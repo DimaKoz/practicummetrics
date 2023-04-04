@@ -13,7 +13,7 @@ const (
 	okPathParts = 5
 	indexType   = 2
 	indexName   = 3
-	indexId     = 4
+	indexValue  = 4
 )
 
 func UpdateHandler(res http.ResponseWriter, req *http.Request) {
@@ -37,7 +37,7 @@ func processPath(path string) (*model.MetricUnit, *error2.RequestError) {
 		return nil, &error2.RequestError{StatusCode: http.StatusNotFound, Err: errors.New("wrong number of the parts of the path")}
 	}
 
-	mu, err := model.NewMetricUnit(parts[indexType], parts[indexName], parts[indexId])
+	mu, err := model.NewMetricUnit(parts[indexType], parts[indexName], parts[indexValue])
 	if err != nil {
 		return nil, err
 	}
