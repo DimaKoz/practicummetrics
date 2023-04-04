@@ -16,6 +16,7 @@ const (
 	indexValue  = 4
 )
 
+// UpdateHandler handles `/update/`
 func UpdateHandler(res http.ResponseWriter, req *http.Request) {
 	mu, err := processPath(req.URL.Path)
 	if err != nil {

@@ -12,6 +12,7 @@ const (
 	MetricTypeCounter = "counter"
 )
 
+// MetricUnit represents a metric
 type MetricUnit struct {
 	Type   string
 	Name   string
@@ -20,6 +21,7 @@ type MetricUnit struct {
 	ValueF float64
 }
 
+// NewMetricUnit creates an instance of MetricUnit or returns *error2.RequestError
 func NewMetricUnit(metricType string, metricName string, metricValue string) (*MetricUnit, *error2.RequestError) {
 	if metricType != MetricTypeGauge && metricType != MetricTypeCounter {
 		return nil, &error2.RequestError{StatusCode: http.StatusNotImplemented, Err: errors.New("unknown type")}

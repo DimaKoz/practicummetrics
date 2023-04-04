@@ -2,6 +2,7 @@ package middleware
 
 import "net/http"
 
+// MethodChecker checks for allowed methods
 func MethodChecker(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
