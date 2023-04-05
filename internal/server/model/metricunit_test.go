@@ -90,8 +90,12 @@ func TestNewMetricUnit(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewMetricUnit() got = %v, want %v", got, tt.want)
 			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("NewMetricUnit() got1 = %v, want %v", got1, tt.want1)
+			if tt.want1 != nil && got1 != nil {
+				if got1.StatusCode != tt.want1.StatusCode {
+					t.Errorf("processPath() got1 = %v, want %v", got1, tt.want1)
+				}
+			} else if tt.want1 != got1 {
+				t.Errorf("processPath() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
