@@ -19,11 +19,11 @@ func TestAddMetricMemStorage(t *testing.T) {
 	}{
 		{name: "counter",
 			args: []args{
-				{mu: model.MetricUnit{model.MetricTypeCounter, "test", "42", 42, 0}},
-				{mu: model.MetricUnit{model.MetricTypeCounter, "test", "10", 10, 0}},
+				{mu: model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "42", ValueI: 42, ValueF: 0}},
+				{mu: model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "10", ValueI: 10, ValueF: 0}},
 			},
 			wantkey: "test",
-			want:    &model.MetricUnit{model.MetricTypeCounter, "test", "52", 52, 0},
+			want:    &model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "52", ValueI: 52, ValueF: 0},
 		},
 	}
 	for _, tt := range tests {
