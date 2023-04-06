@@ -40,8 +40,28 @@ func AddMetricMemStorage(mu model.MetricUnit) {
 	instanceMemSt.storage[mu.Name] = mu
 }
 
+// GetMetricByName returns a *model.MetricUnit if found or nil
+func GetMetricByName(name string) *model.MetricUnit {
+	InitMemStorage()
+	lockMemSt.Lock()
+	defer lockMemSt.Unlock()
+	var result *model.MetricUnit = nil
+	found, ok := instanceMemSt.storage[name]
+	if ok {
+		result = &model.MetricUnit{
+			Type:   found.Type,
+			Name:   found.Name,
+			Value:  found.Value,
+			ValueF: found.ValueF,
+			ValueI: found.ValueI,
+		}
+	}
+	return result
+}
+
 // GetMetricsMemStorage returns a list of model.MetricUnit from the storage
 func GetMetricsMemStorage() []model.MetricUnit {
+	InitMemStorage()
 	result := make([]model.MetricUnit, 0)
 	lockMemSt.Lock()
 	defer lockMemSt.Unlock()
