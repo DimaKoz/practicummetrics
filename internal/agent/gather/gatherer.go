@@ -11,7 +11,7 @@ import (
 
 // GetMetrics returns a list of the metrics
 func GetMetrics() *[]model.MetricUnit {
-	result := make([]model.MetricUnit, 0, 0)
+	result := make([]model.MetricUnit, 0)
 
 	var rtm runtime.MemStats
 	runtime.ReadMemStats(&rtm)
