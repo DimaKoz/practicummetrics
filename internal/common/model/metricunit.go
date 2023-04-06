@@ -2,7 +2,7 @@ package model
 
 import (
 	"errors"
-	error2 "github.com/DimaKoz/practicummetrics/internal/server/error"
+	error2 "github.com/DimaKoz/practicummetrics/internal/common/error"
 	"net/http"
 	"strconv"
 )

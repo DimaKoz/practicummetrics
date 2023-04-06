@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/DimaKoz/practicummetrics/internal/server/model"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"reflect"
 	"testing"
 )

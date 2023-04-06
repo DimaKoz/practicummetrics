@@ -2,8 +2,8 @@ package handler
 
 import (
 	"errors"
-	error2 "github.com/DimaKoz/practicummetrics/internal/server/error"
-	"github.com/DimaKoz/practicummetrics/internal/server/model"
+	error2 "github.com/DimaKoz/practicummetrics/internal/common/error"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"net/http"
 	"net/http/httptest"
 	"reflect"

@@ -2,9 +2,9 @@ package handler
 
 import (
 	"errors"
-	error2 "github.com/DimaKoz/practicummetrics/internal/server/error"
-	"github.com/DimaKoz/practicummetrics/internal/server/model"
-	"github.com/DimaKoz/practicummetrics/internal/server/repository"
+	error2 "github.com/DimaKoz/practicummetrics/internal/common/error"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"net/http"
 	"strings"
 )

@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/DimaKoz/practicummetrics/internal/server/model"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"strconv"
 	"sync"
 )
@@ -36,4 +36,17 @@ func AddMetricMemStorage(mu model.MetricUnit) {
 		}
 	}
 	instanceMemSt.storage[mu.Name] = mu
+}
+
+func GetMetricsMemStorage() []model.MetricUnit {
+	result := make([]model.MetricUnit, 0)
+	lockMemSt.Lock()
+	defer lockMemSt.Unlock()
+	for _, v := range instanceMemSt.storage {
+		newMetric, err := model.NewMetricUnit(v.Type, v.Name, v.Value)
+		if err == nil && newMetric != nil {
+			result = append(result, *newMetric)
+		}
+	}
+	return result
 }
