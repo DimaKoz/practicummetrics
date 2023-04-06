@@ -14,6 +14,7 @@ type MemStorage struct {
 	storage map[string]model.MetricUnit
 }
 
+// InitMemStorage initializes the MemStorage inside itself
 func InitMemStorage() {
 	once.Do(func() {
 
@@ -23,6 +24,7 @@ func InitMemStorage() {
 	})
 }
 
+// AddMetricMemStorage adds model.MetricUnit to 'instanceMemSt.storage' storage
 func AddMetricMemStorage(mu model.MetricUnit) {
 	InitMemStorage()
 	lockMemSt.Lock()
@@ -38,6 +40,7 @@ func AddMetricMemStorage(mu model.MetricUnit) {
 	instanceMemSt.storage[mu.Name] = mu
 }
 
+// GetMetricsMemStorage returns a list of model.MetricUnit from the storage
 func GetMetricsMemStorage() []model.MetricUnit {
 	result := make([]model.MetricUnit, 0)
 	lockMemSt.Lock()
