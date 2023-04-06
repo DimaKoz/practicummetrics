@@ -5,7 +5,7 @@ import (
 	"fmt"
 	error2 "github.com/DimaKoz/practicummetrics/internal/common/error"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
-	"io"
+	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
 )
@@ -17,24 +17,29 @@ const (
 )
 
 // ValueHandler handles `/value/`
-func ValueHandler(res http.ResponseWriter, req *http.Request) {
-	name, err := getNameFromPath(req.URL.Path)
+func ValueHandler(c echo.Context) error {
+	name, err := getNameFromPath(c.Request().URL.Path)
 	if err != nil {
-		http.Error(res, err.Error(), err.StatusCode)
-		return
+		errHTTP := echo.NewHTTPError(err.StatusCode, err.Error())
+		c.Error(errHTTP)
+		return errHTTP
 	}
 	mu := repository.GetMetricByName(name)
 	if mu == nil {
-		res.WriteHeader(http.StatusNotFound)
-		return
+		errHTTP := echo.NewHTTPError(http.StatusNotFound)
+		c.Error(errHTTP)
+		return errHTTP
 	}
-	if _, err2 := io.WriteString(res, mu.Value); err2 != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-		fmt.Println("error for ValueHandler: ", err2)
-		return
-	}
-	res.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
+	if err2 := c.String(http.StatusOK, mu.Value); err2 != nil {
+		errHTTP := echo.NewHTTPError(http.StatusInternalServerError)
+		c.Error(errHTTP)
+		fmt.Println("error for ValueHandler: ", err2)
+
+		return errHTTP
+
+	}
+	return nil
 }
 
 func getNameFromPath(path string) (string, *error2.RequestError) {

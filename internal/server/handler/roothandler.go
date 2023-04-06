@@ -3,14 +3,16 @@ package handler
 import (
 	"fmt"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
+	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
 // RootHandler handles `/`
-func RootHandler(res http.ResponseWriter, req *http.Request) {
-	if req.URL.Path != "/" {
-		res.WriteHeader(http.StatusNotFound)
-		return
+func RootHandler(c echo.Context) error {
+	if c.Request().URL.Path != "/" {
+		errHTTP := echo.NewHTTPError(http.StatusNotFound, "wrong url")
+		c.Error(errHTTP)
+		return errHTTP
 	}
 	metrics := repository.GetMetricsMemStorage()
 	var body = ""
@@ -21,6 +23,6 @@ func RootHandler(res http.ResponseWriter, req *http.Request) {
 		body += m.Name + "," + m.Value
 	}
 
-	fmt.Fprintf(res, "<h1>%s</h1><div>%s</div>", "Metrics:", body)
-
+	str := fmt.Sprintf("<h1>%s</h1><div>%s</div>", "Metrics:", body)
+	return c.String(http.StatusOK, str)
 }

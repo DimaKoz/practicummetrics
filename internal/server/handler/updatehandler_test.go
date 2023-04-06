@@ -4,6 +4,7 @@ import (
 	"errors"
 	error2 "github.com/DimaKoz/practicummetrics/internal/common/error"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/labstack/echo/v4"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -42,10 +43,13 @@ func TestUpdateHandler(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			e := echo.New()
 			request := httptest.NewRequest(http.MethodPost, test.request, nil)
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
-			UpdateHandler(w, request)
+			c := e.NewContext(request, w)
+
+			UpdateHandler(c)
 
 			res := w.Result()
 			// проверяем код ответа

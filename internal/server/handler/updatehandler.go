@@ -5,6 +5,7 @@ import (
 	error2 "github.com/DimaKoz/practicummetrics/internal/common/error"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
+	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
 )
@@ -17,14 +18,16 @@ const (
 )
 
 // UpdateHandler handles `/update/`
-func UpdateHandler(res http.ResponseWriter, req *http.Request) {
-	mu, err := processPath(req.URL.Path)
+func UpdateHandler(c echo.Context) error {
+
+	mu, err := processPath(c.Request().URL.Path)
 	if err != nil {
-		http.Error(res, err.Error(), err.StatusCode)
-		return
+		errHTTP := echo.NewHTTPError(err.StatusCode, err.Error())
+		c.Error(errHTTP)
+		return errHTTP
 	}
 	repository.AddMetricMemStorage(*mu)
-	res.WriteHeader(http.StatusOK)
+	return c.NoContent(http.StatusOK)
 }
 
 func processPath(path string) (*model.MetricUnit, *error2.RequestError) {

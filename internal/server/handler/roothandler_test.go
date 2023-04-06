@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/labstack/echo/v4"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -27,10 +28,12 @@ func TestRootHandler(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			e := echo.New()
 			request := httptest.NewRequest(http.MethodGet, "/status", nil)
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
-			RootHandler(w, request)
+			c := e.NewContext(request, w)
+			RootHandler(c)
 
 			res := w.Result()
 			// проверяем код ответа
