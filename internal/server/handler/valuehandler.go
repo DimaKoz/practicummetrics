@@ -34,7 +34,7 @@ func ValueHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	res.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	res.WriteHeader(http.StatusOK)
+
 }
 
 func getNameFromPath(path string) (string, *error2.RequestError) {
