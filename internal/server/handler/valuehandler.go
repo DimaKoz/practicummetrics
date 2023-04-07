@@ -18,6 +18,7 @@ const (
 
 // ValueHandler handles `/value/`
 func ValueHandler(c echo.Context) error {
+	fmt.Println("ValueHandler", c)
 	name, err := getNameFromPath(c.Request().URL.Path)
 	if err != nil {
 		errHTTP := echo.NewHTTPError(err.StatusCode, err.Error())

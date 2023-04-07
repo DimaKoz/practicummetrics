@@ -18,6 +18,7 @@ func main() {
 	e := echo.New()
 	e.POST("/update/*", handler.UpdateHandler)
 	e.GET("/value/*", handler.ValueHandler)
+	e.POST("/value/*", handler.ValueHandler)
 	e.GET("/", handler.RootHandler)
 	fmt.Println(address)
 	err := e.Start(address)

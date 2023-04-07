@@ -9,6 +9,7 @@ import (
 
 // RootHandler handles `/`
 func RootHandler(c echo.Context) error {
+	fmt.Println("RootHandler", c)
 	if c.Request().URL.Path != "/" {
 		errHTTP := echo.NewHTTPError(http.StatusNotFound, "wrong url")
 		c.Error(errHTTP)

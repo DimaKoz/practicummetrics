@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	error2 "github.com/DimaKoz/practicummetrics/internal/common/error"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
@@ -19,7 +20,7 @@ const (
 
 // UpdateHandler handles `/update/`
 func UpdateHandler(c echo.Context) error {
-
+	fmt.Println("UpdateHandler", c)
 	mu, err := processPath(c.Request().URL.Path)
 	if err != nil {
 		errHTTP := echo.NewHTTPError(err.StatusCode, err.Error())
