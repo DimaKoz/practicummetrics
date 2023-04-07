@@ -7,10 +7,12 @@ import (
 	"os"
 )
 
+var Address string = "http://localhost:8080"
+
 // ParcelsSend sends metrics
 func ParcelsSend(metrics []model.MetricUnit) {
 	for _, unit := range metrics {
-		url := "http://localhost:8080/update/" + prepPathByMetric(unit)
+		url := "http://" + Address + "/update/" + prepPathByMetric(unit)
 		client := resty.New()
 		_, err := client.R().Post(url)
 		if err != nil {

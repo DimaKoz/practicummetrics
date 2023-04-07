@@ -5,15 +5,48 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
 	"github.com/DimaKoz/practicummetrics/internal/agent/send"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
+	flag2 "github.com/spf13/pflag"
 	"runtime"
+	"strconv"
 	"time"
 )
 
-var pollInterval time.Duration = 2
-var reportInterval time.Duration = 10
+var pollInterval = time.Duration(2)
+var reportInterval = time.Duration(10)
 var alive time.Duration = 60
+var Address string
+var pFlag, rFlag string
 
 func main() {
+
+	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
+
+	flag2.StringVarP(&Address, "a", "a", "localhost:8080",
+		"localhost:8080 by default")
+
+	flag2.StringVarP(&pFlag, "p", "p", "2",
+		"2 by default")
+
+	flag2.StringVarP(&rFlag, "r", "r", "10",
+		"10 by default")
+
+	flag2.Parse()
+	if s, err := strconv.ParseInt(pFlag, 10, 64); err == nil {
+		pollInterval = time.Duration(s)
+	} else {
+		fmt.Println("pFlag:", pFlag, ", s:", s, ", err:", err)
+	}
+
+	if s, err := strconv.ParseInt(rFlag, 10, 64); err == nil {
+		reportInterval = time.Duration(s)
+	} else {
+		fmt.Println("rFlag:", rFlag, ", s:", s, ", err:", err)
+	}
+
+	send.Address = Address
+
+	fmt.Println("reportInterval:", reportInterval)
+	fmt.Println("pollInterval:", pollInterval)
 
 	tickerGathering := time.NewTicker(pollInterval * time.Second)
 	done := make(chan bool)

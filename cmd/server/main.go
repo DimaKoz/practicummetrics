@@ -10,6 +10,8 @@ import (
 func main() {
 	//var address = flag2.String("abc", ":8080", ":8080 by default")
 	var address string
+	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
+
 	flag2.StringVarP(&address, "a", "a", ":8080",
 		":8080 by default")
 	flag2.Parse()
