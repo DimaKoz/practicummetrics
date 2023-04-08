@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/go-resty/resty/v2"
-	"os"
 )
 
 var Address string = "http://localhost:8080"
@@ -17,7 +16,8 @@ func ParcelsSend(metrics []model.MetricUnit) {
 		_, err := client.R().Post(url)
 		if err != nil {
 			fmt.Printf("client: could not create request: %s\n", err)
-			os.Exit(1)
+			fmt.Printf("client: waiting for the next tick\n")
+			break
 		}
 
 	}
