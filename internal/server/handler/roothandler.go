@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -16,6 +17,11 @@ func RootHandler(c echo.Context) error {
 		return errHTTP
 	}
 	metrics := repository.GetMetricsMemStorage()
+	str := getHtmlContent(metrics)
+	return c.String(http.StatusOK, str)
+}
+
+func getHtmlContent(metrics []model.MetricUnit) string {
 	var body = ""
 	for i, m := range metrics {
 		if i != 0 {
@@ -24,6 +30,5 @@ func RootHandler(c echo.Context) error {
 		body += m.Name + "," + m.Value
 	}
 
-	str := fmt.Sprintf("<h1>%s</h1><div>%s</div>", "Metrics:", body)
-	return c.String(http.StatusOK, str)
+	return fmt.Sprintf("<h1>%s</h1><div>%s</div>", "Metrics:", body)
 }
