@@ -12,7 +12,6 @@ import (
 
 const (
 	okPathPartsValue = 4
-	indexTypeValue   = 2
 	indexNameValue   = 3
 )
 

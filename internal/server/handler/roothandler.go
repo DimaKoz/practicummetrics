@@ -17,11 +17,11 @@ func RootHandler(c echo.Context) error {
 		return errHTTP
 	}
 	metrics := repository.GetMetricsMemStorage()
-	str := getHtmlContent(metrics)
+	str := getHTMLContent(metrics)
 	return c.String(http.StatusOK, str)
 }
 
-func getHtmlContent(metrics []model.MetricUnit) string {
+func getHTMLContent(metrics []model.MetricUnit) string {
 	var body = ""
 	for i, m := range metrics {
 		if i != 0 {
