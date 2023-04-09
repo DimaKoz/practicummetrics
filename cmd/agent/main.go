@@ -2,24 +2,23 @@ package main
 
 import (
 	"fmt"
+	"github.com/DimaKoz/practicummetrics/internal/agent/config"
 	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
 	"github.com/DimaKoz/practicummetrics/internal/agent/send"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
-	flag2 "github.com/spf13/pflag"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 )
 
-var pollInterval = time.Duration(2)
-var reportInterval = time.Duration(10)
-
-const alive time.Duration = 20
-
-var address string
-var pFlag, rFlag string
+const (
+	defaultPollInterval   = time.Duration(2)
+	defaultReportInterval = time.Duration(10)
+	defaultAddress        = "localhost:8080"
+	alive                 = time.Duration(21)
+)
 
 func sleepingKiller() {
 	var stopTime = alive * time.Second
@@ -36,17 +35,25 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	flagsProcess()
+	cfg := &model.Config{}
+	config.AgentInitConfig(cfg, defaultAddress, defaultReportInterval, defaultPollInterval)
 
-	tickerGathering := time.NewTicker(pollInterval * time.Second)
+	// from cfg:
+	fmt.Println("cfg:")
+	fmt.Println("address:", cfg.Address)
+	fmt.Println("reportInterval:", cfg.ReportInterval*time.Second)
+	fmt.Println("pollInterval:", cfg.PollInterval*time.Second)
+	send.Address = cfg.Address
+	tickerGathering := time.NewTicker(cfg.PollInterval * time.Second)
+	tickerReport := time.NewTicker(cfg.ReportInterval * time.Second)
+
 	done := make(chan bool)
-	tickerReport := time.NewTicker(reportInterval * time.Second)
 	go func() {
 		for {
 			select {
 
-			case <-sigs:
-				fmt.Println("sigs")
+			case t := <-sigs:
+				fmt.Println("sigs:", t)
 				done <- true
 				return
 
@@ -73,36 +80,5 @@ func main() {
 	tickerReport.Stop()
 
 	fmt.Println("exiting")
-
-}
-
-func flagsProcess() {
-	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
-
-	flag2.StringVarP(&address, "a", "a", "localhost:8080",
-		"localhost:8080 by default")
-
-	flag2.StringVarP(&pFlag, "p", "p", "2",
-		"2 by default")
-
-	flag2.StringVarP(&rFlag, "r", "r", "10",
-		"10 by default")
-
-	flag2.Parse()
-	if s, err := strconv.ParseInt(pFlag, 10, 64); err == nil {
-		pollInterval = time.Duration(s)
-	} else {
-		fmt.Println("pFlag:", pFlag, ", s:", s, ", err:", err)
-	}
-
-	if s, err := strconv.ParseInt(rFlag, 10, 64); err == nil {
-		reportInterval = time.Duration(s)
-	} else {
-		fmt.Println("rFlag:", rFlag, ", s:", s, ", err:", err)
-	}
-
-	send.Address = address
-	fmt.Println("reportInterval:", reportInterval)
-	fmt.Println("pollInterval:", pollInterval)
 
 }

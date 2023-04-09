@@ -53,7 +53,7 @@ func TestRootHandler(t *testing.T) {
 
 			res := w.Result()
 			// проверяем код ответа
-			assert.Equal(t, res.StatusCode, test.want.code, "StatusCode got: %v, want: %v", res.StatusCode, test.want.code)
+			assert.Equal(t, test.want.code, res.StatusCode, "StatusCode got: %v, want: %v", res.StatusCode, test.want.code)
 
 			res.Body.Close()
 
