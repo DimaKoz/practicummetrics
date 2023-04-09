@@ -142,7 +142,7 @@ func TestAgentInitConfig(t *testing.T) {
 				flag2.CommandLine.SetOutput(io.Discard)
 
 				osArgOrig := os.Args
-				os.Args = make([]string, 0, 0)
+				os.Args = make([]string, 0)
 				os.Args = append(os.Args, osArgOrig[0])
 				if tt.args.flagAddress != "" {
 					os.Args = append(os.Args, "-a")
