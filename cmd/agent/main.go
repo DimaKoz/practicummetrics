@@ -41,11 +41,11 @@ func main() {
 	// from cfg:
 	fmt.Println("cfg:")
 	fmt.Println("address:", cfg.Address)
-	fmt.Println("reportInterval:", cfg.ReportInterval*time.Second)
-	fmt.Println("pollInterval:", cfg.PollInterval*time.Second)
+	fmt.Println("reportInterval:", cfg.ReportInterval)
+	fmt.Println("pollInterval:", cfg.PollInterval)
 	send.Address = cfg.Address
-	tickerGathering := time.NewTicker(cfg.PollInterval * time.Second)
-	tickerReport := time.NewTicker(cfg.ReportInterval * time.Second)
+	tickerGathering := time.NewTicker(time.Duration(cfg.PollInterval) * time.Second)
+	tickerReport := time.NewTicker(time.Duration(cfg.ReportInterval) * time.Second)
 
 	done := make(chan bool)
 	go func() {
