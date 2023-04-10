@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/DimaKoz/practicummetrics/internal/agent/config"
 	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
 	"github.com/DimaKoz/practicummetrics/internal/agent/send"
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"os"

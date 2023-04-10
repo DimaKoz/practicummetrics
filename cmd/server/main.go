@@ -2,26 +2,28 @@ package main
 
 import (
 	"fmt"
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	"github.com/labstack/echo/v4"
-	flag2 "github.com/spf13/pflag"
 )
 
-func main() {
-	//var address = flag2.String("abc", ":8080", ":8080 by default")
-	var address string
-	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
+const defaultAddress = "localhost:8080"
 
-	flag2.StringVarP(&address, "a", "a", ":8080",
-		":8080 by default")
-	flag2.Parse()
+func main() {
+	cfg := &model.Config{}
+	config.AgentInitConfig(cfg, defaultAddress, 0, 0)
+
+	// from cfg:
+	fmt.Println("cfg:")
+	fmt.Println("address:", cfg.Address)
 	e := echo.New()
 	e.POST("/update/*", handler.UpdateHandler)
 	e.GET("/value/*", handler.ValueHandler)
 	e.POST("/value/*", handler.ValueHandler)
 	e.GET("/", handler.RootHandler)
-	fmt.Println(address)
-	err := e.Start(address)
+
+	err := e.Start(cfg.Address)
 	if err != nil {
 		panic(err)
 	}
