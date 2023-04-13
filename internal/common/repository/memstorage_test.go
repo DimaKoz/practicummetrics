@@ -32,7 +32,7 @@ func TestAddMetricMemStorage(t *testing.T) {
 			for _, unit := range tt.args {
 				AddMetricMemStorage(unit.mu)
 			}
-			if got, ok := instanceMemSt.storage[tt.wantkey]; ok {
+			if got, ok := memStorage.storage[tt.wantkey]; ok {
 				if !reflect.DeepEqual(&got, tt.want) {
 					t.Errorf("AddMetricMemStorage() got = %v, want %v", got, tt.want)
 				}
@@ -76,9 +76,9 @@ func TestGetMetricByName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			orig := instanceMemSt.storage
-			instanceMemSt.storage = make(map[string]model.MetricUnit, 0)
-			t.Cleanup(func() { instanceMemSt.storage = orig })
+			orig := memStorage.storage
+			memStorage.storage = make(map[string]model.MetricUnit, 0)
+			t.Cleanup(func() { memStorage.storage = orig })
 			for _, v := range tt.args.add {
 				AddMetricMemStorage(v)
 			}
@@ -113,9 +113,9 @@ func TestGetMetricsMemStorage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			orig := instanceMemSt.storage
-			instanceMemSt.storage = make(map[string]model.MetricUnit, 0)
-			t.Cleanup(func() { instanceMemSt.storage = orig })
+			orig := memStorage.storage
+			memStorage.storage = make(map[string]model.MetricUnit, 0)
+			t.Cleanup(func() { memStorage.storage = orig })
 			for _, v := range tt.add {
 				AddMetricMemStorage(v)
 			}

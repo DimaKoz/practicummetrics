@@ -17,18 +17,7 @@ const (
 	defaultPollInterval   = time.Duration(2)
 	defaultReportInterval = time.Duration(10)
 	defaultAddress        = "localhost:8080"
-	alive                 = time.Duration(21)
 )
-
-func sleepingKiller() {
-	var stopTime = alive * time.Second
-	time.Sleep(stopTime)
-	fmt.Println("Time to die")
-	err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-	if err != nil {
-		fmt.Println(err)
-	}
-}
 
 func main() {
 
@@ -45,7 +34,10 @@ func main() {
 	fmt.Println("pollInterval:", cfg.PollInterval)
 	send.Address = cfg.Address
 	tickerGathering := time.NewTicker(time.Duration(cfg.PollInterval) * time.Second)
+	defer tickerGathering.Stop()
+
 	tickerReport := time.NewTicker(time.Duration(cfg.ReportInterval) * time.Second)
+	defer tickerReport.Stop()
 
 	done := make(chan bool)
 	go func() {
@@ -72,12 +64,9 @@ func main() {
 		}
 	}()
 
-	go sleepingKiller()
-
 	fmt.Println("awaiting signal")
+
 	<-done
-	tickerGathering.Stop()
-	tickerReport.Stop()
 
 	fmt.Println("exiting")
 

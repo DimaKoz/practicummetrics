@@ -23,9 +23,7 @@ func UpdateHandler(c echo.Context) error {
 	fmt.Println("UpdateHandler", c)
 	mu, err := processPath(c.Request().URL.Path)
 	if err != nil {
-		errHTTP := echo.NewHTTPError(err.StatusCode, err.Error())
-		c.Error(errHTTP)
-		return errHTTP
+		return c.String(err.StatusCode, err.Error())
 	}
 	repository.AddMetricMemStorage(*mu)
 	return c.NoContent(http.StatusOK)

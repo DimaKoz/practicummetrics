@@ -17,28 +17,22 @@ const (
 
 // ValueHandler handles `/value/`
 func ValueHandler(c echo.Context) error {
-	fmt.Println("ValueHandler", c)
+
 	name, err := getNameFromPath(c.Request().URL.Path)
 	if err != nil {
-		errHTTP := echo.NewHTTPError(err.StatusCode, err.Error())
-		c.Error(errHTTP)
-		return errHTTP
+		return c.String(err.StatusCode, err.Error())
 	}
+
 	mu := repository.GetMetricByName(name)
 	if mu == nil {
-		errHTTP := echo.NewHTTPError(http.StatusNotFound)
-		c.Error(errHTTP)
-		return errHTTP
+		return c.NoContent(http.StatusNotFound)
 	}
 
 	if err2 := c.String(http.StatusOK, mu.Value); err2 != nil {
-		errHTTP := echo.NewHTTPError(http.StatusInternalServerError)
-		c.Error(errHTTP)
 		fmt.Println("error for ValueHandler: ", err2)
-
-		return errHTTP
-
+		return c.NoContent(http.StatusInternalServerError)
 	}
+
 	return nil
 }
 
