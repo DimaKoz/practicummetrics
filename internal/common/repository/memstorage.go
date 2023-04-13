@@ -6,8 +6,6 @@ import (
 	"sync"
 )
 
-var once sync.Once
-
 var memStorageSync = &sync.Mutex{}
 var memStorage = MemStorage{
 	storage: make(map[string]model.MetricUnit, 0),

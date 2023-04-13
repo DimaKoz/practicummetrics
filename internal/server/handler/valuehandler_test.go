@@ -50,13 +50,13 @@ func TestValueHandler(t *testing.T) {
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
 			c := e.NewContext(request, w)
-			ValueHandler(c)
+			_ = ValueHandler(c)
 
 			res := w.Result()
 			// проверяем код ответа
 			assert.Equal(t, test.want.code, res.StatusCode, "StatusCode got: %v, want: %v", res.StatusCode, test.want.code)
 
-			res.Body.Close()
+			_ = res.Body.Close()
 
 		})
 	}

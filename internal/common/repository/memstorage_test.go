@@ -15,7 +15,7 @@ func TestAddMetricMemStorage(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    []args
-		wantkey string
+		wantKey string
 		want    *model.MetricUnit
 	}{
 		{name: "counter",
@@ -23,7 +23,7 @@ func TestAddMetricMemStorage(t *testing.T) {
 				{mu: model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "42", ValueI: 42, ValueF: 0}},
 				{mu: model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "10", ValueI: 10, ValueF: 0}},
 			},
-			wantkey: "test",
+			wantKey: "test",
 			want:    &model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "52", ValueI: 52, ValueF: 0},
 		},
 	}
@@ -32,7 +32,7 @@ func TestAddMetricMemStorage(t *testing.T) {
 			for _, unit := range tt.args {
 				AddMetricMemStorage(unit.mu)
 			}
-			if got, ok := memStorage.storage[tt.wantkey]; ok {
+			if got, ok := memStorage.storage[tt.wantKey]; ok {
 				if !reflect.DeepEqual(&got, tt.want) {
 					t.Errorf("AddMetricMemStorage() got = %v, want %v", got, tt.want)
 				}

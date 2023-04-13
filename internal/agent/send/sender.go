@@ -6,7 +6,7 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-var Address string = "http://localhost:8080"
+var Address = "http://localhost:8080"
 
 // ParcelsSend sends metrics
 func ParcelsSend(metrics []model.MetricUnit) {

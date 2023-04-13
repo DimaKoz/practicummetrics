@@ -39,22 +39,19 @@ func TestRootHandler(t *testing.T) {
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
 			c := e.NewContext(request, w)
-			RootHandler(c)
+			_ = RootHandler(c)
 
 			res := w.Result()
 			// проверяем код ответа
 			assert.Equal(t, test.want.code, res.StatusCode, "StatusCode got: %v, want: %v", res.StatusCode, test.want.code)
 
-			res.Body.Close()
+			_ = res.Body.Close()
 
 		})
 	}
 }
 
 func Test_getHtmlContent(t *testing.T) {
-	type args struct {
-		metrics []model.MetricUnit
-	}
 	tests := []struct {
 		name    string
 		metrics []model.MetricUnit

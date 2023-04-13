@@ -14,6 +14,7 @@ func TestNewMetricUnit(t *testing.T) {
 		metricName  string
 		metricValue string
 	}
+	//goland:noinspection SpellCheckingInspection
 	tests := []struct {
 		name  string
 		args  args

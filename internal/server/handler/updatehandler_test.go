@@ -49,7 +49,7 @@ func TestUpdateHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 			c := e.NewContext(request, w)
 
-			UpdateHandler(c)
+			_ = UpdateHandler(c)
 
 			res := w.Result()
 			// проверяем код ответа
@@ -57,7 +57,7 @@ func TestUpdateHandler(t *testing.T) {
 				t.Errorf("StatusCode got: %v, want: %v", res.StatusCode, test.want.code)
 			}
 
-			res.Body.Close()
+			_ = res.Body.Close()
 
 		})
 	}

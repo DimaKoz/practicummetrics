@@ -44,8 +44,8 @@ func GetMetrics() *[]model.MetricUnit {
 	}
 
 	// GCSys
-	gcsys := strconv.FormatUint(rtm.GCSys, 10)
-	if m, err = model.NewMetricUnit(model.MetricTypeGauge, "GCSys", gcsys); err == nil && m != nil {
+	gcSys := strconv.FormatUint(rtm.GCSys, 10)
+	if m, err = model.NewMetricUnit(model.MetricTypeGauge, "GCSys", gcSys); err == nil && m != nil {
 		result = append(result, *m)
 	}
 
