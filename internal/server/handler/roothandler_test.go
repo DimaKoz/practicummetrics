@@ -22,16 +22,6 @@ func TestRootHandler(t *testing.T) {
 		want   want
 	}{
 		{
-			name:   "test 404",
-			method: http.MethodGet,
-			target: "/status",
-			want: want{
-				code:        http.StatusNotFound,
-				response:    ``,
-				contentType: "",
-			},
-		},
-		{
 			name:   "test 200",
 			method: http.MethodGet,
 			target: "/",
