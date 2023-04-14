@@ -70,35 +70,35 @@ func Test_processPath(t *testing.T) {
 	tests := []struct {
 		name  string
 		args  args
-		want  *model.MetricUnit
+		want  model.MetricUnit
 		want1 *error2.RequestError
 	}{
 		{name: "empty path",
 			args: args{
 				path: "",
 			},
-			want:  nil,
+			want:  model.MetricUnit{},
 			want1: &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("unavailable")},
 		},
 		{name: "wrong number '/'",
 			args: args{
 				path: "update/zs/",
 			},
-			want:  nil,
+			want:  model.MetricUnit{},
 			want1: &error2.RequestError{StatusCode: http.StatusNotFound, Err: errors.New("wrong number of the parts of the path")},
 		},
 		{name: "wrong value",
 			args: args{
 				path: "/update/counter/me/none",
 			},
-			want:  nil,
+			want:  model.MetricUnit{},
 			want1: &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("bad value")},
 		},
 		{name: "ok counter metric",
 			args: args{
 				path: "/update/counter/me/42",
 			},
-			want:  &model.MetricUnit{Type: "counter", Name: "me", Value: "42", ValueInt: 42, ValueFloat: 0},
+			want:  model.MetricUnit{Type: "counter", Name: "me", Value: "42", ValueInt: 42, ValueFloat: 0},
 			want1: nil,
 		},
 	}

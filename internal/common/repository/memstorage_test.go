@@ -30,11 +30,11 @@ func TestAddMetricMemStorage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			for _, unit := range tt.args {
-				AddMetricMemStorage(unit.mu)
+				AddMetric(unit.mu)
 			}
 			if got, ok := memStorage.storage[tt.wantKey]; ok {
 				if !reflect.DeepEqual(&got, tt.want) {
-					t.Errorf("AddMetricMemStorage() got = %v, want %v", got, tt.want)
+					t.Errorf("AddMetric() got = %v, want %v", got, tt.want)
 				}
 			} else {
 				t.Errorf("not found stored result")
@@ -80,7 +80,7 @@ func TestGetMetricByName(t *testing.T) {
 			memStorage.storage = make(map[string]model.MetricUnit, 0)
 			t.Cleanup(func() { memStorage.storage = orig })
 			for _, v := range tt.args.add {
-				AddMetricMemStorage(v)
+				AddMetric(v)
 			}
 			got := GetMetricByName(tt.args.search)
 			assert.Equal(t, got, tt.want, "GetMetricByName() = %v, want %v", got, tt.want)
@@ -117,9 +117,9 @@ func TestGetMetricsMemStorage(t *testing.T) {
 			memStorage.storage = make(map[string]model.MetricUnit, 0)
 			t.Cleanup(func() { memStorage.storage = orig })
 			for _, v := range tt.add {
-				AddMetricMemStorage(v)
+				AddMetric(v)
 			}
-			assert.Equalf(t, tt.want, GetMetricsMemStorage(), "GetMetricsMemStorage()")
+			assert.ElementsMatch(t, tt.want, GetAllMetrics(), "GetAllMetrics()")
 		})
 	}
 }

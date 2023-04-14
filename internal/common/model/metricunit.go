@@ -14,6 +14,8 @@ const (
 	MetricTypeCounter = "counter"
 )
 
+var EmptyMetric = MetricUnit{}
+
 // MetricUnit represents a metric
 type MetricUnit struct {
 	Type       string
@@ -24,14 +26,14 @@ type MetricUnit struct {
 }
 
 // NewMetricUnit creates an instance of MetricUnit or returns *error2.RequestError
-func NewMetricUnit(metricType string, metricName string, metricValue string) (*MetricUnit, *error2.RequestError) {
+func NewMetricUnit(metricType string, metricName string, metricValue string) (MetricUnit, *error2.RequestError) {
 	if metricType != MetricTypeGauge && metricType != MetricTypeCounter {
-		return nil, &error2.RequestError{StatusCode: http.StatusNotImplemented, Err: errors.New("unknown type")}
+		return EmptyMetric, &error2.RequestError{StatusCode: http.StatusNotImplemented, Err: errors.New("unknown type")}
 	}
 	if metricName == "" || metricValue == "" {
-		return nil, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("unavailable")}
+		return EmptyMetric, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("unavailable")}
 	}
-	var result = &MetricUnit{}
+	var result = MetricUnit{}
 	result.Type = metricType
 	result.Name = metricName
 	result.Value = metricValue
@@ -40,7 +42,7 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (*M
 		if s, err := strconv.ParseFloat(metricValue, 64); err == nil {
 			result.ValueFloat = s
 		} else {
-			return nil, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("bad value")}
+			return EmptyMetric, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("bad value")}
 		}
 	}
 
@@ -48,10 +50,20 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (*M
 		if s, err := strconv.ParseInt(metricValue, 10, 64); err == nil {
 			result.ValueInt = s
 		} else {
-			return nil, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("bad value")}
+			return EmptyMetric, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("bad value")}
 		}
 	}
 	var err *error2.RequestError = nil
 	return result, err
 
+}
+
+func (mu MetricUnit) Clone() MetricUnit {
+	return MetricUnit{
+		Type:       mu.Type,
+		Name:       mu.Name,
+		Value:      mu.Value,
+		ValueFloat: mu.ValueFloat,
+		ValueInt:   mu.ValueInt,
+	}
 }

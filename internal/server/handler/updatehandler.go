@@ -25,24 +25,24 @@ func UpdateHandler(c echo.Context) error {
 	if err != nil {
 		return c.String(err.StatusCode, err.Error())
 	}
-	repository.AddMetricMemStorage(*mu)
+	repository.AddMetric(mu)
 	return c.NoContent(http.StatusOK)
 }
 
-func processPath(path string) (*model.MetricUnit, *error2.RequestError) {
+func processPath(path string) (model.MetricUnit, *error2.RequestError) {
 
 	if path == "" {
-		return nil, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("unavailable")}
+		return model.MetricUnit{}, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("unavailable")}
 	}
 
 	parts := strings.Split(path, "/")
 	if len(parts) != okPathParts {
-		return nil, &error2.RequestError{StatusCode: http.StatusNotFound, Err: errors.New("wrong number of the parts of the path")}
+		return model.MetricUnit{}, &error2.RequestError{StatusCode: http.StatusNotFound, Err: errors.New("wrong number of the parts of the path")}
 	}
 
 	mu, err := model.NewMetricUnit(parts[indexType], parts[indexName], parts[indexValue])
 	if err != nil {
-		return nil, err
+		return model.MetricUnit{}, err
 	}
 
 	return mu, nil

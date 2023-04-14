@@ -15,8 +15,8 @@ type MemStorage struct {
 	storage map[string]model.MetricUnit
 }
 
-// AddMetricMemStorage adds model.MetricUnit to 'memStorage.storage' storage
-func AddMetricMemStorage(mu model.MetricUnit) {
+// AddMetric adds model.MetricUnit to 'memStorage.storage' storage
+func AddMetric(mu model.MetricUnit) {
 	memStorageSync.Lock()
 	defer memStorageSync.Unlock()
 
@@ -48,16 +48,13 @@ func GetMetricByName(name string) *model.MetricUnit {
 	return result
 }
 
-// GetMetricsMemStorage returns a list of model.MetricUnit from the storage
-func GetMetricsMemStorage() []model.MetricUnit {
+// GetAllMetrics returns a list of model.MetricUnit from the storage
+func GetAllMetrics() []model.MetricUnit {
 	result := make([]model.MetricUnit, 0)
 	memStorageSync.Lock()
 	defer memStorageSync.Unlock()
 	for _, v := range memStorage.storage {
-		newMetric, err := model.NewMetricUnit(v.Type, v.Name, v.Value)
-		if err == nil && newMetric != nil {
-			result = append(result, *newMetric)
-		}
+		result = append(result, v.Clone())
 	}
 	return result
 }

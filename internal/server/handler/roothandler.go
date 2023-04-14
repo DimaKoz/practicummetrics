@@ -10,7 +10,7 @@ import (
 
 // RootHandler handles `/`
 func RootHandler(c echo.Context) error {
-	metrics := repository.GetMetricsMemStorage()
+	metrics := repository.GetAllMetrics()
 	str := getHTMLContent(metrics)
 	return c.String(http.StatusOK, str)
 }

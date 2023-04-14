@@ -18,7 +18,7 @@ func TestNewMetricUnit(t *testing.T) {
 	tests := []struct {
 		name  string
 		args  args
-		want  *MetricUnit
+		want  MetricUnit
 		want1 *error2.RequestError
 	}{
 		{name: "normal counter",
@@ -27,7 +27,7 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "test",
 				metricValue: "42",
 			},
-			want:  &MetricUnit{MetricTypeCounter, "test", "42", 42, 0},
+			want:  MetricUnit{MetricTypeCounter, "test", "42", 42, 0},
 			want1: nil,
 		},
 		{name: "normal gauge",
@@ -36,7 +36,7 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "test",
 				metricValue: "42",
 			},
-			want:  &MetricUnit{MetricTypeGauge, "test", "42", 0, 42},
+			want:  MetricUnit{MetricTypeGauge, "test", "42", 0, 42},
 			want1: nil,
 		},
 		{name: "unknown type",
@@ -45,7 +45,7 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "test",
 				metricValue: "42",
 			},
-			want:  nil,
+			want:  EmptyMetric,
 			want1: &error2.RequestError{StatusCode: http.StatusNotImplemented, Err: errors.New("unknown type")},
 		},
 		{name: "empty name",
@@ -54,7 +54,7 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "",
 				metricValue: "42",
 			},
-			want:  nil,
+			want:  EmptyMetric,
 			want1: &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("unavailable")},
 		},
 		{name: "empty value",
@@ -63,7 +63,7 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "qaz",
 				metricValue: "",
 			},
-			want:  nil,
+			want:  EmptyMetric,
 			want1: &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("unavailable")},
 		},
 		{name: "no float value",
@@ -72,7 +72,7 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "qaz",
 				metricValue: "xexe",
 			},
-			want:  nil,
+			want:  EmptyMetric,
 			want1: &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("bad value")},
 		},
 		{name: "no int value",
@@ -81,7 +81,7 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "qaz",
 				metricValue: "xexe",
 			},
-			want:  nil,
+			want:  EmptyMetric,
 			want1: &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("bad value")},
 		},
 	}
@@ -97,6 +97,39 @@ func TestNewMetricUnit(t *testing.T) {
 				}
 			} else if tt.want1 != got1 {
 				t.Errorf("processPath() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestMetricUnit_Clone(t *testing.T) {
+	tests := []struct {
+		name string
+		pass MetricUnit
+		want MetricUnit
+	}{
+		{
+			name: "clone",
+			pass: MetricUnit{
+				Type:       MetricTypeGauge,
+				Name:       "heap",
+				ValueInt:   0,
+				ValueFloat: 4932.99,
+				Value:      "4932.99",
+			},
+			want: MetricUnit{
+				Type:       MetricTypeGauge,
+				Name:       "heap",
+				ValueInt:   0,
+				ValueFloat: 4932.99,
+				Value:      "4932.99",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.pass.Clone(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Clone() = %v, want %v", got, tt.want)
 			}
 		})
 	}

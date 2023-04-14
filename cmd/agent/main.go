@@ -49,12 +49,12 @@ func main() {
 				fmt.Println("gathering info Tick at", t)
 				metrics := gather.GetMetrics()
 				for _, s := range *metrics {
-					repository.AddMetricMemStorage(s)
+					repository.AddMetric(s)
 				}
 
 			case t := <-tickerReport.C:
 				fmt.Println("sending info Tick at", t)
-				metrics := repository.GetMetricsMemStorage()
+				metrics := repository.GetAllMetrics()
 				send.ParcelsSend(cfg, metrics)
 			}
 		}
