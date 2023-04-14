@@ -20,11 +20,11 @@ func TestAddMetricMemStorage(t *testing.T) {
 	}{
 		{name: "counter",
 			args: []args{
-				{mu: model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "42", ValueI: 42, ValueF: 0}},
-				{mu: model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "10", ValueI: 10, ValueF: 0}},
+				{mu: model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "42", ValueInt: 42, ValueFloat: 0}},
+				{mu: model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "10", ValueInt: 10, ValueFloat: 0}},
 			},
 			wantKey: "test",
-			want:    &model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "52", ValueI: 52, ValueF: 0},
+			want:    &model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "52", ValueInt: 52, ValueFloat: 0},
 		},
 	}
 	for _, tt := range tests {
@@ -67,11 +67,11 @@ func TestGetMetricByName(t *testing.T) {
 			args: args{
 				search: "wanted",
 				add: []model.MetricUnit{
-					{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueI: 42, ValueF: 0},
-					{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueI: 43, ValueF: 0},
+					{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueInt: 42, ValueFloat: 0},
+					{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueInt: 43, ValueFloat: 0},
 				},
 			},
-			want: &model.MetricUnit{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueI: 42, ValueF: 0},
+			want: &model.MetricUnit{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueInt: 42, ValueFloat: 0},
 		},
 	}
 	for _, tt := range tests {
@@ -101,12 +101,12 @@ func TestGetMetricsMemStorage(t *testing.T) {
 			want: []model.MetricUnit{},
 		}, {name: "wanted key",
 			add: []model.MetricUnit{
-				{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueI: 42, ValueF: 0},
-				{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueI: 43, ValueF: 0},
+				{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueInt: 42, ValueFloat: 0},
+				{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueInt: 43, ValueFloat: 0},
 			},
 			want: []model.MetricUnit{
-				{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueI: 42, ValueF: 0},
-				{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueI: 43, ValueF: 0},
+				{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueInt: 42, ValueFloat: 0},
+				{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueInt: 43, ValueFloat: 0},
 			},
 		},
 	}

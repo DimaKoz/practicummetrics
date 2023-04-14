@@ -98,7 +98,7 @@ func Test_processPath(t *testing.T) {
 			args: args{
 				path: "/update/counter/me/42",
 			},
-			want:  &model.MetricUnit{Type: "counter", Name: "me", Value: "42", ValueI: 42, ValueF: 0},
+			want:  &model.MetricUnit{Type: "counter", Name: "me", Value: "42", ValueInt: 42, ValueFloat: 0},
 			want1: nil,
 		},
 	}

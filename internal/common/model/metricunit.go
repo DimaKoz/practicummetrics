@@ -14,11 +14,11 @@ const (
 
 // MetricUnit represents a metric
 type MetricUnit struct {
-	Type   string
-	Name   string
-	Value  string
-	ValueI int64
-	ValueF float64
+	Type       string
+	Name       string
+	Value      string
+	ValueInt   int64
+	ValueFloat float64
 }
 
 // NewMetricUnit creates an instance of MetricUnit or returns *error2.RequestError
@@ -36,7 +36,7 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (*M
 
 	if metricType == MetricTypeGauge {
 		if s, err := strconv.ParseFloat(metricValue, 64); err == nil {
-			result.ValueF = s
+			result.ValueFloat = s
 		} else {
 			return nil, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("bad value")}
 		}
@@ -44,7 +44,7 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (*M
 
 	if metricType == MetricTypeCounter {
 		if s, err := strconv.ParseInt(metricValue, 10, 64); err == nil {
-			result.ValueI = s
+			result.ValueInt = s
 		} else {
 			return nil, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("bad value")}
 		}

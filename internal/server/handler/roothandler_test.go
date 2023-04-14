@@ -65,8 +65,8 @@ func Test_getHtmlContent(t *testing.T) {
 		{
 			name: "2 metrics",
 			metrics: []model.MetricUnit{
-				{Type: model.MetricTypeCounter, Name: "test", Value: "42", ValueI: 42, ValueF: 0},
-				{Type: model.MetricTypeCounter, Name: "test2", Value: "22", ValueI: 22, ValueF: 0},
+				{Type: model.MetricTypeCounter, Name: "test", Value: "42", ValueInt: 42, ValueFloat: 0},
+				{Type: model.MetricTypeCounter, Name: "test2", Value: "22", ValueInt: 22, ValueFloat: 0},
 			},
 			want: "<h1>Metrics:</h1><div>test,42<br></br>test2,22</div>",
 		},

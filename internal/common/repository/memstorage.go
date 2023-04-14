@@ -23,8 +23,8 @@ func AddMetricMemStorage(mu model.MetricUnit) {
 	if mu.Type == model.MetricTypeCounter {
 		found, ok := memStorage.storage[mu.Name]
 		if ok {
-			mu.ValueI += found.ValueI
-			mu.Value = strconv.FormatInt(mu.ValueI, 10)
+			mu.ValueInt += found.ValueInt
+			mu.Value = strconv.FormatInt(mu.ValueInt, 10)
 		}
 	}
 	memStorage.storage[mu.Name] = mu
@@ -38,11 +38,11 @@ func GetMetricByName(name string) *model.MetricUnit {
 	found, ok := memStorage.storage[name]
 	if ok {
 		result = &model.MetricUnit{
-			Type:   found.Type,
-			Name:   found.Name,
-			Value:  found.Value,
-			ValueF: found.ValueF,
-			ValueI: found.ValueI,
+			Type:       found.Type,
+			Name:       found.Name,
+			Value:      found.Value,
+			ValueFloat: found.ValueFloat,
+			ValueInt:   found.ValueInt,
 		}
 	}
 	return result
