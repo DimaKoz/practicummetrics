@@ -5,7 +5,6 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
 	"github.com/DimaKoz/practicummetrics/internal/agent/send"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"os"
 	"os/signal"
@@ -13,26 +12,23 @@ import (
 	"time"
 )
 
-const (
-	defaultPollInterval   = time.Duration(2)
-	defaultReportInterval = time.Duration(10)
-	defaultAddress        = "localhost:8080"
-)
-
 func main() {
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	cfg := &model.Config{}
-	config.AgentInitConfig(cfg, defaultAddress, defaultReportInterval, defaultPollInterval)
+	cfg, err := config.CreateConfig(config.ServerCfg)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	// from cfg:
 	fmt.Println("cfg:")
 	fmt.Println("address:", cfg.Address)
 	fmt.Println("reportInterval:", cfg.ReportInterval)
 	fmt.Println("pollInterval:", cfg.PollInterval)
-	send.Address = cfg.Address
+
 	tickerGathering := time.NewTicker(time.Duration(cfg.PollInterval) * time.Second)
 	defer tickerGathering.Stop()
 
@@ -59,7 +55,7 @@ func main() {
 			case t := <-tickerReport.C:
 				fmt.Println("sending info Tick at", t)
 				metrics := repository.GetMetricsMemStorage()
-				send.ParcelsSend(metrics)
+				send.ParcelsSend(cfg, metrics)
 			}
 		}
 	}()

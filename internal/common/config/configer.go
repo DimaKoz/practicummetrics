@@ -2,74 +2,110 @@ package config
 
 import (
 	"fmt"
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/caarlos0/env/v6"
 	flag2 "github.com/spf13/pflag"
 	"strconv"
 	"time"
 )
 
-func AgentInitConfig(cfg *model.Config,
-	defaultAddress string,
-	defaultRepInterval time.Duration,
-	defaultPollInterval time.Duration) {
+const (
+	// ServerCfg used to pass it to CreateConfig for getting a config for the server
+	ServerCfg = iota
+	// AgentCfg used to pass it to CreateConfig for getting a config for the server
+	AgentCfg
+)
 
-	if cfg == nil {
-		fmt.Println("passed config is nil")
-		return
-	}
+const (
+	defaultPollInterval   = time.Duration(2)
+	defaultReportInterval = time.Duration(10)
+	defaultAddress        = "localhost:8080"
+)
 
-	processEnv(cfg)
-
-	processFlags(cfg)
-
-	setupDefaultValues(cfg, defaultAddress, defaultRepInterval, defaultPollInterval)
+// Config represents a config of the agent and/or the server
+type Config struct {
+	Address        string `env:"ADDRESS"`
+	ReportInterval int64  `env:"REPORT_INTERVAL"`
+	PollInterval   int64  `env:"POLL_INTERVAL"`
 }
 
-func processFlags(cfg *model.Config) {
+var getEnv = processEnv
+
+func CreateConfig(configType int) (*Config, error) {
+	if configType != ServerCfg && configType != AgentCfg {
+		errDesc := fmt.Sprintln("from CreateConfig: an unknown type of the config, no config for you ")
+		return nil, fmt.Errorf(errDesc)
+	}
+	cfg := &Config{}
+
+	warningEnv := getEnv(cfg)
+	if warningEnv != nil {
+		fmt.Println("from CreateConfig: warning: couldn't process the environment: ", warningEnv)
+		fmt.Println("from CreateConfig: trying to use an another option")
+	}
+	fmt.Println("after getEnv:", cfg)
+	warningFlags := processFlags(cfg, configType)
+	if warningFlags != nil {
+		fmt.Println("from CreateConfig: warning: couldn't process the flags: ", warningEnv)
+		fmt.Println("from CreateConfig: trying to use default values")
+	}
+	setupDefaultValues(cfg, defaultAddress, defaultReportInterval, defaultPollInterval)
+
+	return cfg, nil
+}
+
+func processFlags(cfg *Config, configType int) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
 	var address string
 	if cfg.Address == "" {
 		flag2.StringVarP(&address, "a", "a", "", "")
 		cfg.Address = address
 	}
-
 	var pFlag string
-	if cfg.PollInterval == 0 {
-		flag2.StringVarP(&pFlag, "p", "p", "", "")
-	}
-
 	var rFlag string
-	if cfg.PollInterval == 0 {
-		flag2.StringVarP(&rFlag, "r", "r", "", "")
+	if configType == AgentCfg {
+
+		if cfg.PollInterval == 0 {
+			flag2.StringVarP(&pFlag, "p", "p", "", "")
+		}
+
+		if cfg.PollInterval == 0 {
+			flag2.StringVarP(&rFlag, "r", "r", "", "")
+		}
 	}
 
 	flag2.Parse()
+
 	if address != "" {
 		cfg.Address = address
 	}
 
-	if s, err := strconv.ParseInt(pFlag, 10, 64); err == nil {
-		cfg.PollInterval = s
-	} else {
-		fmt.Println("pFlag:", pFlag, ", s:", s, ", err:", err)
-	}
+	if configType == AgentCfg {
 
-	if s, err := strconv.ParseInt(rFlag, 10, 64); err == nil {
-		cfg.ReportInterval = s
-	} else {
-		fmt.Println("rFlag:", rFlag, ", s:", s, ", err:", err)
+		if s, err := strconv.ParseInt(pFlag, 10, 64); err == nil {
+			cfg.PollInterval = s
+		} else {
+			return fmt.Errorf("pFlag: %s, err: %w", pFlag, err)
+		}
+
+		if s, err := strconv.ParseInt(rFlag, 10, 64); err == nil {
+			cfg.ReportInterval = s
+		} else {
+			return fmt.Errorf("rFlag: %s, err: %w", rFlag, err)
+		}
+
 	}
+	return nil
 }
 
-func processEnv(config *model.Config) {
+func processEnv(config *Config) error {
 	err := env.Parse(config)
 	if err != nil {
-		fmt.Println(" env parsing error: ", err)
+		return fmt.Errorf(" env parsing error: %w", err)
 	}
+	return nil
 }
 
-func setupDefaultValues(config *model.Config,
+func setupDefaultValues(config *Config,
 	defaultAddress string,
 	defaultRepInterval time.Duration,
 	defaultPollInterval time.Duration) {
