@@ -8,7 +8,9 @@ import (
 )
 
 const (
-	MetricTypeGauge   = "gauge"
+	// MetricTypeGauge represents "gauge" MetricUnit.Type
+	MetricTypeGauge = "gauge"
+	// MetricTypeCounter represents "counter" MetricUnit.Type
 	MetricTypeCounter = "counter"
 )
 
