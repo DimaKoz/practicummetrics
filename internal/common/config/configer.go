@@ -84,13 +84,13 @@ func processFlags(cfg *Config, configType int) error {
 		if s, err := strconv.ParseInt(pFlag, 10, 64); err == nil {
 			cfg.PollInterval = s
 		} else {
-			return fmt.Errorf("pFlag: %s, err: %w", pFlag, err)
+			return fmt.Errorf("couldn't convert the poll interval to int, pFlag: %s, err: %w", pFlag, err)
 		}
 
 		if s, err := strconv.ParseInt(rFlag, 10, 64); err == nil {
 			cfg.ReportInterval = s
 		} else {
-			return fmt.Errorf("rFlag: %s, err: %w", rFlag, err)
+			return fmt.Errorf("couldn't convert the request interval to int, rFlag: %s, err: %w", rFlag, err)
 		}
 
 	}
@@ -100,7 +100,7 @@ func processFlags(cfg *Config, configType int) error {
 func processEnv(config *Config) error {
 	err := env.Parse(config)
 	if err != nil {
-		return fmt.Errorf(" env parsing error: %w", err)
+		return fmt.Errorf("couldn't parse an enviroment, error: %w", err)
 	}
 	return nil
 }
