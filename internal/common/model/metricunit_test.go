@@ -134,3 +134,31 @@ func TestMetricUnit_Clone(t *testing.T) {
 		})
 	}
 }
+
+func TestMetricUnit_GetPath(t *testing.T) {
+
+	tests := []struct {
+		name string
+		mu   MetricUnit
+		want string
+	}{
+		{
+			name: "a path from MetricUnit",
+			mu: MetricUnit{
+				Type:       MetricTypeGauge,
+				Name:       "b",
+				Value:      "42",
+				ValueInt:   0,
+				ValueFloat: 42,
+			},
+			want: "gauge/b/42",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.mu.GetPath(); got != tt.want {
+				t.Errorf("GetPath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

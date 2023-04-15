@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
-	"github.com/DimaKoz/practicummetrics/internal/agent/send"
+	"github.com/DimaKoz/practicummetrics/internal/agent/sender"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"os"
@@ -55,7 +55,7 @@ func main() {
 			case t := <-tickerReport.C:
 				fmt.Println("sending info Tick at", t)
 				metrics := repository.GetAllMetrics()
-				send.ParcelsSend(cfg, metrics)
+				sender.ParcelsSend(cfg, metrics)
 			}
 		}
 	}()

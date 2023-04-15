@@ -67,3 +67,7 @@ func (mu MetricUnit) Clone() MetricUnit {
 		ValueInt:   mu.ValueInt,
 	}
 }
+
+func (mu MetricUnit) GetPath() string {
+	return mu.Type + "/" + mu.Name + "/" + mu.Value
+}
