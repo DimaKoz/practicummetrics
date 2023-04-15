@@ -121,36 +121,6 @@ func TestParcelsSend(t *testing.T) {
 	}
 }
 
-/*
-func readPrintedByte() {
-
-	err := io.EOF // force an error
-	if err != nil {
-		ParcelsSend(&config.Config{
-			Address:        "localhost:8080",
-			PollInterval:   int64(2),
-			ReportInterval: int64(10),
-		}, []model.MetricUnit{model.MetricUnit{
-			Type:       model.MetricTypeGauge,
-			Name:       "qwerty",
-			Value:      "42.42",
-			ValueInt:   0,
-			ValueFloat: 42.42,
-		}})
-
-		return
-	}
-
-}
-
-	func captureOutput(f func()) string {
-		var buf bytes.Buffer
-		log.SetOutput(&buf)
-		f()
-		log.SetOutput(os.Stderr)
-		return buf.String()
-	}
-*/
 func capture() func() (string, error) {
 	r, w, err := os.Pipe()
 	if err != nil {

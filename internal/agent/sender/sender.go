@@ -11,9 +11,9 @@ import (
 // ParcelsSend sends metrics
 func ParcelsSend(cfg *config.Config, metrics []model.MetricUnit) {
 	for _, unit := range metrics {
-		url := getURL(cfg, unit)
+		preparedURL := getURL(cfg, unit)
 		client := resty.New()
-		_, err := client.R().Post(url.String())
+		_, err := client.R().Post(preparedURL.String())
 		if err != nil {
 			fmt.Printf("client: could not create the request: %s \n", err)
 			fmt.Printf("client: waiting for the next tick\n")

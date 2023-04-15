@@ -1,26 +1,18 @@
 package handler
 
 import (
-	"errors"
 	"fmt"
-	error2 "github.com/DimaKoz/practicummetrics/internal/common/error"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/labstack/echo/v4"
 	"net/http"
-	"strings"
-)
-
-const (
-	okPathPartsValue = 4
-	indexNameValue   = 3
 )
 
 // ValueHandler handles `/value/`
 func ValueHandler(c echo.Context) error {
-
-	name, err := getNameFromPath(c.Request().URL.Path)
-	if err != nil {
-		return c.String(err.StatusCode, err.Error())
+	fmt.Println(c.ParamNames(), c.ParamValues())
+	name := c.Param("name")
+	if name == "" {
+		return c.String(http.StatusNotFound, "couldn't find a name of a metric")
 	}
 
 	mu := repository.GetMetricByName(name)
@@ -34,15 +26,4 @@ func ValueHandler(c echo.Context) error {
 	}
 
 	return nil
-}
-
-func getNameFromPath(path string) (string, *error2.RequestError) {
-	if path == "" {
-		return "", &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("unavailable")}
-	}
-	parts := strings.Split(path, "/")
-	if len(parts) != okPathPartsValue {
-		return "", &error2.RequestError{StatusCode: http.StatusNotFound, Err: errors.New("wrong number of the parts of the path")}
-	}
-	return parts[indexNameValue], nil
 }

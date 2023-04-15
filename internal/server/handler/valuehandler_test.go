@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"errors"
-	error2 "github.com/DimaKoz/practicummetrics/internal/common/error"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -23,7 +21,7 @@ func TestValueHandler(t *testing.T) {
 		want   want
 	}{
 		{
-			name:   "test 404",
+			name:   "test 404 - 0",
 			method: http.MethodGet,
 			target: "/status",
 			want: want{
@@ -33,7 +31,17 @@ func TestValueHandler(t *testing.T) {
 			},
 		},
 		{
-			name:   "test 404",
+			name:   "test 404 - 1",
+			method: http.MethodGet,
+			target: "/value/gauge/testCounter132",
+			want: want{
+				code:        http.StatusNotFound,
+				response:    ``,
+				contentType: "",
+			},
+		},
+		{
+			name:   "test 404 - 2",
 			method: http.MethodGet,
 			target: "/value/gauge/testCounter132",
 			want: want{
@@ -43,13 +51,18 @@ func TestValueHandler(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for i, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			e := echo.New()
 			request := httptest.NewRequest(test.method, test.target, nil)
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
 			c := e.NewContext(request, w)
+			if i != len(tests)-1 {
+				c.SetParamNames([]string{"name"}...)
+				c.SetParamValues([]string{"testCounter132"}...)
+
+			}
 			_ = ValueHandler(c)
 
 			res := w.Result()
@@ -58,42 +71,6 @@ func TestValueHandler(t *testing.T) {
 
 			_ = res.Body.Close()
 
-		})
-	}
-}
-
-func Test_getNameFromPath(t *testing.T) {
-
-	tests := []struct {
-		name  string
-		path  string
-		want  string
-		want1 *error2.RequestError
-	}{
-		{
-			name:  "empty path",
-			path:  "",
-			want:  "",
-			want1: &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("unavailable")},
-		},
-		{
-			name:  "bad path",
-			path:  "/6/5/4/3/2/1",
-			want:  "",
-			want1: &error2.RequestError{StatusCode: http.StatusNotFound, Err: errors.New("wrong number of the parts of the path")},
-		},
-		{
-			name:  "ok path",
-			path:  "/value/gauge/testCounter",
-			want:  "testCounter",
-			want1: nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := getNameFromPath(tt.path)
-			assert.Equalf(t, tt.want, got, "getNameFromPath(%v)", tt.path)
-			assert.Equalf(t, tt.want1, got1, "getNameFromPath(%v)", tt.path)
 		})
 	}
 }
