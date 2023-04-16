@@ -47,8 +47,9 @@ func main() {
 
 			case t := <-tickerGathering.C:
 				fmt.Println("gathering info Tick at", t)
-				metrics := gather.GetMetrics()
-				for _, s := range *metrics {
+				metrics, err1 := gather.GetMetrics()
+				fmt.Println(err1)
+				for _, s := range metrics {
 					repository.AddMetric(s)
 				}
 

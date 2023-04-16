@@ -46,11 +46,12 @@ func TestGetMetrics(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetMetrics(); len(*got) != len(tt.wantKeys) {
+			if got, _ := GetMetrics(); len(got) != len(tt.wantKeys) {
+
 				t.Errorf("GetMetrics() = %v, want %v", got, tt.wantKeys)
-				checkMetricsName(t, tt.wantKeys, got)
+				checkMetricsName(t, tt.wantKeys, &got)
 			} else {
-				checkMetricsName(t, tt.wantKeys, got)
+				checkMetricsName(t, tt.wantKeys, &got)
 			}
 		})
 	}
