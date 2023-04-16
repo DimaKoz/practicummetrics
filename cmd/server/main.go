@@ -21,7 +21,7 @@ func main() {
 	fmt.Println("address:", cfg.Address)
 
 	e := echo.New()
-	e.POST("/update/*", handler.UpdateHandler)
+	e.POST("/update/:type/:name/:value", handler.UpdateHandler)
 	e.GET("/value/:type/:name", handler.ValueHandler)
 	e.POST("/value/*", handler.ValueHandler)
 	e.GET("/", handler.RootHandler)

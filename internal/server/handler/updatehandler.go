@@ -8,20 +8,19 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/labstack/echo/v4"
 	"net/http"
-	"strings"
 )
 
 const (
-	okPathParts = 5
-	indexType   = 2
-	indexName   = 3
-	indexValue  = 4
+	okPathParts = 3
+	indexType   = 0
+	indexName   = 1
+	indexValue  = 2
 )
 
 // UpdateHandler handles `/update/`
 func UpdateHandler(c echo.Context) error {
 	fmt.Println("UpdateHandler", c)
-	mu, err := processPath(c.Request().URL.Path)
+	mu, err := processPath(c, c.Request().URL.Path)
 	if err != nil {
 		return c.String(err.StatusCode, err.Error())
 	}
@@ -29,18 +28,17 @@ func UpdateHandler(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func processPath(path string) (model.MetricUnit, *error2.RequestError) {
+func processPath(c echo.Context, path string) (model.MetricUnit, *error2.RequestError) {
 
 	if path == "" {
 		return model.MetricUnit{}, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("unavailable")}
 	}
-
-	parts := strings.Split(path, "/")
-	if len(parts) != okPathParts {
+	
+	if len(c.ParamValues()) != okPathParts {
 		return model.MetricUnit{}, &error2.RequestError{StatusCode: http.StatusNotFound, Err: errors.New("wrong number of the parts of the path")}
 	}
 
-	mu, err := model.NewMetricUnit(parts[indexType], parts[indexName], parts[indexValue])
+	mu, err := model.NewMetricUnit(c.ParamValues()[indexType], c.ParamValues()[indexName], c.ParamValues()[indexValue])
 	if err != nil {
 		return model.MetricUnit{}, err
 	}

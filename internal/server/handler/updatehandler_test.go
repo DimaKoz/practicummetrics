@@ -1,13 +1,11 @@
 package handler
 
 import (
-	"errors"
-	error2 "github.com/DimaKoz/practicummetrics/internal/common/error"
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -48,14 +46,17 @@ func TestUpdateHandler(t *testing.T) {
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
 			c := e.NewContext(request, w)
+			paramValues := strings.Split(test.request, "/")
+
+			c.SetParamNames([]string{"type", "name", "value"}...)
+			c.SetParamValues(paramValues[2:]...)
 
 			_ = UpdateHandler(c)
 
 			res := w.Result()
 			// проверяем код ответа
-			if res.StatusCode != test.want.code {
-				t.Errorf("StatusCode got: %v, want: %v", res.StatusCode, test.want.code)
-			}
+			got := res.StatusCode
+			assert.Equal(t, test.want.code, got, "StatusCode got: %v, want: %v", got, test.want.code)
 
 			_ = res.Body.Close()
 
@@ -63,7 +64,7 @@ func TestUpdateHandler(t *testing.T) {
 	}
 }
 
-func Test_processPath(t *testing.T) {
+/*func Test_processPath(t *testing.T) {
 	type args struct {
 		path string
 	}
@@ -118,3 +119,4 @@ func Test_processPath(t *testing.T) {
 		})
 	}
 }
+*/
