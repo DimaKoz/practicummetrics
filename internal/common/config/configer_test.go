@@ -39,7 +39,7 @@ func TestAgentInitConfig(t *testing.T) {
 				typeCfg: 3,
 			},
 			want:    nil,
-			wantErr: fmt.Errorf("from CreateConfig: an unknown type of the config, no config for you \n"),
+			wantErr: fmt.Errorf("unsupported config type"),
 		},
 
 		{
@@ -198,12 +198,14 @@ func Test_processEnvMock(t *testing.T) {
 	osArgOrig := os.Args
 	os.Args = make([]string, 0)
 	os.Args = append(os.Args, osArgOrig[0])
-	t.Cleanup(func() { os.Args = osArgOrig })
 
-	old := getEnv
-	defer func() { getEnv = old }()
+	processEnvOrig := processEnv
+	t.Cleanup(func() {
+		os.Args = osArgOrig
+		processEnv = processEnvOrig
+	})
 
-	getEnv = func(config *Config) error {
+	processEnv = func(config *Config) error {
 		return fmt.Errorf("any error")
 	}
 

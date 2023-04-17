@@ -1,9 +1,11 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"github.com/caarlos0/env/v6"
 	flag2 "github.com/spf13/pflag"
+	"log"
 	"strconv"
 	"time"
 )
@@ -28,25 +30,22 @@ type Config struct {
 	PollInterval   int64  `env:"POLL_INTERVAL"`
 }
 
-var getEnv = processEnv
-
 func CreateConfig(configType int) (*Config, error) {
 	if configType != ServerCfg && configType != AgentCfg {
-		errDesc := fmt.Sprintln("from CreateConfig: an unknown type of the config, no config for you ")
-		return nil, fmt.Errorf(errDesc)
+		return nil, errors.New("unsupported config type")
 	}
 	cfg := &Config{}
 
-	warningEnv := getEnv(cfg)
+	warningEnv := processEnv(cfg)
 	if warningEnv != nil {
-		fmt.Println("from CreateConfig: warning: couldn't process the environment: ", warningEnv)
-		fmt.Println("from CreateConfig: trying to use an another option")
+		log.Println("from CreateConfig: warning: couldn't process the environment: ", warningEnv)
+		log.Println("from CreateConfig: trying to use an another option")
 	}
 	fmt.Println("after getEnv:", cfg)
 	warningFlags := processFlags(cfg, configType)
 	if warningFlags != nil {
-		fmt.Println("from CreateConfig: warning: couldn't process the flags: ", warningEnv)
-		fmt.Println("from CreateConfig: trying to use default values")
+		log.Println("from CreateConfig: warning: couldn't process the flags: ", warningEnv)
+		log.Println("from CreateConfig: trying to use default values")
 	}
 	setupDefaultValues(cfg, defaultAddress, defaultReportInterval, defaultPollInterval)
 
@@ -97,7 +96,7 @@ func processFlags(cfg *Config, configType int) error {
 	return nil
 }
 
-func processEnv(config *Config) error {
+var processEnv = func(config *Config) error {
 	err := env.Parse(config)
 	if err != nil {
 		return fmt.Errorf("couldn't parse an enviroment, error: %w", err)
