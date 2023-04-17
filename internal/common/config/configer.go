@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/caarlos0/env/v6"
 	flag2 "github.com/spf13/pflag"
-	"log"
 	"strconv"
 	"time"
 )
@@ -36,17 +35,15 @@ func CreateConfig(configType int) (*Config, error) {
 	}
 	cfg := &Config{}
 
-	warningEnv := processEnv(cfg)
-	if warningEnv != nil {
-		log.Println("from CreateConfig: warning: couldn't process the environment: ", warningEnv)
-		log.Println("from CreateConfig: trying to use an another option")
+	err := processEnv(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("cannot process ENV variables: %w", err)
 	}
-	fmt.Println("after getEnv:", cfg)
-	warningFlags := processFlags(cfg, configType)
-	if warningFlags != nil {
-		log.Println("from CreateConfig: warning: couldn't process the flags: ", warningEnv)
-		log.Println("from CreateConfig: trying to use default values")
+	err = processFlags(cfg, configType)
+	if err != nil {
+		return nil, fmt.Errorf("cannot process flags variables: %w", err)
 	}
+
 	setupDefaultValues(cfg, defaultAddress, defaultReportInterval, defaultPollInterval)
 
 	return cfg, nil
@@ -67,7 +64,7 @@ func processFlags(cfg *Config, configType int) error {
 			flag2.StringVarP(&pFlag, "p", "p", "", "")
 		}
 
-		if cfg.PollInterval == 0 {
+		if cfg.ReportInterval == 0 {
 			flag2.StringVarP(&rFlag, "r", "r", "", "")
 		}
 	}
@@ -79,17 +76,19 @@ func processFlags(cfg *Config, configType int) error {
 	}
 
 	if configType == AgentCfg {
-
-		if s, err := strconv.ParseInt(pFlag, 10, 64); err == nil {
-			cfg.PollInterval = s
-		} else {
-			return fmt.Errorf("couldn't convert the poll interval to int, pFlag: %s, err: %w", pFlag, err)
+		if cfg.PollInterval == 0 && pFlag != "" {
+			if s, err := strconv.ParseInt(pFlag, 10, 64); err == nil {
+				cfg.PollInterval = s
+			} else {
+				return fmt.Errorf("couldn't convert the poll interval to int, pFlag: %s, err: %w", pFlag, err)
+			}
 		}
-
-		if s, err := strconv.ParseInt(rFlag, 10, 64); err == nil {
-			cfg.ReportInterval = s
-		} else {
-			return fmt.Errorf("couldn't convert the request interval to int, rFlag: %s, err: %w", rFlag, err)
+		if cfg.ReportInterval == 0 && rFlag != "" {
+			if s, err := strconv.ParseInt(rFlag, 10, 64); err == nil {
+				cfg.ReportInterval = s
+			} else {
+				return fmt.Errorf("couldn't convert the request interval to int, rFlag: %s, err: %w", rFlag, err)
+			}
 		}
 
 	}

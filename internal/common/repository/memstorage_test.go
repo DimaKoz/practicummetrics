@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/stretchr/testify/assert"
 	"reflect"
@@ -50,9 +51,10 @@ func TestGetMetricByName(t *testing.T) {
 		add    []model.MetricUnit
 	}
 	tests := []struct {
-		name string
-		args args
-		want *model.MetricUnit
+		name    string
+		args    args
+		want    model.MetricUnit
+		wantErr error
 	}{
 		{
 			name: "empty key",
@@ -60,7 +62,8 @@ func TestGetMetricByName(t *testing.T) {
 				search: "",
 				add:    []model.MetricUnit{},
 			},
-			want: nil,
+			want:    model.EmptyMetric,
+			wantErr: fmt.Errorf("couldn't find a metric: %s", ""),
 		},
 		{
 			name: "wanted key",
@@ -71,7 +74,8 @@ func TestGetMetricByName(t *testing.T) {
 					{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueInt: 43, ValueFloat: 0},
 				},
 			},
-			want: &model.MetricUnit{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueInt: 42, ValueFloat: 0},
+			want:    model.MetricUnit{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueInt: 42, ValueFloat: 0},
+			wantErr: nil,
 		},
 	}
 	for _, tt := range tests {
@@ -82,7 +86,9 @@ func TestGetMetricByName(t *testing.T) {
 			for _, v := range tt.args.add {
 				AddMetric(v)
 			}
-			got := GetMetricByName(tt.args.search)
+			got, err := GetMetricByName(tt.args.search)
+			assert.Equal(t, err, tt.wantErr, "GetMetricByName() error = %v, want error %v", err, tt.wantErr)
+
 			assert.Equal(t, got, tt.want, "GetMetricByName() = %v, want %v", got, tt.want)
 		})
 	}

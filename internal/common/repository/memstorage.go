@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"strconv"
 	"sync"
@@ -30,22 +31,16 @@ func AddMetric(mu model.MetricUnit) {
 	memStorage.storage[mu.Name] = mu
 }
 
-// GetMetricByName returns a *model.MetricUnit if found or nil
-func GetMetricByName(name string) *model.MetricUnit {
+// GetMetricByName returns a model.MetricUnit and nil error if found or model.EmptyMetric and error
+func GetMetricByName(name string) (model.MetricUnit, error) {
 	memStorageSync.Lock()
 	defer memStorageSync.Unlock()
-	var result *model.MetricUnit = nil
+
 	found, ok := memStorage.storage[name]
 	if ok {
-		result = &model.MetricUnit{
-			Type:       found.Type,
-			Name:       found.Name,
-			Value:      found.Value,
-			ValueFloat: found.ValueFloat,
-			ValueInt:   found.ValueInt,
-		}
+		return found.Clone(), nil
 	}
-	return result
+	return model.EmptyMetric, fmt.Errorf("couldn't find a metric: %s", name)
 }
 
 // GetAllMetrics returns a list of model.MetricUnit from the storage

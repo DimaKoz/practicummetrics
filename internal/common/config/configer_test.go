@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	flag2 "github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
@@ -91,11 +92,8 @@ func TestAgentInitConfig(t *testing.T) {
 				flagPoll:    "5",
 				flagReport:  "abc",
 			},
-			want: &Config{
-				Address:        "127.0.0.1:59455",
-				PollInterval:   5,
-				ReportInterval: 10,
-			},
+			want:    nil,
+			wantErr: errors.New("cannot process flags variables: couldn't convert the request interval to int, rFlag: abc, err: strconv.ParseInt: parsing \"abc\": invalid syntax"),
 		},
 
 		{
@@ -167,7 +165,11 @@ func TestAgentInitConfig(t *testing.T) {
 
 			got, gotErr := CreateConfig(tt.args.typeCfg)
 
-			assert.Equal(t, tt.wantErr, gotErr, "Configs - got error: %v, want: %v", gotErr, tt.wantErr)
+			if tt.wantErr != nil {
+				assert.EqualErrorf(t, gotErr, tt.wantErr.Error(), "Configs - got error: %v, want: %v", gotErr, tt.wantErr)
+			} else {
+				assert.NoError(t, gotErr, "Configs - got error: %v, want: %v", gotErr, tt.wantErr)
+			}
 
 			assert.Equal(t, tt.want, got, "Configs - got: %v, want: %v", got, tt.want)
 
@@ -209,15 +211,11 @@ func Test_processEnvMock(t *testing.T) {
 		return fmt.Errorf("any error")
 	}
 
-	want := &Config{
-		Address:        "localhost:8080",
-		PollInterval:   int64(defaultPollInterval),
-		ReportInterval: int64(defaultReportInterval),
-	}
-	var wantErr error = nil
+	var want *Config = nil
+	var wantErr = errors.New("cannot process ENV variables: any error")
 	got, gotErr := CreateConfig(AgentCfg)
 
-	assert.Equal(t, wantErr, gotErr, "Configs - got error: %v, want: %v", gotErr, wantErr)
+	assert.Equal(t, wantErr.Error(), gotErr.Error(), "Configs - got error: %v, want: %v", gotErr, wantErr)
 	assert.Equal(t, want, got, "Configs - got: %v, want: %v", got, want)
 
 }
