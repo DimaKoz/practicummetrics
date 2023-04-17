@@ -1,22 +1,22 @@
 package sender
 
 import (
-	"fmt"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/go-resty/resty/v2"
+	"log"
 	"net/url"
 )
 
 // ParcelsSend sends metrics
 func ParcelsSend(cfg *config.Config, metrics []model.MetricUnit) {
+	client := resty.New()
 	for _, unit := range metrics {
 		preparedURL := getURL(cfg, unit)
-		client := resty.New()
 		_, err := client.R().Post(preparedURL.String())
 		if err != nil {
-			fmt.Printf("client: could not create the request: %s \n", err)
-			fmt.Printf("client: waiting for the next tick\n")
+			log.Printf("client: could not create the request: %s \n", err)
+			log.Println("client: waiting for the next tick")
 			break
 		}
 

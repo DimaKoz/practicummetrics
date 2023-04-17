@@ -21,6 +21,15 @@ func TestUpdateHandler(t *testing.T) {
 		want    want
 	}{
 		{
+			name:    "test StatusNotFound",
+			request: "/update/counter/100",
+			want: want{
+				code:        http.StatusNotFound,
+				response:    ``,
+				contentType: "",
+			},
+		},
+		{
 			name:    "test counter StatusOk",
 			request: "/update/counter/testCounter/100",
 			want: want{
@@ -39,7 +48,7 @@ func TestUpdateHandler(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for i, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			e := echo.New()
 			request := httptest.NewRequest(http.MethodPost, test.request, nil)
@@ -47,9 +56,10 @@ func TestUpdateHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 			c := e.NewContext(request, w)
 			paramValues := strings.Split(test.request, "/")
-
-			c.SetParamNames([]string{"type", "name", "value"}...)
-			c.SetParamValues(paramValues[2:]...)
+			if i != 0 {
+				c.SetParamNames([]string{"type", "name", "value"}...)
+				c.SetParamValues(paramValues[2:]...)
+			}
 
 			_ = UpdateHandler(c)
 

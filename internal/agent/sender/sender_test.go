@@ -1,17 +1,17 @@
 package sender
 
 import (
-	"fmt"
+	"bytes"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/stretchr/testify/assert"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"strings"
 	"testing"
 )
 
@@ -121,38 +121,21 @@ func TestParcelsSend(t *testing.T) {
 	}
 }
 
-func capture() func() (string, error) {
-	r, w, err := os.Pipe()
+func readByte() {
+	err := io.EOF // force an error
 	if err != nil {
-		panic(err)
-	}
-
-	done := make(chan error, 1)
-
-	save := os.Stdout
-	os.Stdout = w
-
-	var buf strings.Builder
-
-	go func() {
-		_, err := io.Copy(&buf, r)
-		r.Close()
-		done <- err
-	}()
-
-	return func() (string, error) {
-		os.Stdout = save
-		w.Close()
-		err := <-done
-		return buf.String(), err
+		return
 	}
 }
 
 func TestPrintSender(t *testing.T) {
-
 	want := `client: could not create the request: Post "http://localhost:8080/gauge/qwerty/42.42"`
-	// setting stdout to a file
-	done := capture()
+
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	defer func() {
+		log.SetOutput(os.Stderr)
+	}()
 	ParcelsSend(&config.Config{
 		Address:        "localhost:8080",
 		PollInterval:   int64(2),
@@ -164,10 +147,7 @@ func TestPrintSender(t *testing.T) {
 		ValueInt:   0,
 		ValueFloat: 42.42,
 	}})
-	s, err := done()
-	if err != nil {
-		fmt.Printf("TestPrintSender(): err=%v, stdout=%q\n", err, s)
-	}
-	assert.Contains(t, s, want, "Expected %s, got %s", "this is value: test", want, s)
-
+	readByte()
+	got := buf.String()
+	assert.Contains(t, got, want, "Expected %s, got %s", want, got)
 }

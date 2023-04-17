@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
 	"github.com/DimaKoz/practicummetrics/internal/agent/sender"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -19,15 +19,14 @@ func main() {
 
 	cfg, err := config.CreateConfig(config.ServerCfg)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatalf("couldn't create a config %s", err)
 	}
 
 	// from cfg:
-	fmt.Println("cfg:")
-	fmt.Println("address:", cfg.Address)
-	fmt.Println("reportInterval:", cfg.ReportInterval)
-	fmt.Println("pollInterval:", cfg.PollInterval)
+	log.Println("cfg:")
+	log.Println("address:", cfg.Address)
+	log.Println("reportInterval:", cfg.ReportInterval)
+	log.Println("pollInterval:", cfg.PollInterval)
 
 	tickerGathering := time.NewTicker(time.Duration(cfg.PollInterval) * time.Second)
 	defer tickerGathering.Stop()
@@ -40,31 +39,30 @@ func main() {
 		for {
 			select {
 
-			case t := <-sigs:
-				fmt.Println("sigs:", t)
+			case <-sigs:
 				done <- true
 				return
 
-			case t := <-tickerGathering.C:
-				fmt.Println("gathering info Tick at", t)
+			case <-tickerGathering.C:
 				metrics, err1 := gather.GetMetrics()
-				fmt.Println(err1)
+				if err1 != nil {
+					log.Fatalf("cannot collect metrics: %s", err1)
+				}
 				for _, s := range metrics {
 					repository.AddMetric(s)
 				}
 
-			case t := <-tickerReport.C:
-				fmt.Println("sending info Tick at", t)
+			case <-tickerReport.C:
 				metrics := repository.GetAllMetrics()
 				sender.ParcelsSend(cfg, metrics)
 			}
 		}
 	}()
 
-	fmt.Println("awaiting signal")
+	log.Println("awaiting a signal or press Ctrl+C to finish this agent")
 
 	<-done
 
-	fmt.Println("exiting")
+	log.Println("exiting")
 
 }
