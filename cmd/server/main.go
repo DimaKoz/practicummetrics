@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	cfg, err := config.CreateConfig(config.ServerCfg)
+	cfg, err := config.LoadServerConfig()
 	if err != nil {
 		log.Fatalf("couldn't create a config %s", err)
 	}

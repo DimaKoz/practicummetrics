@@ -18,8 +18,6 @@ const (
 
 func TestAgentInitConfig(t *testing.T) {
 	type args struct {
-		typeCfg int
-
 		envAddress string
 		envPoll    string
 		envReport  string
@@ -31,25 +29,17 @@ func TestAgentInitConfig(t *testing.T) {
 	var tests = []struct {
 		name    string
 		args    args
-		want    *Config
+		want    *AgentConfig
 		wantErr error
 	}{
-		{
-			name: "unknown type config",
-			args: args{
-				typeCfg: 3,
-			},
-			want:    nil,
-			wantErr: fmt.Errorf("unsupported config type"),
-		},
 
 		{
 			name: "default values (agent)",
-			args: args{
-				typeCfg: AgentCfg,
-			},
-			want: &Config{
-				Address:        "localhost:8080",
+			args: args{},
+			want: &AgentConfig{
+				Config: Config{
+					Address: "localhost:8080",
+				},
 				PollInterval:   int64(defaultPollInterval),
 				ReportInterval: int64(defaultReportInterval),
 			},
@@ -58,14 +48,15 @@ func TestAgentInitConfig(t *testing.T) {
 		{
 			name: "env values without flags",
 			args: args{
-				typeCfg: AgentCfg,
 
 				envAddress: "127.0.0.1:59483",
 				envPoll:    "15",
 				envReport:  "16",
 			},
-			want: &Config{
-				Address:        "127.0.0.1:59483",
+			want: &AgentConfig{
+				Config: Config{
+					Address: "127.0.0.1:59483",
+				},
 				PollInterval:   15,
 				ReportInterval: 16,
 			},
@@ -73,13 +64,14 @@ func TestAgentInitConfig(t *testing.T) {
 		{
 			name: "flags values without env",
 			args: args{
-				typeCfg:     AgentCfg,
 				flagAddress: "127.0.0.1:59455",
 				flagPoll:    "12",
 				flagReport:  "15",
 			},
-			want: &Config{
-				Address:        "127.0.0.1:59455",
+			want: &AgentConfig{
+				Config: Config{
+					Address: "127.0.0.1:59455",
+				},
 				PollInterval:   12,
 				ReportInterval: 15,
 			},
@@ -87,7 +79,6 @@ func TestAgentInitConfig(t *testing.T) {
 		{
 			name: "flags values without env and without any report interval",
 			args: args{
-				typeCfg:     AgentCfg,
 				flagAddress: "127.0.0.1:59455",
 				flagPoll:    "5",
 				flagReport:  "abc",
@@ -99,7 +90,6 @@ func TestAgentInitConfig(t *testing.T) {
 		{
 			name: "flags values + env",
 			args: args{
-				typeCfg: AgentCfg,
 
 				envAddress:  "127.0.0.1:59483",
 				envPoll:     "3",
@@ -108,8 +98,10 @@ func TestAgentInitConfig(t *testing.T) {
 				flagPoll:    "12",
 				flagReport:  "15",
 			},
-			want: &Config{
-				Address:        "127.0.0.1:59483",
+			want: &AgentConfig{
+				Config: Config{
+					Address: "127.0.0.1:59483",
+				},
 				PollInterval:   3,
 				ReportInterval: 4,
 			},
@@ -163,7 +155,7 @@ func TestAgentInitConfig(t *testing.T) {
 				t.Cleanup(func() { os.Args = osArgOrig })
 			}
 
-			got, gotErr := CreateConfig(tt.args.typeCfg)
+			got, gotErr := LoadAgentConfig()
 
 			if tt.wantErr != nil {
 				assert.EqualErrorf(t, gotErr, tt.wantErr.Error(), "Configs - got error: %v, want: %v", gotErr, tt.wantErr)
@@ -212,10 +204,21 @@ func Test_processEnvMock(t *testing.T) {
 	}
 
 	var want *Config = nil
-	var wantErr = errors.New("cannot process ENV variables: any error")
-	got, gotErr := CreateConfig(AgentCfg)
+	var wantErr = errors.New("server config: cannot process ENV variables: any error")
+	got, gotErr := LoadServerConfig()
 
 	assert.Equal(t, wantErr.Error(), gotErr.Error(), "Configs - got error: %v, want: %v", gotErr, wantErr)
+	assert.Equal(t, want, got, "Configs - got: %v, want: %v", got, want)
+
+}
+
+func TestLoadServerConfig(t *testing.T) {
+
+	want := &Config{
+		Address: defaultAddress,
+	}
+	got, err := LoadServerConfig()
+	assert.NoError(t, err, "error must be nil")
 	assert.Equal(t, want, got, "Configs - got: %v, want: %v", got, want)
 
 }

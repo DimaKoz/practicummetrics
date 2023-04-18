@@ -17,7 +17,7 @@ import (
 
 func Test_getUrl(t *testing.T) {
 	type args struct {
-		cfg *config.Config
+		cfg *config.AgentConfig
 		mu  model.MetricUnit
 	}
 	tests := []struct {
@@ -28,8 +28,10 @@ func Test_getUrl(t *testing.T) {
 		{
 			name: "get url",
 			args: args{
-				cfg: &config.Config{
-					Address:        "localhost:8080",
+				cfg: &config.AgentConfig{
+					Config: config.Config{
+						Address: "localhost:8080",
+					},
 					PollInterval:   int64(2),
 					ReportInterval: int64(10),
 				},
@@ -46,7 +48,7 @@ func Test_getUrl(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := getURL(tt.args.cfg, tt.args.mu)
+			got := getURL(tt.args.cfg.Address, tt.args.mu)
 			assert.Equal(t, tt.want, got, "getURL() = %v, want %v", got, tt.want)
 		})
 	}
@@ -54,7 +56,7 @@ func Test_getUrl(t *testing.T) {
 
 func TestParcelsSend(t *testing.T) {
 	type args struct {
-		cfg *config.Config
+		cfg *config.AgentConfig
 		mu  model.MetricUnit
 	}
 	tests := []struct {
@@ -65,8 +67,10 @@ func TestParcelsSend(t *testing.T) {
 		{
 			name: "check sending",
 			args: args{
-				cfg: &config.Config{
-					Address:        "localhost:8080",
+				cfg: &config.AgentConfig{
+					Config: config.Config{
+						Address: "localhost:8080",
+					},
 					PollInterval:   int64(2),
 					ReportInterval: int64(10),
 				},
@@ -110,7 +114,7 @@ func TestParcelsSend(t *testing.T) {
 			// Start the server.
 			srv.Start()
 
-			urlUsed := getURL(tt.args.cfg, tt.args.mu)
+			urlUsed := getURL(tt.args.cfg.Address, tt.args.mu)
 			srv.URL = urlUsed.String()
 			// Close the server when test finishes
 			defer srv.Close()
@@ -136,8 +140,10 @@ func TestPrintSender(t *testing.T) {
 	defer func() {
 		log.SetOutput(os.Stderr)
 	}()
-	ParcelsSend(&config.Config{
-		Address:        "localhost:8080",
+	ParcelsSend(&config.AgentConfig{
+		Config: config.Config{
+			Address: "localhost:8080",
+		},
 		PollInterval:   int64(2),
 		ReportInterval: int64(10),
 	}, []model.MetricUnit{model.MetricUnit{

@@ -9,10 +9,10 @@ import (
 )
 
 // ParcelsSend sends metrics
-func ParcelsSend(cfg *config.Config, metrics []model.MetricUnit) {
+func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 	client := resty.New()
 	for _, unit := range metrics {
-		preparedURL := getURL(cfg, unit)
+		preparedURL := getURL(cfg.Address, unit)
 		_, err := client.R().Post(preparedURL.String())
 		if err != nil {
 			log.Printf("client: could not create the request: %s \n", err)
@@ -24,10 +24,10 @@ func ParcelsSend(cfg *config.Config, metrics []model.MetricUnit) {
 
 }
 
-func getURL(cfg *config.Config, mu model.MetricUnit) url.URL {
+func getURL(address string, mu model.MetricUnit) url.URL {
 	u := url.URL{
 		Scheme: "http",
-		Host:   cfg.Address,
+		Host:   address,
 		Path:   mu.GetPath(),
 	}
 	return u

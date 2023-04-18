@@ -17,7 +17,7 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	cfg, err := config.CreateConfig(config.ServerCfg)
+	cfg, err := config.LoadAgentConfig()
 	if err != nil {
 		log.Fatalf("couldn't create a config %s", err)
 	}
