@@ -48,7 +48,7 @@ func collectUintMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error) {
 		if m, err := model.NewMetricUnit(model.MetricTypeGauge, name, value); err == nil {
 			result = append(result, m)
 		} else {
-			return nil, fmt.Errorf(errFormatString, name, err.Err)
+			return nil, fmt.Errorf(errFormatString, name, err)
 		}
 	}
 	return &result, nil
@@ -62,7 +62,7 @@ func collectOtherTypeMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error)
 	if m, err := model.NewMetricUnit(model.MetricTypeGauge, "GCCPUFraction", fraction); err == nil {
 		result = append(result, m)
 	} else {
-		return nil, fmt.Errorf(errFormatString, "GCCPUFraction", err.Err)
+		return nil, fmt.Errorf(errFormatString, "GCCPUFraction", err)
 	}
 
 	// RandomValue
@@ -72,14 +72,14 @@ func collectOtherTypeMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error)
 	if m, err := model.NewMetricUnit(model.MetricTypeGauge, "RandomValue", randomValue); err == nil {
 		result = append(result, m)
 	} else {
-		return nil, fmt.Errorf(errFormatString, "RandomValue", err.Err)
+		return nil, fmt.Errorf(errFormatString, "RandomValue", err)
 	}
 
 	// PollCount
 	if m, err := model.NewMetricUnit(model.MetricTypeCounter, "PollCount", "1"); err == nil {
 		result = append(result, m)
 	} else {
-		return nil, fmt.Errorf(errFormatString, "PollCount", err.Err)
+		return nil, fmt.Errorf(errFormatString, "PollCount", err)
 	}
 
 	return &result, nil

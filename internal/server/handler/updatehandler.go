@@ -23,7 +23,11 @@ func UpdateHandler(c echo.Context) error {
 	}
 	mu, err := model.NewMetricUnit(c.ParamValues()[indexType], c.ParamValues()[indexName], c.ParamValues()[indexValue])
 	if err != nil {
-		return c.String(err.StatusCode, fmt.Sprintf("cannot create metric: %s", err))
+		statusCode := http.StatusBadRequest
+		if err == model.ErrorUnknownType {
+			statusCode = http.StatusNotImplemented
+		}
+		return c.String(statusCode, fmt.Sprintf("cannot create metric: %s", err))
 	}
 	repository.AddMetric(mu)
 	return c.NoContent(http.StatusOK)

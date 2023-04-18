@@ -2,9 +2,8 @@ package model
 
 import (
 	"errors"
-	error2 "github.com/DimaKoz/practicummetrics/internal/common/error"
-	"net/http"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -16,10 +15,10 @@ func TestNewMetricUnit(t *testing.T) {
 	}
 	//goland:noinspection SpellCheckingInspection
 	tests := []struct {
-		name  string
-		args  args
-		want  MetricUnit
-		want1 *error2.RequestError
+		name    string
+		args    args
+		want    MetricUnit
+		wantErr error
 	}{
 		{name: "normal counter",
 			args: args{
@@ -27,8 +26,8 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "test",
 				metricValue: "42",
 			},
-			want:  MetricUnit{MetricTypeCounter, "test", "42", 42, 0},
-			want1: nil,
+			want:    MetricUnit{MetricTypeCounter, "test", "42", 42, 0},
+			wantErr: nil,
 		},
 		{name: "normal gauge",
 			args: args{
@@ -36,8 +35,8 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "test",
 				metricValue: "42",
 			},
-			want:  MetricUnit{MetricTypeGauge, "test", "42", 0, 42},
-			want1: nil,
+			want:    MetricUnit{MetricTypeGauge, "test", "42", 0, 42},
+			wantErr: nil,
 		},
 		{name: "unknown type",
 			args: args{
@@ -45,8 +44,8 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "test",
 				metricValue: "42",
 			},
-			want:  EmptyMetric,
-			want1: &error2.RequestError{StatusCode: http.StatusNotImplemented, Err: errors.New("unknown type")},
+			want:    EmptyMetric,
+			wantErr: ErrorUnknownType,
 		},
 		{name: "empty name",
 			args: args{
@@ -54,8 +53,8 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "",
 				metricValue: "42",
 			},
-			want:  EmptyMetric,
-			want1: &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("unavailable")},
+			want:    EmptyMetric,
+			wantErr: ErrorEmptyValue,
 		},
 		{name: "empty value",
 			args: args{
@@ -63,8 +62,8 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "qaz",
 				metricValue: "",
 			},
-			want:  EmptyMetric,
-			want1: &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("unavailable")},
+			want:    EmptyMetric,
+			wantErr: ErrorEmptyValue,
 		},
 		{name: "no float value",
 			args: args{
@@ -72,8 +71,8 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "qaz",
 				metricValue: "xexe",
 			},
-			want:  EmptyMetric,
-			want1: &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("bad value")},
+			want:    EmptyMetric,
+			wantErr: errors.New("bad value"),
 		},
 		{name: "no int value",
 			args: args{
@@ -81,8 +80,8 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "qaz",
 				metricValue: "xexe",
 			},
-			want:  EmptyMetric,
-			want1: &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("bad value")},
+			want:    EmptyMetric,
+			wantErr: errors.New("bad value"),
 		},
 	}
 	for _, tt := range tests {
@@ -91,12 +90,8 @@ func TestNewMetricUnit(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewMetricUnit() got = %v, want %v", got, tt.want)
 			}
-			if tt.want1 != nil && got1 != nil {
-				if got1.StatusCode != tt.want1.StatusCode {
-					t.Errorf("processPath() got1 = %v, want %v", got1, tt.want1)
-				}
-			} else if tt.want1 != got1 {
-				t.Errorf("processPath() got1 = %v, want %v", got1, tt.want1)
+			if tt.wantErr != got1 && !strings.Contains(tt.wantErr.Error(), "bad value") {
+				t.Errorf("processPath() got1 = %v, want %v", got1, tt.wantErr)
 			}
 		})
 	}

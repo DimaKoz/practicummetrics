@@ -2,8 +2,7 @@ package model
 
 import (
 	"errors"
-	error2 "github.com/DimaKoz/practicummetrics/internal/common/error"
-	"net/http"
+	"fmt"
 	"strconv"
 )
 
@@ -25,13 +24,19 @@ type MetricUnit struct {
 	ValueFloat float64
 }
 
-// NewMetricUnit creates an instance of MetricUnit or returns *error2.RequestError
-func NewMetricUnit(metricType string, metricName string, metricValue string) (MetricUnit, *error2.RequestError) {
+// ErrorUnknownType represents an error with an unknown type of the metric
+var ErrorUnknownType = errors.New("unknown metric type") //should use for StatusCode: http.StatusNotImplemented
+
+// ErrorEmptyValue represents an error which related to empty MetricUnit.Name and/or MetricUnit.Value
+var ErrorEmptyValue = errors.New("to create a metric you must provide `name` and `value`") // StatusCode: http.StatusBadRequest
+
+// NewMetricUnit creates an instance of MetricUnit or returns an error
+func NewMetricUnit(metricType string, metricName string, metricValue string) (MetricUnit, error) {
 	if metricType != MetricTypeGauge && metricType != MetricTypeCounter {
-		return EmptyMetric, &error2.RequestError{StatusCode: http.StatusNotImplemented, Err: errors.New("unknown type")}
+		return EmptyMetric, ErrorUnknownType
 	}
 	if metricName == "" || metricValue == "" {
-		return EmptyMetric, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("unavailable")}
+		return EmptyMetric, ErrorEmptyValue
 	}
 	var result = MetricUnit{}
 	result.Type = metricType
@@ -42,7 +47,7 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (Me
 		if s, err := strconv.ParseFloat(metricValue, 64); err == nil {
 			result.ValueFloat = s
 		} else {
-			return EmptyMetric, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("bad value")}
+			return EmptyMetric, fmt.Errorf("bad value: couldn't parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
 		}
 	}
 
@@ -50,11 +55,10 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (Me
 		if s, err := strconv.ParseInt(metricValue, 10, 64); err == nil {
 			result.ValueInt = s
 		} else {
-			return EmptyMetric, &error2.RequestError{StatusCode: http.StatusBadRequest, Err: errors.New("bad value")}
+			return EmptyMetric, fmt.Errorf("bad value: couldn't parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
 		}
 	}
-	var err *error2.RequestError = nil
-	return result, err
+	return result, nil
 
 }
 
