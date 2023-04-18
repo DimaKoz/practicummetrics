@@ -48,7 +48,7 @@ func main() {
 				if err1 != nil {
 					log.Fatalf("cannot collect metrics: %s", err1)
 				}
-				for _, s := range metrics {
+				for _, s := range *metrics {
 					repository.AddMetric(s)
 				}
 
