@@ -41,7 +41,7 @@ var metricsName = []string{
 
 const errFormatString = "error while collecting metrics with: \n can't get '%s' metric by %w "
 
-func collectUint64Metrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error) {
+func collectUintMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error) {
 	result := make([]model.MetricUnit, 0, len(metricsName))
 	for _, name := range metricsName {
 		value := getFieldValueUint64(rtm, name)
@@ -93,12 +93,12 @@ func GetMetrics() (*[]model.MetricUnit, error) {
 	var result, m *[]model.MetricUnit
 
 	var err error
-	if result, err = collectUint64Metrics(&rtm); err != nil {
-		return nil, err
+	if result, err = collectUintMetrics(&rtm); err != nil {
+		return nil, fmt.Errorf("cannot collectUintMetrics: %w", err)
 	}
 
 	if m, err = collectOtherTypeMetrics(&rtm); err != nil {
-		return m, err
+		return m, fmt.Errorf("cannot collectOtherTypeMetrics: %w", err)
 	}
 
 	*result = append(*result, *m...)
