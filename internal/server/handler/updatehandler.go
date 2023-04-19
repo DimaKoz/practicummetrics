@@ -8,20 +8,13 @@ import (
 	"net/http"
 )
 
-const (
-	okPathParts = 3
-	indexType   = 0
-	indexName   = 1
-	indexValue  = 2
-)
-
 // UpdateHandler handles `/update/`
 func UpdateHandler(c echo.Context) error {
 
-	if len(c.ParamValues()) != okPathParts {
-		return c.String(http.StatusNotFound, "wrong number of the parts of the path")
-	}
-	mu, err := model.NewMetricUnit(c.ParamValues()[indexType], c.ParamValues()[indexName], c.ParamValues()[indexValue])
+	metricType := c.Param("type")
+	metricName := c.Param("name")
+	metricValue := c.Param("value")
+	mu, err := model.NewMetricUnit(metricType, metricName, metricValue)
 	if err != nil {
 		statusCode := http.StatusBadRequest
 		if err == model.ErrorUnknownType {

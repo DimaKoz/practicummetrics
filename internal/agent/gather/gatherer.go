@@ -66,9 +66,8 @@ func collectOtherTypeMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error)
 	}
 
 	// RandomValue
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
-	randomValue := strconv.Itoa(r1.Intn(100))
+	random := rand.New(rand.NewSource(time.Now().UnixNano()))
+	randomValue := strconv.Itoa(random.Intn(100))
 	if m, err := model.NewMetricUnit(model.MetricTypeGauge, "RandomValue", randomValue); err == nil {
 		result = append(result, m)
 	} else {

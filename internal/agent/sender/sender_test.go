@@ -146,7 +146,7 @@ func TestPrintSender(t *testing.T) {
 		},
 		PollInterval:   int64(2),
 		ReportInterval: int64(10),
-	}, []model.MetricUnit{model.MetricUnit{
+	}, []model.MetricUnit{{
 		Type:       model.MetricTypeGauge,
 		Name:       "qwerty",
 		Value:      "42.42",

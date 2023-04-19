@@ -44,9 +44,9 @@ func main() {
 				return
 
 			case <-tickerGathering.C:
-				metrics, err1 := gather.GetMetrics()
-				if err1 != nil {
-					log.Fatalf("cannot collect metrics: %s", err1)
+				metrics, err := gather.GetMetrics()
+				if err != nil {
+					log.Fatalf("cannot collect metrics: %s", err)
 				}
 				for _, s := range *metrics {
 					repository.AddMetric(s)
