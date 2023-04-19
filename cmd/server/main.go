@@ -42,14 +42,23 @@ func main() {
 	)
 	e := echo.New()
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		LogURI:    true,
-		LogStatus: true,
+		LogURI:           true,
+		LogStatus:        true,
+		LogLatency:       true,
+		LogContentLength: true,
+		LogResponseSize:  true,
+		LogMethod:        true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-			logger.Info("request",
+			sugar.Infow("request",
+				zap.String("Method", v.Method),
 				zap.String("URI", v.URI),
-				zap.Int("status", v.Status),
+				zap.Duration("latency", v.Latency),
 			)
-
+			sugar.Infow("answer",
+				zap.Int("status", v.Status),
+				zap.String("length", v.ContentLength),
+				zap.Int64("size", v.ResponseSize),
+			)
 			return nil
 		},
 	}))
