@@ -51,7 +51,7 @@ func TestUpdateHandler(t *testing.T) {
 			c.SetParamNames([]string{"type", "name", "value"}...)
 			c.SetParamValues(paramValues[2:]...)
 
-			_ = UpdateHandler(c)
+			assert.NoError(t, UpdateHandler(c), "expected no errors")
 
 			res := w.Result()
 			// проверяем код ответа
