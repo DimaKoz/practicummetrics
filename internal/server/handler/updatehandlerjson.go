@@ -24,7 +24,7 @@ func UpdateHandlerJSON(c echo.Context) error {
 	} else {
 		metricValue = strconv.FormatInt(*m.Delta, 10)
 	}
-	mu, err := model.NewMetricUnit(m.MType, m.ID, metricValue)
+	muIncome, err := model.NewMetricUnit(m.MType, m.ID, metricValue)
 	if err != nil {
 		statusCode := http.StatusBadRequest
 		if err == model.ErrorUnknownType {
@@ -32,9 +32,12 @@ func UpdateHandlerJSON(c echo.Context) error {
 		}
 		return c.String(statusCode, fmt.Sprintf("cannot create metric: %s", err))
 	}
-	repository.AddMetric(mu)
-
-	m.Convert(mu)
+	repository.AddMetric(muIncome)
+	if mu, err := repository.GetMetricByName(muIncome.Name); err != nil {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("cannot find updated metric: %s", err))
+	} else {
+		m.Convert(mu)
+	}
 
 	return c.JSON(http.StatusOK, m)
 }
