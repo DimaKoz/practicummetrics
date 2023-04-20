@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "encoding/json"
+	"encoding/json"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	middleware2 "github.com/DimaKoz/practicummetrics/internal/server/middleware"
@@ -13,8 +13,8 @@ import (
 var sugar zap.SugaredLogger
 
 func main() {
-	/*encJ := json.Encoder{}
-	_ = encJ*/
+	encJ := json.Encoder{}
+	_ = encJ
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		panic(err)
