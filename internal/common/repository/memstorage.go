@@ -17,7 +17,8 @@ type MemStorage struct {
 }
 
 // AddMetric adds model.MetricUnit to 'memStorage.storage' storage
-func AddMetric(mu model.MetricUnit) {
+// returns updated model.MetricUnit after that
+func AddMetric(mu model.MetricUnit) model.MetricUnit {
 	memStorageSync.Lock()
 	defer memStorageSync.Unlock()
 
@@ -29,6 +30,7 @@ func AddMetric(mu model.MetricUnit) {
 		}
 	}
 	memStorage.storage[mu.Name] = mu
+	return mu.Clone()
 }
 
 // GetMetricByName returns a model.MetricUnit and nil error if found or model.EmptyMetric and error

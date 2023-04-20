@@ -1,5 +1,7 @@
 package model
 
+import "strconv"
+
 type Metrics struct {
 	ID    string   `json:"id"`              // имя метрики
 	MType string   `json:"type"`            // параметр, принимающий значение gauge или counter
@@ -15,4 +17,14 @@ func (m *Metrics) Convert(mu MetricUnit) {
 	} else {
 		m.Delta = &mu.ValueInt
 	}
+}
+
+func (m *Metrics) GetPreparedValue() string {
+	var metricValue string
+	if m.MType == MetricTypeGauge {
+		metricValue = strconv.FormatFloat(*m.Value, 'f', -1, 64)
+	} else {
+		metricValue = strconv.FormatInt(*m.Delta, 10)
+	}
+	return metricValue
 }
