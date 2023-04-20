@@ -41,11 +41,15 @@ func main() {
 	)
 	e := echo.New()
 	e.Use(middleware.RequestLoggerWithConfig(middleware2.GetRequestLoggerConfig(sugar)))
-
+	e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
+		sugar.Infow(
+			"body:", "reqBody:", string(reqBody[:]),
+		)
+	}))
 	e.POST("/update/:type/:name/:value", handler.UpdateHandler)
-	e.POST("/update", handler.UpdateHandlerJSON)
+	e.POST("/update/", handler.UpdateHandlerJSON)
 	e.GET("/value/:type/:name", handler.ValueHandler)
-	e.POST("/value", handler.ValueHandlerJSON)
+	e.POST("/value/", handler.ValueHandlerJSON)
 	e.GET("/", handler.RootHandler)
 
 	if err = e.Start(cfg.Address); err != nil {
