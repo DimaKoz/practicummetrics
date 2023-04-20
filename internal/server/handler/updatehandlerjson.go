@@ -7,26 +7,24 @@ import (
 	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // UpdateHandlerJSON handles `/update` with json
 func UpdateHandlerJSON(c echo.Context) error {
 	log.Println("UpdateHandlerJSON")
-	mappedData := echo.Map{}
-	if err := c.Bind(&mappedData); err != nil {
+	m := &model.Metrics{}
+	if err := c.Bind(&m); err != nil {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("cannot parse from json: %s", err))
 	}
 
-	metricType := fmt.Sprintf("%v", mappedData["type"])
-	metricName := fmt.Sprintf("%v", mappedData["id"])
 	var metricValue string
-	if metricType == "gauge" {
-		metricValue = fmt.Sprintf("%v", mappedData["value"])
+	if m.MType == model.MetricTypeGauge {
+		metricValue = strconv.FormatFloat(*m.Value, 'f', -1, 64)
 	} else {
-		metricValue = fmt.Sprintf("%v", mappedData["delta"])
+		metricValue = strconv.FormatInt(*m.Delta, 10)
 	}
-
-	mu, err := model.NewMetricUnit(metricType, metricName, metricValue)
+	mu, err := model.NewMetricUnit(m.MType, m.ID, metricValue)
 	if err != nil {
 		statusCode := http.StatusBadRequest
 		if err == model.ErrorUnknownType {
@@ -35,7 +33,7 @@ func UpdateHandlerJSON(c echo.Context) error {
 		return c.String(statusCode, fmt.Sprintf("cannot create metric: %s", err))
 	}
 	repository.AddMetric(mu)
-	m := &model.Metrics{}
+
 	m.Convert(mu)
 
 	return c.JSON(http.StatusOK, m)

@@ -31,7 +31,6 @@ func GetRequestLoggerConfig(sugar zap.SugaredLogger) middleware.RequestLoggerCon
 		LogContentLength: true,
 		LogResponseSize:  true,
 		LogMethod:        true,
-		LogFormValues:    []string{},
 		LogValuesFunc:    logValuesFunc,
 	}
 }
