@@ -43,7 +43,9 @@ func main() {
 	e.Use(middleware.RequestLoggerWithConfig(middleware2.GetRequestLoggerConfig(sugar)))
 
 	e.POST("/update/:type/:name/:value", handler.UpdateHandler)
+	e.POST("/update", handler.UpdateHandlerJSON)
 	e.GET("/value/:type/:name", handler.ValueHandler)
+	e.POST("/value", handler.ValueHandlerJSON)
 	e.GET("/", handler.RootHandler)
 
 	if err = e.Start(cfg.Address); err != nil {
