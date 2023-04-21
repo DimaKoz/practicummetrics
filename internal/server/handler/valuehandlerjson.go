@@ -24,7 +24,7 @@ func ValueHandlerJSON(c echo.Context) error {
 		return c.String(http.StatusNotFound, fmt.Sprintf(" 'value' json handler: %s", err.Error()))
 	}
 	m := &model.Metrics{}
-	m.Convert(mu)
+	m.UpdateByMetricUnit(mu)
 
 	return c.JSON(http.StatusOK, m)
 }

@@ -24,6 +24,6 @@ func UpdateHandlerJSON(c echo.Context) error {
 		return c.String(statusCode, fmt.Sprintf("UpdateHandlerJSON: cannot create metric: %s", err))
 	}
 	mu := repository.AddMetric(muIncome)
-	m.Convert(mu)
+	m.UpdateByMetricUnit(mu)
 	return c.JSON(http.StatusOK, m)
 }

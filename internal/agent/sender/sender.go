@@ -16,7 +16,7 @@ func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 		r := client.R()
 		r.SetHeader("Content-Type", "application/json")
 		m := &model.Metrics{}
-		m.Convert(unit)
+		m.UpdateByMetricUnit(unit)
 		r.SetBody(m)
 		_, err := r.Post( /*preparedURL.String()*/ "http://" + cfg.Address + "/update/")
 		if err != nil {

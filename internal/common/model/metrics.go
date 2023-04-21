@@ -9,7 +9,7 @@ type Metrics struct {
 	Value *float64 `json:"value,omitempty"` // значение метрики в случае передачи gauge
 }
 
-func (m *Metrics) Convert(mu MetricUnit) {
+func (m *Metrics) UpdateByMetricUnit(mu MetricUnit) {
 	m.ID = mu.Name
 	m.MType = mu.Type
 	if mu.Type == MetricTypeGauge {
