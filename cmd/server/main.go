@@ -54,8 +54,11 @@ func main() {
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Skipper: func(c echo.Context) bool {
 			accept := c.Request().Header.Get(echo.HeaderAcceptEncoding)
-			isCompressing := strings.Contains(accept, "gzip")
-			return isCompressing
+			hasNoGzip := !strings.Contains(accept, "gzip")
+			if !hasNoGzip {
+				c.Response().Header().Set(echo.HeaderContentEncoding, "gzip")
+			}
+			return hasNoGzip
 		},
 		Level: 5,
 	}))
