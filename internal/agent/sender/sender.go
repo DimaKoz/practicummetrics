@@ -15,6 +15,7 @@ func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 		//preparedURL := getURL(cfg.Address, unit)
 		r := client.R()
 		r.SetHeader("Content-Type", "application/json")
+		r.SetHeader("Accept-Encoding", "gzip")
 		m := &model.Metrics{}
 		m.UpdateByMetricUnit(unit)
 		r.SetBody(m)

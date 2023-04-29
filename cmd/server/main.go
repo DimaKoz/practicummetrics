@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
+	"strings"
 )
 
 var sugar zap.SugaredLogger
@@ -50,6 +51,15 @@ func main() {
 			"body:", "reqBody:", string(reqBody[:]),
 		)
 	}))
+	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
+		Skipper: func(c echo.Context) bool {
+			accept := c.Request().Header.Get(echo.HeaderAcceptEncoding)
+			isCompressing := strings.Contains(accept, "gzip")
+			return isCompressing
+		},
+		Level: 5,
+	}))
+
 	e.POST("/update/:type/:name/:value", handler.UpdateHandler)
 	e.POST("/update/", handler.UpdateHandlerJSON)
 	e.GET("/value/:type/:name", handler.ValueHandler)
