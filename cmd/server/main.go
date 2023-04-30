@@ -1,22 +1,17 @@
 package main
 
 import (
-	"encoding/json" // this import helps to pass some autotests
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	middleware2 "github.com/DimaKoz/practicummetrics/internal/server/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
-	"strings"
 )
 
 var sugar zap.SugaredLogger
 
 func main() {
-
-	encJ := json.Encoder{} // this logic helps to pass some autotests
-	_ = encJ               // this logic helps to pass some autotests
 
 	logger, err := zap.NewDevelopment()
 	if err != nil {
@@ -51,17 +46,7 @@ func main() {
 			"body:", "reqBody:", string(reqBody[:]),
 		)
 	}))
-	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
-		Skipper: func(c echo.Context) bool {
-			accept := c.Request().Header.Get(echo.HeaderAcceptEncoding)
-			hasNoGzip := !strings.Contains(accept, "gzip")
-			if !hasNoGzip {
-				c.Response().Header().Set(echo.HeaderContentEncoding, "gzip")
-			}
-			return hasNoGzip
-		},
-		Level: 5,
-	}))
+	e.Use(middleware2.GetGzipMiddlewareConfig())
 
 	e.POST("/update/:type/:name/:value", handler.UpdateHandler)
 	e.POST("/update/", handler.UpdateHandlerJSON)
