@@ -179,7 +179,7 @@ func Test_processEnvError(t *testing.T) {
 
 func Test_processEnvNoError(t *testing.T) {
 	var wantErr error = nil
-	gotErr := processEnv(&Config{})
+	gotErr := processEnv(&ServerConfig{})
 
 	assert.Equal(t, wantErr, gotErr, "Configs - got error: %v, want: %v", gotErr, wantErr)
 
@@ -199,11 +199,11 @@ func Test_processEnvMock(t *testing.T) {
 		processEnv = processEnvOrig
 	})
 
-	processEnv = func(config *Config) error {
+	processEnv = func(config *ServerConfig) error {
 		return fmt.Errorf("any error")
 	}
 
-	var want *Config = nil
+	var want *ServerConfig = nil
 	var wantErr = errors.New("server config: cannot process ENV variables: any error")
 	got, gotErr := LoadServerConfig()
 
@@ -214,8 +214,10 @@ func Test_processEnvMock(t *testing.T) {
 
 func TestLoadServerConfig(t *testing.T) {
 
-	want := &Config{
-		Address: defaultAddress,
+	want := &ServerConfig{
+		Config: Config{
+			Address: defaultAddress,
+		},
 	}
 	got, err := LoadServerConfig()
 	assert.NoError(t, err, "error must be nil")
