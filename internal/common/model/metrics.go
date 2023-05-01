@@ -14,8 +14,10 @@ func (m *Metrics) UpdateByMetricUnit(mu MetricUnit) {
 	m.MType = mu.Type
 	if mu.Type == MetricTypeGauge {
 		m.Value = &mu.ValueFloat
+		m.Delta = nil
 	} else {
 		m.Delta = &mu.ValueInt
+		m.Value = nil
 	}
 }
 

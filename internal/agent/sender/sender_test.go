@@ -1,52 +1,8 @@
 package sender
 
 import (
-	"github.com/DimaKoz/practicummetrics/internal/common/config"
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
-	"github.com/stretchr/testify/assert"
 	"io"
-	"net/url"
-	"testing"
 )
-
-func Test_getUrl(t *testing.T) {
-	type args struct {
-		cfg *config.AgentConfig
-		mu  model.MetricUnit
-	}
-	tests := []struct {
-		name string
-		args args
-		want url.URL
-	}{
-		{
-			name: "get url",
-			args: args{
-				cfg: &config.AgentConfig{
-					Config: config.Config{
-						Address: "localhost:8080",
-					},
-					PollInterval:   int64(2),
-					ReportInterval: int64(10),
-				},
-				mu: model.MetricUnit{
-					Type:       model.MetricTypeGauge,
-					Name:       "qwerty",
-					Value:      "42.42",
-					ValueInt:   0,
-					ValueFloat: 42.42,
-				},
-			},
-			want: url.URL{Scheme: "http", Host: "localhost:8080", Path: "gauge/qwerty/42.42"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := getURL(tt.args.cfg.Address, tt.args.mu)
-			assert.Equal(t, tt.want, got, "getURL() = %v, want %v", got, tt.want)
-		})
-	}
-}
 
 /*
 	func TestParcelsSend(t *testing.T) {

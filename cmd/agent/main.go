@@ -19,14 +19,14 @@ func main() {
 
 	cfg, err := config.LoadAgentConfig()
 	if err != nil {
-		log.Fatalf("couldn't create a config %s", err)
+		log.Fatalf("agent: couldn't create a config %s", err)
 	}
 
 	// from cfg:
-	log.Println("cfg:")
-	log.Println("address:", cfg.Address)
-	log.Println("reportInterval:", cfg.ReportInterval)
-	log.Println("pollInterval:", cfg.PollInterval)
+	log.Println("agent: cfg:")
+	log.Println("agent: address:", cfg.Address)
+	log.Println("agent: reportInterval:", cfg.ReportInterval)
+	log.Println("agent: pollInterval:", cfg.PollInterval)
 
 	tickerGathering := time.NewTicker(time.Duration(cfg.PollInterval) * time.Second)
 	defer tickerGathering.Stop()
@@ -46,7 +46,7 @@ func main() {
 			case <-tickerGathering.C:
 				metrics, err := gather.GetMetrics()
 				if err != nil {
-					log.Fatalf("cannot collect metrics: %s", err)
+					log.Fatalf("agent: cannot collect metrics: %s", err)
 				}
 				for _, s := range *metrics {
 					repository.AddMetric(s)
@@ -59,10 +59,10 @@ func main() {
 		}
 	}()
 
-	log.Println("awaiting a signal or press Ctrl+C to finish this agent")
+	log.Println("agent: awaiting a signal or press Ctrl+C to finish this agent")
 
 	<-done
 
-	log.Println("exiting")
+	log.Println("agent: exiting")
 
 }
