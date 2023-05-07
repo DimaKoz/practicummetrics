@@ -11,6 +11,7 @@ import (
 // RootHandler handles `/`
 func RootHandler(c echo.Context) error {
 	metrics := repository.GetAllMetrics()
+
 	str := getHTMLContent(metrics)
 	c.Response().Header().Set(echo.HeaderContentType, "text/html; charset=utf-8")
 	return c.String(http.StatusOK, str)

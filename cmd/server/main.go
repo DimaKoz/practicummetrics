@@ -2,11 +2,13 @@ package main
 
 import (
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
+	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	middleware2 "github.com/DimaKoz/practicummetrics/internal/server/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
+	"time"
 )
 
 var sugar zap.SugaredLogger
@@ -32,13 +34,40 @@ func main() {
 	}
 
 	// from cfg:
-	sugar.Infow(
-		"cfg:",
-		"address", cfg.Address,
+	sugar.Info(
+		"cfg: \n", cfg.String(),
 	)
 	sugar.Infow(
 		"Starting server",
 	)
+	repository.SetupFilePathStorage(cfg.FileStoragePath)
+	if cfg.Restore && cfg.FileStoragePath != "" {
+		if err = repository.Load(); err != nil {
+			sugar.Fatalf("couldn't restore metrics by %s", err)
+		}
+	}
+	cfg.StoreInterval = 5
+	if cfg.FileStoragePath != "" {
+		if cfg.StoreInterval != 0 {
+			handler.SyncSaveUpdateHandlerJSON = false
+			ticker := time.NewTicker(time.Duration(cfg.StoreInterval) * time.Second)
+			defer ticker.Stop()
+			go func() {
+				for {
+					select {
+					case <-ticker.C:
+						err = repository.Save()
+						if err != nil {
+							sugar.Fatalf("agent: cannot collect metrics: %s", err)
+						}
+					}
+				}
+			}()
+		} else {
+			handler.SyncSaveUpdateHandlerJSON = true
+		}
+	}
+
 	e := echo.New()
 	e.Use(middleware.RequestLoggerWithConfig(middleware2.GetRequestLoggerConfig(sugar)))
 	e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {

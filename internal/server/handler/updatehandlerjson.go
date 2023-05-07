@@ -5,8 +5,11 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/labstack/echo/v4"
+	"log"
 	"net/http"
 )
+
+var SyncSaveUpdateHandlerJSON = false
 
 // UpdateHandlerJSON handles `/update` with json
 func UpdateHandlerJSON(c echo.Context) error {
@@ -25,5 +28,13 @@ func UpdateHandlerJSON(c echo.Context) error {
 	}
 	mu := repository.AddMetric(muIncome)
 	m.UpdateByMetricUnit(mu)
+	if SyncSaveUpdateHandlerJSON {
+		go func() {
+			err := repository.Save()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+	}
 	return c.JSON(http.StatusOK, m)
 }

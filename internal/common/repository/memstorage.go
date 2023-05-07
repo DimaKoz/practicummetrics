@@ -1,8 +1,11 @@
 package repository
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"log"
+	"os"
 	"strconv"
 	"sync"
 )
@@ -54,4 +57,48 @@ func GetAllMetrics() []model.MetricUnit {
 		result = append(result, v.Clone())
 	}
 	return result
+}
+
+var filePathStorage string
+
+func SetupFilePathStorage(pFilePathStorage string) {
+	filePathStorage = pFilePathStorage
+}
+
+func Load() error {
+	if filePathStorage == "" {
+		return fmt.Errorf("filePathStorage is empty")
+	}
+	data, err := os.ReadFile(filePathStorage)
+	if err != nil {
+		return fmt.Errorf("can't read '%s' file with error: %w", filePathStorage, err)
+	}
+	var m []model.MetricUnit
+	if err := json.Unmarshal(data, &m); err != nil {
+		return fmt.Errorf("can't parse json with error: %w", err)
+	}
+	memStorageSync.Lock()
+	defer memStorageSync.Unlock()
+	for _, v := range m {
+		memStorage.storage[v.Name] = v
+	}
+	log.Printf("repository: loaded: %d \n", len(m))
+	return nil
+}
+
+func Save() error {
+	if filePathStorage == "" {
+		return fmt.Errorf("filePathStorage is empty")
+	}
+	metrics := GetAllMetrics()
+	j, err := json.Marshal(metrics)
+	if err != nil {
+		return fmt.Errorf("can't marshal json with error: %w", err)
+	}
+	err = os.WriteFile(filePathStorage, j, 0666)
+	if err != nil {
+		return fmt.Errorf("can't write '%s' file with error: %w", filePathStorage, err)
+	}
+	log.Printf("repository: saved: %d \n", len(metrics))
+	return nil
 }
