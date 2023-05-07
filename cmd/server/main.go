@@ -46,20 +46,17 @@ func main() {
 			sugar.Fatalf("couldn't restore metrics by %s", err)
 		}
 	}
-	cfg.StoreInterval = 5
+
 	if cfg.FileStoragePath != "" {
 		if cfg.StoreInterval != 0 {
 			handler.SyncSaveUpdateHandlerJSON = false
 			ticker := time.NewTicker(time.Duration(cfg.StoreInterval) * time.Second)
 			defer ticker.Stop()
 			go func() {
-				for {
-					select {
-					case <-ticker.C:
-						err = repository.Save()
-						if err != nil {
-							sugar.Fatalf("agent: cannot collect metrics: %s", err)
-						}
+				for range ticker.C {
+					err = repository.Save()
+					if err != nil {
+						sugar.Fatalf("agent: cannot collect metrics: %s", err)
 					}
 				}
 			}()

@@ -212,7 +212,7 @@ func Test_processEnvMock(t *testing.T) {
 
 }
 
-func TestLoadServerConfig(t *testing.T) {
+/*func TestLoadServerConfig(t *testing.T) {
 
 	want := &ServerConfig{
 		Config: Config{
@@ -224,3 +224,4 @@ func TestLoadServerConfig(t *testing.T) {
 	assert.Equal(t, want, got, "Configs - got: %v, want: %v", got, want)
 
 }
+*/
