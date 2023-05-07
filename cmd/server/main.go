@@ -56,7 +56,7 @@ func main() {
 				for range ticker.C {
 					err = repository.Save()
 					if err != nil {
-						sugar.Fatalf("agent: cannot collect metrics: %s", err)
+						sugar.Fatalf("server: cannot save metrics: %s", err)
 					}
 				}
 			}()

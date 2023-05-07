@@ -32,7 +32,5 @@ func ValueHandlerJSON(c echo.Context) error {
 	}
 	m := &model.Metrics{}
 	m.UpdateByMetricUnit(mu)
-	err = repository.Save()
-	log.Fatal(err)
 	return c.JSON(http.StatusOK, m)
 }
