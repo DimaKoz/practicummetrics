@@ -1,12 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
+	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	middleware2 "github.com/DimaKoz/practicummetrics/internal/server/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
+	"os"
+	"time"
 )
 
 var sugar zap.SugaredLogger
@@ -38,31 +42,35 @@ func main() {
 	sugar.Infow(
 		"Starting server",
 	)
-	/*	repository.SetupFilePathStorage(cfg.FileStoragePath)
-		if cfg.Restore && cfg.FileStoragePath != "" {
-			if err = repository.Load(); err != nil {
-				sugar.Fatalf("couldn't restore metrics by %s", err)
-			}
+	_, err = os.Stat(cfg.FileStoragePath)
+	if os.IsNotExist(err) {
+		cfg.Restore = false
+		fmt.Printf("%v file does not exist\n", cfg.FileStoragePath)
+	}
+	repository.SetupFilePathStorage(cfg.FileStoragePath)
+	if cfg.Restore && cfg.FileStoragePath != "" {
+		if err = repository.Load(); err != nil {
+			sugar.Fatalf("couldn't restore metrics by %s", err)
 		}
+	}
 
-		if cfg.FileStoragePath != "" {
-			if cfg.StoreInterval != 0 {
-				handler.SyncSaveUpdateHandlerJSON = false
-				ticker := time.NewTicker(time.Duration(cfg.StoreInterval) * time.Second)
-				defer ticker.Stop()
-				go func() {
-					for range ticker.C {
-						err = repository.Save()
-						if err != nil {
-							sugar.Fatalf("server: cannot save metrics: %s", err)
-						}
+	if cfg.FileStoragePath != "" {
+		if cfg.StoreInterval != 0 {
+			handler.SyncSaveUpdateHandlerJSON = false
+			ticker := time.NewTicker(time.Duration(cfg.StoreInterval) * time.Second)
+			defer ticker.Stop()
+			go func() {
+				for range ticker.C {
+					err = repository.Save()
+					if err != nil {
+						sugar.Fatalf("server: cannot save metrics: %s", err)
 					}
-				}()
-			} else {
-				handler.SyncSaveUpdateHandlerJSON = true
-			}
+				}
+			}()
+		} else {
+			handler.SyncSaveUpdateHandlerJSON = true
 		}
-	*/
+	}
 
 	e := echo.New()
 	e.Use(middleware.RequestLoggerWithConfig(middleware2.GetRequestLoggerConfig(sugar)))
