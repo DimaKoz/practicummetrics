@@ -5,6 +5,8 @@
 *.so
 *.dylib
 
+log*.txt
+
 # Test binary, built with `go test -c`
 *.test
 
@@ -16,6 +18,8 @@ cmd/agent/main
 cmd/agent/agent
 cmd/server/main
 cmd/server/server
+ser
+ag
 
 # Dependency directories (remove the comment below to include it)
 vendor/
