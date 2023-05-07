@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/caarlos0/env/v6"
 	flag2 "github.com/spf13/pflag"
+	"log"
+	"os"
 	"strconv"
 	"time"
 )
@@ -40,13 +42,6 @@ type ServerConfig struct {
 	Restore         bool `env:"RESTORE"`
 }
 
-func (cfg *ServerConfig) setupInitialServer() {
-	cfg.Address = defaultAddress
-	cfg.StoreInterval = defaultStoreInterval
-	cfg.FileStoragePath = defaultFileStoragePath
-	cfg.Restore = defaultRestore
-}
-
 func LoadServerConfig() (*ServerConfig, error) {
 
 	cfg := &ServerConfig{
@@ -56,10 +51,11 @@ func LoadServerConfig() (*ServerConfig, error) {
 		hasRestore:      false,
 		Restore:         true,
 	}
-
+	fmt.Println("cfg address before processEnv", cfg.Address)
 	if err := processEnv(cfg); err != nil {
 		return nil, fmt.Errorf("server config: cannot process ENV variables: %w", err)
 	}
+	fmt.Println("cfg address after processEnv", cfg.Address)
 	if err := processServerFlags(cfg); err != nil {
 		return nil, fmt.Errorf("server config: cannot process flags variables: %w", err)
 	}
@@ -87,12 +83,12 @@ func LoadAgentConfig() (*AgentConfig, error) {
 
 func processServerFlags(cfg *ServerConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
-	var address string
+	var address = unknownStringFieldValue
 	if cfg.Address == unknownStringFieldValue {
 		flag2.StringVarP(&address, "a", "a", unknownStringFieldValue, "")
 	}
 
-	var rFlag string
+	var rFlag = unknownStringFieldValue
 	if !cfg.hasRestore {
 		flag2.StringVarP(&rFlag, "r", "r", unknownStringFieldValue, "")
 	}
@@ -102,7 +98,7 @@ func processServerFlags(cfg *ServerConfig) error {
 		flag2.StringVarP(&iFlag, "i", "i", "", "")
 	}
 
-	var fFlag string
+	var fFlag = unknownStringFieldValue
 	if cfg.FileStoragePath == unknownStringFieldValue {
 		flag2.StringVarP(&fFlag, "f", "f", "unknownStringFieldValue", "")
 	}
@@ -181,12 +177,13 @@ func processAgentFlags(cfg *AgentConfig) error {
 }
 
 var processEnv = func(config *ServerConfig) error {
+	fmt.Println(os.Environ())
 	opts := env.Options{
 		OnSet: func(tag string, value interface{}, isDefault bool) {
 			if tag == "RESTORE" {
 				config.hasRestore = true
 			}
-			//log.Printf("Set %s to %v (default? %v)\n", tag, value, isDefault)
+			log.Printf("Set %s to %v (default? %v)\n", tag, value, isDefault)
 		},
 	}
 

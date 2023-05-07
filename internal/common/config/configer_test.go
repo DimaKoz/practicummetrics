@@ -212,16 +212,19 @@ func Test_processEnvMock(t *testing.T) {
 
 }
 
-/*func TestLoadServerConfig(t *testing.T) {
+func TestLoadServerConfig(t *testing.T) {
 
 	want := &ServerConfig{
 		Config: Config{
 			Address: defaultAddress,
 		},
+		StoreInterval:   defaultStoreInterval,
+		FileStoragePath: defaultFileStoragePath,
+		hasRestore:      true,
+		Restore:         defaultRestore,
 	}
 	got, err := LoadServerConfig()
 	assert.NoError(t, err, "error must be nil")
 	assert.Equal(t, want, got, "Configs - got: %v, want: %v", got, want)
 
 }
-*/
