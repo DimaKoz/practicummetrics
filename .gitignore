@@ -5,7 +5,9 @@
 *.so
 *.dylib
 
+# Logs and other junk
 log*.txt
+temp*
 
 # Test binary, built with `go test -c`
 *.test
