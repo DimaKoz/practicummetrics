@@ -1,7 +1,14 @@
 package sender
 
 import (
+	"bytes"
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/stretchr/testify/assert"
 	"io"
+	"log"
+	"os"
+	"testing"
 )
 
 /*
@@ -83,8 +90,8 @@ func readByte() {
 	}
 }
 
-/*func TestPrintSender(t *testing.T) {
-	want := `client: could not create the request: Post "http://localhost:8080/gauge/qwerty/42.42"`
+func TestPrintSender(t *testing.T) {
+	want := `client: could not create the request: Post "http://localhost:8888/update/"`
 
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
@@ -93,7 +100,7 @@ func readByte() {
 	}()
 	ParcelsSend(&config.AgentConfig{
 		Config: config.Config{
-			Address: "localhost:8080",
+			Address: "localhost:8888",
 		},
 		PollInterval:   int64(2),
 		ReportInterval: int64(10),
@@ -108,4 +115,3 @@ func readByte() {
 	got := buf.String()
 	assert.Contains(t, got, want, "Expected %s, got %s", want, got)
 }
-*/
