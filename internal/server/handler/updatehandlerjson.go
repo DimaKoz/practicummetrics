@@ -17,8 +17,12 @@ func UpdateHandlerJSON(c echo.Context) error {
 	if err := c.Bind(&m); err != nil {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("UpdateHandlerJSON: cannot parse from json: %s", err))
 	}
+	prepModelValue, err := m.GetPreparedValue()
+	if err != nil {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("UpdateHandlerJSON: Metrics contains nil: %s", err))
+	}
 
-	muIncome, err := model.NewMetricUnit(m.MType, m.ID, m.GetPreparedValue())
+	muIncome, err := model.NewMetricUnit(m.MType, m.ID, prepModelValue)
 	if err != nil {
 		statusCode := http.StatusBadRequest
 		if err == model.ErrorUnknownType {

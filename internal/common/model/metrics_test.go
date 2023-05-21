@@ -40,7 +40,8 @@ func TestMetrics_GetPreparedValue(t *testing.T) {
 			if tt.iValue != 0 {
 				tt.m.Delta = &tt.iValue
 			}
-			got := tt.m.GetPreparedValue()
+			got, err := tt.m.GetPreparedValue()
+			assert.NoError(t, err)
 			assert.Equalf(t, tt.want, got, "problem test name: \"%s\"", tt.name)
 		})
 	}
