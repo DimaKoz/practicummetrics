@@ -13,8 +13,6 @@ import (
 	"time"
 )
 
-var sugar zap.SugaredLogger
-
 func main() {
 
 	logger, err := zap.NewDevelopment()
@@ -28,7 +26,7 @@ func main() {
 		}
 	}(logger)
 
-	sugar = *logger.Sugar()
+	sugar := *logger.Sugar()
 
 	cfg, err := config.LoadServerConfig()
 	if err != nil {
