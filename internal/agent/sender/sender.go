@@ -5,12 +5,13 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/go-resty/resty/v2"
 	"log"
+	"strings"
 )
 
 // ParcelsSend sends metrics
 func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 	client := resty.New()
-	targetURL := "http://" + cfg.Address + "/update/"
+	targetURL := getTargetURL(cfg.Address)
 	m := &model.Metrics{}
 	for _, unit := range metrics {
 		r := client.R()
@@ -26,4 +27,17 @@ func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 		}
 	}
 
+}
+
+const protocolParcelsSend = "http://"
+const endpointParcelsSend = "/update/"
+
+func getTargetURL(address string) string {
+	buffLen := len(protocolParcelsSend) + len(endpointParcelsSend) + len(address)
+	b := strings.Builder{}
+	b.Grow(buffLen)
+	b.WriteString(protocolParcelsSend)
+	b.WriteString(address)
+	b.WriteString(endpointParcelsSend)
+	return b.String()
 }

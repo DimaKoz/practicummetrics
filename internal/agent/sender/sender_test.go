@@ -121,3 +121,27 @@ func TestPrintSender(t *testing.T) {
 	got := buf.String()
 	assert.Contains(t, got, want, "Expected %s, got %s", want, got)
 }
+
+func Test_getTargetURL(t *testing.T) {
+	type args struct {
+		address string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "test ok",
+			args: args{
+				address: "example.com",
+			},
+			want: "http://example.com/update/",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, getTargetURL(tt.args.address), "getTargetURL(%v)", tt.args.address)
+		})
+	}
+}
