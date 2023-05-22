@@ -60,7 +60,8 @@ func main() {
 			ticker := time.NewTicker(time.Duration(cfg.StoreInterval) * time.Second)
 			defer ticker.Stop()
 			go func() {
-				for range ticker.C {
+				tickerChannel := ticker.C
+				for range tickerChannel {
 					err = repository.Save()
 					if err != nil {
 						sugar.Fatalf("server: cannot save metrics: %s", err)
