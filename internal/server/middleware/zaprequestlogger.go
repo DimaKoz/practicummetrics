@@ -14,7 +14,7 @@ var logValuesFunc = func(c echo.Context, v middleware.RequestLoggerValues) error
 		zap.String("URI", v.URI),
 		zap.Duration("latency", v.Latency),
 	)
-	zapSugar.Infow("answer",
+	zapSugar.Infow("response",
 		zap.Int("status", v.Status),
 		zap.String("length", v.ContentLength),
 		zap.Int64("size", v.ResponseSize),
