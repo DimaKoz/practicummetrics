@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# This file is sometimes used for running Yandex Autotests, like it is done on GitHub
+
 #chmod 755 ./testrun.sh
 
+# EPHEMERAL_PORT returns a free random port
 function EPHEMERAL_PORT() {
 	LOW_BOUND=49152
 	RANGE=16384
@@ -15,6 +18,7 @@ function EPHEMERAL_PORT() {
 	done
 }
 
+# CLEAN_AFTER_TEST cleans some variables and removes some files
 function CLEAN_AFTER_TEST() {
 	unset ADDRESS
 	unset RANDOM_PORT
@@ -38,32 +42,32 @@ else
 fi
 
 echo "cleaning..."
-rm ./ag ./ser
+rm ./cmd/agent/agent ./cmd/server/server
 rm ./log*.txt
 
 echo "building server"
-go build -o ser ./cmd/server/*.go
+go build -o ./cmd/server/server ./cmd/server/*.go
 
 echo "building agent"
-go build -o ag ./cmd/agent/*.go
+go build -o ./cmd/agent/agent ./cmd/agent/*.go
 
 echo "Iter 1..."
-metricstest-darwin-amd64 -test.v -test.run=^TestIteration1$ -agent-binary-path=./ag -binary-path=./ser > log1.txt
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration1$ -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server > log1.txt
 echo "Iter 1: $(tail -1 ./log1.txt)"
 
 echo "Iter 2..."
-metricstest-darwin-amd64 -test.v -test.run=^TestIteration2[AB]*$ -agent-binary-path=./ag -binary-path=./ser -source-path=. > log2.txt
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration2[AB]*$ -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log2.txt
 echo "Iter 2: $(tail -1 ./log2.txt)"
 
 echo "Iter 3..."
-metricstest-darwin-amd64 -test.v -test.run=^TestIteration3[AB]*$ -agent-binary-path=./ag -binary-path=./ser -source-path=. > log3.txt
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration3[AB]*$ -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log3.txt
 echo "Iter 3: $(tail -1 ./log3.txt)"
 
 echo "Iter 4..."
 RANDOM_PORT=$(EPHEMERAL_PORT)
 echo RANDOM_PORT: "$RANDOM_PORT"
 export ADDRESS="localhost:${RANDOM_PORT}"
-metricstest-darwin-amd64 -test.v -test.run=^TestIteration4$ -server-port="$RANDOM_PORT" -agent-binary-path=./ag -binary-path=./ser -source-path=. > log4.txt
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration4$ -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log4.txt
 CLEAN_AFTER_TEST
 echo "Iter 4: $(tail -1 ./log4.txt)"
 
@@ -71,7 +75,7 @@ echo "Iter 5..."
 RANDOM_PORT=$(EPHEMERAL_PORT)
 echo RANDOM_PORT: "$RANDOM_PORT"
 export ADDRESS="localhost:${RANDOM_PORT}"
-metricstest-darwin-amd64 -test.v -test.run=^TestIteration5$ -server-port="$RANDOM_PORT" -agent-binary-path=./ag -binary-path=./ser -source-path=. > log5.txt
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration5$ -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log5.txt
 CLEAN_AFTER_TEST
 echo "Iter 5: $(tail -1 ./log5.txt)"
 
@@ -79,7 +83,7 @@ echo "Iter 6..."
 RANDOM_PORT=$(EPHEMERAL_PORT)
 echo RANDOM_PORT: "$RANDOM_PORT"
 export ADDRESS="localhost:${RANDOM_PORT}"
-metricstest-darwin-amd64 -test.v -test.run=^TestIteration6$ -server-port="$RANDOM_PORT" -agent-binary-path=./ag -binary-path=./ser -source-path=. > log6.txt
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration6$ -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log6.txt
 CLEAN_AFTER_TEST
 echo "Iter 6: $(tail -1 ./log6.txt)"
 
@@ -89,7 +93,7 @@ RANDOM_PORT="8080"
 RESTORE=false
 echo RANDOM_PORT: "$RANDOM_PORT"
 export ADDRESS="localhost:${RANDOM_PORT}"
-metricstest-darwin-amd64 -test.v -test.run=^TestIteration7$ -server-port="$RANDOM_PORT" -agent-binary-path=./ag -binary-path=./ser -source-path=. > log7.txt
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration7$ -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log7.txt
 CLEAN_AFTER_TEST
 echo "Iter 7: $(tail -1 ./log7.txt)"
 
@@ -101,7 +105,7 @@ export ADDRESS="localhost:${RANDOM_PORT}"
 export TEMP_FILE="./tempfile${RANDOM_PORT}"
 echo TEMP FILE: "$TEMP_FILE"
 export RESTORE=true
-metricstest-darwin-amd64 -test.v -test.run=^TestIteration8$ -server-port="$RANDOM_PORT" -agent-binary-path=./ag -binary-path=./ser -source-path=. > log8.txt
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration8$ -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log8.txt
 CLEAN_AFTER_TEST
 echo "Iter 8: $(tail -1 ./log8.txt)"
 
@@ -113,6 +117,6 @@ export ADDRESS="localhost:${RANDOM_PORT}"
 export TEMP_FILE="./tempfile${RANDOM_PORT}"
 echo TEMP FILE: "$TEMP_FILE"
 export RESTORE=true
-metricstest-darwin-amd64 -test.v -test.run=^TestIteration9$ -file-storage-path=$TEMP_FILE -server-port="$RANDOM_PORT" -agent-binary-path=./ag -binary-path=./ser -source-path=. > log9.txt
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration9$ -file-storage-path=$TEMP_FILE -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log9.txt
 CLEAN_AFTER_TEST
 echo "Iter 9: $(tail -1 ./log9.txt)"
