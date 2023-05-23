@@ -97,7 +97,7 @@ func readByte() {
 }
 
 func TestPrintSender(t *testing.T) {
-	want := `client: could not create the request: Post "http://localhost:8888/update/"`
+	want := `Post "http://localhost:8888/update/"`
 
 	var buf bytes.Buffer
 	log.SetOutput(&buf)

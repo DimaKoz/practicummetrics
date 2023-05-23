@@ -15,12 +15,11 @@ const (
 	defaultReportInterval = time.Duration(10)
 	defaultAddress        = "localhost:8080"
 
-	defaultStoreInterval      = 300
-	synchronicalStoreInterval = 0
-	unknownIntFieldValue      = -1
-	defaultFileStoragePath    = "/tmp/metrics-db.json"
-	unknownStringFieldValue   = "unknownStringFieldValue"
-	defaultRestore            = true
+	defaultStoreInterval    = 300
+	unknownIntFieldValue    = -1
+	defaultFileStoragePath  = "/tmp/metrics-db.json"
+	unknownStringFieldValue = "unknownStringFieldValue"
+	defaultRestore          = true
 )
 
 // Config represents a config of the agent and/or the server
@@ -51,11 +50,9 @@ func LoadServerConfig() (*ServerConfig, error) {
 		hasRestore:      false,
 		Restore:         true,
 	}
-	fmt.Println("cfg address before processEnv", cfg.Address)
 	if err := processEnv(cfg); err != nil {
 		return nil, fmt.Errorf("server config: cannot process ENV variables: %w", err)
 	}
-	fmt.Println("cfg address after processEnv", cfg.Address)
 	if err := processServerFlags(cfg); err != nil {
 		return nil, fmt.Errorf("server config: cannot process flags variables: %w", err)
 	}
@@ -177,7 +174,7 @@ func processAgentFlags(cfg *AgentConfig) error {
 }
 
 var processEnv = func(config *ServerConfig) error {
-	fmt.Println(os.Environ())
+	log.Println(os.Environ())
 	opts := env.Options{
 		OnSet: func(tag string, value interface{}, isDefault bool) {
 			if tag == "RESTORE" {

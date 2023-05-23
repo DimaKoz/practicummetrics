@@ -21,8 +21,8 @@ func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 		r.SetBody(m)
 		_, err := r.Post(targetURL)
 		if err != nil {
-			log.Printf("client: could not create the request: %s \n", err)
-			log.Println("client: waiting for the next tick")
+			log.Printf("could not create the request: %s \n", err)
+			log.Println("waiting for the next tick")
 			break
 		}
 	}

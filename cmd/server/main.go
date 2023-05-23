@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
@@ -43,7 +42,7 @@ func main() {
 	_, err = os.Stat(cfg.FileStoragePath)
 	if os.IsNotExist(err) {
 		cfg.Restore = false
-		fmt.Printf("%v file does not exist\n", cfg.FileStoragePath)
+		sugar.Info("%v file does not exist\n", cfg.FileStoragePath)
 	}
 	repository.SetupFilePathStorage(cfg.FileStoragePath)
 	if cfg.Restore && cfg.FileStoragePath != "" {
