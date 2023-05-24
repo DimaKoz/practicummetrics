@@ -15,9 +15,9 @@ var gzipSkipper = func(c echo.Context) bool {
 	return hasNoGzip
 }
 
-func newGzipConfig(f func(c echo.Context) bool) middleware.GzipConfig {
+func newGzipConfig(skipper middleware.Skipper) middleware.GzipConfig {
 	return middleware.GzipConfig{
-		Skipper: f,
+		Skipper: skipper,
 		Level:   5,
 	}
 }
