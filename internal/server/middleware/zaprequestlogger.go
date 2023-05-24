@@ -34,3 +34,11 @@ func GetRequestLoggerConfig(sugar zap.SugaredLogger) middleware.RequestLoggerCon
 		LogValuesFunc:    logValuesFunc,
 	}
 }
+
+func GetBodyLoggerHandler(sugar zap.SugaredLogger) middleware.BodyDumpHandler {
+	return func(c echo.Context, reqBody, resBody []byte) {
+		sugar.Infow(
+			"body:", "reqBody:", string(reqBody[:]),
+		)
+	}
+}

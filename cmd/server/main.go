@@ -3,10 +3,9 @@ package main
 import (
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
+	"github.com/DimaKoz/practicummetrics/internal/server"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
-	middleware2 "github.com/DimaKoz/practicummetrics/internal/server/middleware"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
 	"os"
 	"time"
@@ -71,19 +70,8 @@ func main() {
 	}
 
 	e := echo.New()
-	e.Use(middleware.RequestLoggerWithConfig(middleware2.GetRequestLoggerConfig(sugar)))
-	e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
-		sugar.Infow(
-			"body:", "reqBody:", string(reqBody[:]),
-		)
-	}))
-	e.Use(middleware2.GetGzipMiddlewareConfig())
-
-	e.POST("/update/:type/:name/:value", handler.UpdateHandler)
-	e.POST("/update/", handler.UpdateHandlerJSON)
-	e.GET("/value/:type/:name", handler.ValueHandler)
-	e.POST("/value/", handler.ValueHandlerJSON)
-	e.GET("/", handler.RootHandler)
+	server.SetupMiddleware(e, sugar)
+	server.SetupRouter(e)
 
 	if err = e.Start(cfg.Address); err != nil {
 		sugar.Fatalf("couldn't start the server by %s", err)
