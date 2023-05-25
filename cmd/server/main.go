@@ -26,7 +26,9 @@ func main() {
 
 	sugar := *logger.Sugar()
 
-	cfg, err := config.LoadServerConfig()
+	cfg := config.NewServerConfig()
+
+	err = config.LoadServerConfig(cfg, config.ProcessEnvServer)
 	if err != nil {
 		sugar.Fatalf("couldn't create a config %s", err)
 	}

@@ -41,20 +41,28 @@ type ServerConfig struct {
 	Restore         bool `env:"RESTORE"`
 }
 
-func LoadServerConfig() (*ServerConfig, error) {
-
-	cfg := &ServerConfig{
+// NewServerConfig creates an instance of ServerConfig.
+func NewServerConfig() *ServerConfig {
+	return &ServerConfig{
 		Config:          Config{Address: unknownStringFieldValue},
 		StoreInterval:   unknownIntFieldValue,
 		FileStoragePath: unknownStringFieldValue,
 		hasRestore:      false,
 		Restore:         true,
 	}
-	if err := processEnv(cfg); err != nil {
-		return nil, fmt.Errorf("server config: cannot process ENV variables: %w", err)
+}
+
+// ProcessEnv receives and sets up the ServerConfig.
+type ProcessEnv func(config *ServerConfig) error
+
+// LoadServerConfig loads data to the passed ServerConfig
+func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
+
+	if err := processing(cfg); err != nil {
+		return fmt.Errorf("server config: cannot process ENV variables: %w", err)
 	}
 	if err := processServerFlags(cfg); err != nil {
-		return nil, fmt.Errorf("server config: cannot process flags variables: %w", err)
+		return fmt.Errorf("server config: cannot process flags variables: %w", err)
 	}
 	setupDefaultServerValues(cfg,
 		defaultAddress,
@@ -62,7 +70,7 @@ func LoadServerConfig() (*ServerConfig, error) {
 		defaultFileStoragePath,
 		defaultRestore)
 
-	return cfg, nil
+	return nil
 }
 
 func LoadAgentConfig() (*AgentConfig, error) {
@@ -173,7 +181,7 @@ func processAgentFlags(cfg *AgentConfig) error {
 	return nil
 }
 
-var processEnv = func(config *ServerConfig) error {
+func ProcessEnvServer(config *ServerConfig) error {
 	log.Println(os.Environ())
 	opts := env.Options{
 		OnSet: func(tag string, value interface{}, isDefault bool) {

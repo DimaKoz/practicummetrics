@@ -171,7 +171,7 @@ func TestAgentInitConfig(t *testing.T) {
 
 func Test_processEnvError(t *testing.T) {
 	wantErr := fmt.Errorf("couldn't parse an enviroment, error: %w", fmt.Errorf("env: expected a pointer to a Struct"))
-	gotErr := processEnv(nil)
+	gotErr := ProcessEnvServer(nil)
 
 	assert.Equal(t, wantErr, gotErr, "Configs - got error: %v, want: %v", gotErr, wantErr)
 
@@ -179,7 +179,7 @@ func Test_processEnvError(t *testing.T) {
 
 func Test_processEnvNoError(t *testing.T) {
 	var wantErr error = nil
-	gotErr := processEnv(&ServerConfig{})
+	gotErr := ProcessEnvServer(NewServerConfig())
 
 	assert.Equal(t, wantErr, gotErr, "Configs - got error: %v, want: %v", gotErr, wantErr)
 
@@ -193,19 +193,20 @@ func Test_processEnvMock(t *testing.T) {
 	os.Args = make([]string, 0)
 	os.Args = append(os.Args, osArgOrig[0])
 
-	processEnvOrig := processEnv
+	//processEnvOrig := processEnv
 	t.Cleanup(func() {
 		os.Args = osArgOrig
-		processEnv = processEnvOrig
+		//processEnv = processEnvOrig
 	})
 
-	processEnv = func(config *ServerConfig) error {
+	processEnv := func(config *ServerConfig) error {
 		return fmt.Errorf("any error")
 	}
 
-	var want *ServerConfig = nil
+	var want = NewServerConfig()
 	var wantErr = errors.New("server config: cannot process ENV variables: any error")
-	got, gotErr := LoadServerConfig()
+	got := NewServerConfig()
+	gotErr := LoadServerConfig(got, processEnv)
 
 	assert.Equal(t, wantErr.Error(), gotErr.Error(), "Configs - got error: %v, want: %v", gotErr, wantErr)
 	assert.Equal(t, want, got, "Configs - got: %v, want: %v", got, want)
@@ -223,7 +224,8 @@ func TestLoadServerConfig(t *testing.T) {
 		hasRestore:      true,
 		Restore:         defaultRestore,
 	}
-	got, err := LoadServerConfig()
+	got := NewServerConfig()
+	err := LoadServerConfig(got, ProcessEnvServer)
 	assert.NoError(t, err, "error must be nil")
 	assert.Equal(t, want, got, "Configs - got: %v, want: %v", got, want)
 
