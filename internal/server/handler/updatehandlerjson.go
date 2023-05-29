@@ -15,7 +15,7 @@ var SyncSaveUpdateHandlerJSON = false
 func UpdateHandlerJSON(c echo.Context) error {
 	m := &model.Metrics{}
 	if err := c.Bind(&m); err != nil {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("UpdateHandlerJSON: cannot parse from json: %s", err))
+		return c.String(http.StatusBadRequest, fmt.Sprintf("UpdateHandlerJSON: failed to parse json: %s", err))
 	}
 	prepModelValue, err := m.GetPreparedValue()
 	if err != nil {

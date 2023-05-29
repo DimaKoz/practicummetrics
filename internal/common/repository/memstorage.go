@@ -75,7 +75,7 @@ func Load() error {
 	}
 	var m []model.MetricUnit
 	if err := json.Unmarshal(data, &m); err != nil {
-		return fmt.Errorf("can't parse json with error: %w", err)
+		return fmt.Errorf("failed to parse json with error: %w", err)
 	}
 	memStorageSync.Lock()
 	defer memStorageSync.Unlock()

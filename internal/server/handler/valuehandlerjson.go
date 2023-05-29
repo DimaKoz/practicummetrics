@@ -21,7 +21,7 @@ func ValueHandlerJSON(c echo.Context) error {
 	log.Println("ValueHandlerJSON")
 	mappedData := echo.Map{}
 	if err := c.Bind(&mappedData); err != nil {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("cannot parse from json: %s", err))
+		return c.String(http.StatusBadRequest, fmt.Sprintf("failed to parse json: %s", err))
 	}
 
 	name := fmt.Sprintf("%v", mappedData["id"])
