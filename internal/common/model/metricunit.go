@@ -73,5 +73,5 @@ func (mu MetricUnit) Clone() MetricUnit {
 }
 
 func (mu MetricUnit) GetPath() string {
-	return mu.Type + "/" + mu.Name + "/" + mu.Value
+	return fmt.Sprintf("%s/%s/%s", mu.Type, mu.Name, mu.Value)
 }
