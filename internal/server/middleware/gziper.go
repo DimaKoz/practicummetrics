@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"compress/gzip"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"strings"
@@ -18,7 +19,7 @@ var gzipSkipper = func(c echo.Context) bool {
 func newGzipConfig(skipper middleware.Skipper) middleware.GzipConfig {
 	return middleware.GzipConfig{
 		Skipper: skipper,
-		Level:   5,
+		Level:   gzip.BestCompression,
 	}
 }
 

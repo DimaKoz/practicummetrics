@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"compress/gzip"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/stretchr/testify/assert"
@@ -46,7 +47,7 @@ func Test_newGzipConfig(t *testing.T) {
 			args: args{f: nil},
 			want: middleware.GzipConfig{
 				Skipper: nil,
-				Level:   5,
+				Level:   gzip.BestCompression,
 			},
 		},
 	}
@@ -65,7 +66,7 @@ func TestGetGzipMiddlewareConfig(t *testing.T) {
 		{
 			want: middleware.GzipWithConfig(middleware.GzipConfig{
 				Skipper: nil,
-				Level:   5,
+				Level:   gzip.BestCompression,
 			}),
 		},
 	}
