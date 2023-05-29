@@ -242,8 +242,5 @@ func setupDefaultAgentValues(config *AgentConfig,
 }
 
 func (cfg ServerConfig) String() string {
-	return "Address:" + cfg.Address + "\n" +
-		"StoreInterval:" + strconv.FormatInt(cfg.StoreInterval, 10) + "\n" +
-		"FileStoragePath:" + cfg.FileStoragePath + "\n" +
-		"Restore:" + strconv.FormatBool(cfg.Restore) + "\n"
+	return fmt.Sprintf("Address: %s \n StoreInterval: %d \n FileStoragePath: %s \n Restore: %t \n", cfg.Address, cfg.StoreInterval, cfg.FileStoragePath, cfg.Restore)
 }
