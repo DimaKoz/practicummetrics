@@ -122,7 +122,7 @@ func TestPrintSender(t *testing.T) {
 	assert.Contains(t, got, want, "Expected %s, got %s", want, got)
 }
 
-func Test_getTargetURL(t *testing.T) {
+func TestGetTargetURL(t *testing.T) {
 	type args struct {
 		address string
 	}

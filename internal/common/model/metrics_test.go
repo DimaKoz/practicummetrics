@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestMetrics_GetPreparedValue(t *testing.T) {
+func TestMetricsGetPreparedValue(t *testing.T) {
 	tests := []struct {
 		name   string
 		fValue float64
@@ -47,7 +47,7 @@ func TestMetrics_GetPreparedValue(t *testing.T) {
 	}
 }
 
-func TestMetrics_UpdateByMetricUnit(t *testing.T) {
+func TestMetricsUpdateByMetricUnit(t *testing.T) {
 	tests := []struct {
 		name       string
 		fValueWant float64

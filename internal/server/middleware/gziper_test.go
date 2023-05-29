@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func Test_gzipSkipperHasGzip(t *testing.T) {
+func TestGzipSkipperHasGzip(t *testing.T) {
 	e := echo.New()
 	request := httptest.NewRequest(http.MethodPost, "/", nil)
 	request.Header.Set(echo.HeaderAcceptEncoding, "gzip")
@@ -22,7 +22,7 @@ func Test_gzipSkipperHasGzip(t *testing.T) {
 	assert.Contains(t, contentEnc, "gzip")
 }
 
-func Test_gzipSkipperNoGzip(t *testing.T) {
+func TestGzipSkipperNoGzip(t *testing.T) {
 	e := echo.New()
 	request := httptest.NewRequest(http.MethodPost, "/", nil)
 	w := httptest.NewRecorder()
@@ -33,7 +33,7 @@ func Test_gzipSkipperNoGzip(t *testing.T) {
 	assert.Empty(t, contentEnc)
 }
 
-func Test_newGzipConfig(t *testing.T) {
+func TestNewGzipConfig(t *testing.T) {
 	type args struct {
 		f func(c echo.Context) bool
 	}

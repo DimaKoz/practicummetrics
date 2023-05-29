@@ -169,7 +169,7 @@ func TestAgentInitConfig(t *testing.T) {
 	}
 }
 
-func Test_processEnvError(t *testing.T) {
+func TestProcessEnvError(t *testing.T) {
 	wantErr := fmt.Errorf("couldn't parse an enviroment, error: %w", fmt.Errorf("env: expected a pointer to a Struct"))
 	gotErr := ProcessEnvServer(nil)
 
@@ -177,7 +177,7 @@ func Test_processEnvError(t *testing.T) {
 
 }
 
-func Test_processEnvNoError(t *testing.T) {
+func TestProcessEnvNoError(t *testing.T) {
 	var wantErr error = nil
 	gotErr := ProcessEnvServer(NewServerConfig())
 
@@ -185,7 +185,7 @@ func Test_processEnvNoError(t *testing.T) {
 
 }
 
-func Test_processEnvMock(t *testing.T) {
+func TestProcessEnvMock(t *testing.T) {
 	flag2.CommandLine = flag2.NewFlagSet(os.Args[0], flag2.ContinueOnError)
 	flag2.CommandLine.SetOutput(io.Discard)
 
