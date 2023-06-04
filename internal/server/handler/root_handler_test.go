@@ -51,7 +51,7 @@ func TestRootHandler(t *testing.T) {
 	}
 }
 
-func Test_getHtmlContent(t *testing.T) {
+func TestGetHtmlContent(t *testing.T) {
 	tests := []struct {
 		name    string
 		metrics []model.MetricUnit

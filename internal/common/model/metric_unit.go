@@ -47,7 +47,7 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (Me
 		if s, err := strconv.ParseFloat(metricValue, 64); err == nil {
 			result.ValueFloat = s
 		} else {
-			return EmptyMetric, fmt.Errorf("bad value: couldn't parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
+			return EmptyMetric, fmt.Errorf("bad value: failed to parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
 		}
 	}
 
@@ -55,7 +55,7 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (Me
 		if s, err := strconv.ParseInt(metricValue, 10, 64); err == nil {
 			result.ValueInt = s
 		} else {
-			return EmptyMetric, fmt.Errorf("bad value: couldn't parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
+			return EmptyMetric, fmt.Errorf("bad value: failed to parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
 		}
 	}
 	return result, nil
@@ -73,5 +73,5 @@ func (mu MetricUnit) Clone() MetricUnit {
 }
 
 func (mu MetricUnit) GetPath() string {
-	return mu.Type + "/" + mu.Name + "/" + mu.Value
+	return fmt.Sprintf("%s/%s/%s", mu.Type, mu.Name, mu.Value)
 }

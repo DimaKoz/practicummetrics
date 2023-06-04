@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/stretchr/testify/assert"
+	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -128,4 +129,28 @@ func TestGetMetricsMemStorage(t *testing.T) {
 			assert.ElementsMatch(t, tt.want, GetAllMetrics(), "GetAllMetrics()")
 		})
 	}
+}
+
+func TestLoadSaveEmptyFileStorageErr(t *testing.T) {
+
+	orig := filePathStorage
+	filePathStorage = ""
+	t.Cleanup(func() { filePathStorage = orig })
+
+	err := Load()
+	assert.Error(t, err)
+
+	err = Save()
+	assert.Error(t, err)
+}
+
+func TestSetupFilePathStorage(t *testing.T) {
+
+	orig := filePathStorage
+	t.Cleanup(func() { filePathStorage = orig })
+
+	want := filepath.Join(t.TempDir(), "abc.txt")
+	SetupFilePathStorage(want)
+	assert.Equal(t, want, filePathStorage)
+	
 }

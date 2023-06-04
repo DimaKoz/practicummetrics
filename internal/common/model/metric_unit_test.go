@@ -97,7 +97,7 @@ func TestNewMetricUnit(t *testing.T) {
 	}
 }
 
-func TestMetricUnit_Clone(t *testing.T) {
+func TestMetricUnitClone(t *testing.T) {
 	tests := []struct {
 		name string
 		pass MetricUnit
@@ -130,7 +130,7 @@ func TestMetricUnit_Clone(t *testing.T) {
 	}
 }
 
-func TestMetricUnit_GetPath(t *testing.T) {
+func TestMetricUnitGetPath(t *testing.T) {
 
 	tests := []struct {
 		name string
