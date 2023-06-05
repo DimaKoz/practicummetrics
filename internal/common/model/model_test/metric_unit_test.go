@@ -1,13 +1,15 @@
-package model
+package model_test
 
 import (
 	"errors"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"reflect"
 	"strings"
 	"testing"
 )
 
 func TestNewMetricUnit(t *testing.T) {
+	errBadValue := errors.New("bad value")
 	type args struct {
 		metricType  string
 		metricName  string
@@ -17,25 +19,25 @@ func TestNewMetricUnit(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    MetricUnit
+		want    model.MetricUnit
 		wantErr error
 	}{
 		{name: "normal counter",
 			args: args{
-				metricType:  MetricTypeCounter,
+				metricType:  model.MetricTypeCounter,
 				metricName:  "test",
 				metricValue: "42",
 			},
-			want:    MetricUnit{MetricTypeCounter, "test", "42", 42, 0},
+			want:    model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "42", ValueInt: 42, ValueFloat: 0},
 			wantErr: nil,
 		},
 		{name: "normal gauge",
 			args: args{
-				metricType:  MetricTypeGauge,
+				metricType:  model.MetricTypeGauge,
 				metricName:  "test",
 				metricValue: "42",
 			},
-			want:    MetricUnit{MetricTypeGauge, "test", "42", 0, 42},
+			want:    model.MetricUnit{Type: model.MetricTypeGauge, Name: "test", Value: "42", ValueInt: 0, ValueFloat: 42},
 			wantErr: nil,
 		},
 		{name: "unknown type",
@@ -44,49 +46,49 @@ func TestNewMetricUnit(t *testing.T) {
 				metricName:  "test",
 				metricValue: "42",
 			},
-			want:    EmptyMetric,
-			wantErr: ErrorUnknownType,
+			want:    model.EmptyMetric,
+			wantErr: model.ErrorUnknownType,
 		},
 		{name: "empty name",
 			args: args{
-				metricType:  MetricTypeGauge,
+				metricType:  model.MetricTypeGauge,
 				metricName:  "",
 				metricValue: "42",
 			},
-			want:    EmptyMetric,
-			wantErr: ErrorEmptyValue,
+			want:    model.EmptyMetric,
+			wantErr: model.ErrorEmptyValue,
 		},
 		{name: "empty value",
 			args: args{
-				metricType:  MetricTypeGauge,
+				metricType:  model.MetricTypeGauge,
 				metricName:  "qaz",
 				metricValue: "",
 			},
-			want:    EmptyMetric,
-			wantErr: ErrorEmptyValue,
+			want:    model.EmptyMetric,
+			wantErr: model.ErrorEmptyValue,
 		},
 		{name: "no float value",
 			args: args{
-				metricType:  MetricTypeGauge,
+				metricType:  model.MetricTypeGauge,
 				metricName:  "qaz",
 				metricValue: "xexe",
 			},
-			want:    EmptyMetric,
-			wantErr: errors.New("bad value"),
+			want:    model.EmptyMetric,
+			wantErr: errBadValue,
 		},
 		{name: "no int value",
 			args: args{
-				metricType:  MetricTypeCounter,
+				metricType:  model.MetricTypeCounter,
 				metricName:  "qaz",
 				metricValue: "xexe",
 			},
-			want:    EmptyMetric,
-			wantErr: errors.New("bad value"),
+			want:    model.EmptyMetric,
+			wantErr: errBadValue,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := NewMetricUnit(tt.args.metricType, tt.args.metricName, tt.args.metricValue)
+			got, got1 := model.NewMetricUnit(tt.args.metricType, tt.args.metricName, tt.args.metricValue)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewMetricUnit() got = %v, want %v", got, tt.want)
 			}
@@ -100,20 +102,20 @@ func TestNewMetricUnit(t *testing.T) {
 func TestMetricUnitClone(t *testing.T) {
 	tests := []struct {
 		name string
-		pass MetricUnit
-		want MetricUnit
+		pass model.MetricUnit
+		want model.MetricUnit
 	}{
 		{
 			name: "clone",
-			pass: MetricUnit{
-				Type:       MetricTypeGauge,
+			pass: model.MetricUnit{
+				Type:       model.MetricTypeGauge,
 				Name:       "heap",
 				ValueInt:   0,
 				ValueFloat: 4932.99,
 				Value:      "4932.99",
 			},
-			want: MetricUnit{
-				Type:       MetricTypeGauge,
+			want: model.MetricUnit{
+				Type:       model.MetricTypeGauge,
 				Name:       "heap",
 				ValueInt:   0,
 				ValueFloat: 4932.99,
@@ -134,13 +136,13 @@ func TestMetricUnitGetPath(t *testing.T) {
 
 	tests := []struct {
 		name string
-		mu   MetricUnit
+		mu   model.MetricUnit
 		want string
 	}{
 		{
 			name: "a path from MetricUnit",
-			mu: MetricUnit{
-				Type:       MetricTypeGauge,
+			mu: model.MetricUnit{
+				Type:       model.MetricTypeGauge,
 				Name:       "b",
 				Value:      "42",
 				ValueInt:   0,

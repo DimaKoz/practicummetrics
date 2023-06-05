@@ -1,6 +1,7 @@
-package model
+package model_test
 
 import (
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -10,24 +11,24 @@ func TestMetricsGetPreparedValue(t *testing.T) {
 		name   string
 		fValue float64
 		iValue int64
-		m      *Metrics
+		m      *model.Metrics
 		want   string
 	}{
 		{
-			name:   MetricTypeGauge,
+			name:   model.MetricTypeGauge,
 			fValue: 340255.4088704579,
-			m: &Metrics{
+			m: &model.Metrics{
 				ID:    "test0",
-				MType: MetricTypeGauge,
+				MType: model.MetricTypeGauge,
 			},
 			want: "340255.4088704579",
 		},
 		{
-			name:   MetricTypeCounter,
+			name:   model.MetricTypeCounter,
 			iValue: 42,
-			m: &Metrics{
+			m: &model.Metrics{
 				ID:    "test1",
-				MType: MetricTypeCounter,
+				MType: model.MetricTypeCounter,
 			},
 			want: "42",
 		},
@@ -52,35 +53,36 @@ func TestMetricsUpdateByMetricUnit(t *testing.T) {
 		name       string
 		fValueWant float64
 		iValueWant int64
-		mu         MetricUnit
-		want       *Metrics
+		mu         model.MetricUnit
+		want       *model.Metrics
 	}{
 		{
-			name: MetricTypeGauge,
-			mu: MetricUnit{
-				Type:       MetricTypeGauge,
+			name: model.MetricTypeGauge,
+			mu: model.MetricUnit{
+				Type:       model.MetricTypeGauge,
 				Name:       "test0",
 				Value:      "3342.55",
 				ValueFloat: 3342.55,
 			},
 			fValueWant: 3342.55,
-			want: &Metrics{
+			want: &model.Metrics{
 				ID:    "test0",
-				MType: MetricTypeGauge,
+				MType: model.MetricTypeGauge,
 			},
 		},
 		{
-			name: MetricTypeCounter,
-			mu: MetricUnit{
-				Type:     MetricTypeCounter,
-				Name:     "test1",
-				Value:    "42",
-				ValueInt: 42,
+			name: model.MetricTypeCounter,
+			mu: model.MetricUnit{
+				Type:       model.MetricTypeCounter,
+				Name:       "test1",
+				Value:      "42",
+				ValueInt:   42,
+				ValueFloat: 0,
 			},
 			iValueWant: 42,
-			want: &Metrics{
+			want: &model.Metrics{
 				ID:    "test1",
-				MType: MetricTypeCounter,
+				MType: model.MetricTypeCounter,
 			},
 		},
 	}
@@ -92,7 +94,7 @@ func TestMetricsUpdateByMetricUnit(t *testing.T) {
 			if tt.iValueWant != 0 {
 				tt.want.Delta = &tt.iValueWant
 			}
-			got := &Metrics{}
+			got := &model.Metrics{}
 			got.UpdateByMetricUnit(tt.mu)
 			assert.Equalf(t, tt.want, got, "problem test name: \"%s\"", tt.name)
 		})

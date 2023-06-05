@@ -170,7 +170,7 @@ func TestAgentInitConfig(t *testing.T) {
 }
 
 func TestProcessEnvError(t *testing.T) {
-	wantErr := fmt.Errorf("failed to parse an enviroment, error: %w", fmt.Errorf("env: expected a pointer to a Struct"))
+	wantErr := fmt.Errorf("failed to parse an environment, error: %w", fmt.Errorf("env: expected a pointer to a Struct"))
 	gotErr := ProcessEnvServer(nil)
 
 	assert.Equal(t, wantErr, gotErr, "Configs - got error: %v, want: %v", gotErr, wantErr)

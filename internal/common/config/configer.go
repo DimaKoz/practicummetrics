@@ -192,10 +192,10 @@ func ProcessEnvServer(config *ServerConfig) error {
 		},
 	}
 
-	err := env.Parse(config, opts)
-	if err != nil {
-		return fmt.Errorf("failed to parse an enviroment, error: %w", err)
+	if err := env.Parse(config, opts); err != nil {
+		return fmt.Errorf("failed to parse an environment, error: %w", err)
 	}
+
 	return nil
 }
 

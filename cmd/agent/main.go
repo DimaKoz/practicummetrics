@@ -43,6 +43,7 @@ func main() {
 
 			case <-sigs:
 				done <- true
+
 				return
 
 			case <-tickerGathering.C:
