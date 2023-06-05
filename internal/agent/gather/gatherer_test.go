@@ -63,6 +63,7 @@ func checkMetricsName(t *testing.T, wantKeys []string, got *[]model.MetricUnit) 
 		for _, kk := range *got {
 			if kk.Name == k {
 				isPresent = true
+
 				break
 			}
 		}

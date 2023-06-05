@@ -19,6 +19,7 @@ var logValuesFunc = func(c echo.Context, v middleware.RequestLoggerValues) error
 		zap.String("length", v.ContentLength),
 		zap.Int64("size", v.ResponseSize),
 	)
+
 	return nil
 }
 

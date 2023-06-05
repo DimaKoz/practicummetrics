@@ -13,6 +13,7 @@ var gzipSkipper = func(c echo.Context) bool {
 	if !hasNoGzip {
 		c.Response().Header().Set(echo.HeaderContentEncoding, "gzip")
 	}
+	
 	return hasNoGzip
 }
 

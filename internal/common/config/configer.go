@@ -204,6 +204,7 @@ var processEnvAgent = func(config *AgentConfig) error {
 	if err != nil {
 		return fmt.Errorf("failed to parse an enviroment, error: %w", err)
 	}
+
 	return nil
 }
 
