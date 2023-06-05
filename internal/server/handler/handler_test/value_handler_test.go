@@ -1,6 +1,7 @@
-package handler
+package handler_test
 
 import (
+	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -63,7 +64,7 @@ func TestValueHandler(t *testing.T) {
 				c.SetParamValues([]string{"testCounter132"}...)
 
 			}
-			_ = ValueHandler(c)
+			_ = handler.ValueHandler(c)
 
 			res := w.Result()
 			// проверяем код ответа

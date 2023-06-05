@@ -1,16 +1,21 @@
-package handler
+package handler_test
 
 import (
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/DimaKoz/practicummetrics/internal/common/repository"
+	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
+
 	"strings"
 	"testing"
 )
 
-func TestUpdateHandlerJSON(t *testing.T) {
+func TestValueHandlerJSON(t *testing.T) {
 	type want struct {
 		code        int
 		response    string
@@ -25,10 +30,10 @@ func TestUpdateHandlerJSON(t *testing.T) {
 
 		{
 			name:    "test no json",
-			request: "/update",
+			request: "/value",
 			reqJSON: "",
 			want: want{
-				code:        http.StatusBadRequest,
+				code:        http.StatusNotFound,
 				response:    ``,
 				contentType: "",
 			},
@@ -43,29 +48,32 @@ func TestUpdateHandlerJSON(t *testing.T) {
 				contentType: "",
 			},
 		},
-		{
-			name:    "test wrong type metrics",
-			request: "/update",
-			reqJSON: "{\"id\":\"GetSet185\",\"type\":\"gauge1\",\"delta\":1}",
-			want: want{
-				code:        http.StatusNotImplemented,
-				response:    ``,
-				contentType: "",
-			},
-		},
+
 		{
 			name:    "test OK",
 			request: "/update",
-			reqJSON: `{"id":"GetSet186","type":"counter","delta":1}`,
+			reqJSON: `{"id":"GetSet187"}`,
 			want: want{
 				code:        http.StatusOK,
-				response:    "{\"id\":\"GetSet186\",\"type\":\"counter\",\"delta\":1}\n",
+				response:    "{\"id\":\"GetSet187\",\"type\":\"gauge\",\"value\":42}\n",
 				contentType: "",
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tmpDir := t.TempDir()
+			fileStorage := filepath.Join(tmpDir, "rep_values.txt")
+			repository.SetupFilePathStorage(fileStorage)
+			assert.NoError(t, repository.Save())
+			mu, err := model.NewMetricUnit("gauge", "GetSet187", "42")
+			assert.NoError(t, err)
+			repository.AddMetric(mu)
+			t.Cleanup(func() {
+				_ = repository.Load()
+			})
+
 			e := echo.New()
 			var body io.Reader = nil
 			if tt.reqJSON != "" {
@@ -79,7 +87,7 @@ func TestUpdateHandlerJSON(t *testing.T) {
 			w := httptest.NewRecorder()
 			c := e.NewContext(request, w)
 
-			err := UpdateHandlerJSON(c)
+			err = handler.ValueHandlerJSON(c)
 			assert.NoError(t, err, "expected no errors")
 
 			res := w.Result()

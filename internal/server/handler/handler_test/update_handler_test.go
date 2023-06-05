@@ -1,6 +1,7 @@
-package handler
+package handler_test
 
 import (
+	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -51,7 +52,7 @@ func TestUpdateHandler(t *testing.T) {
 			c.SetParamNames([]string{"type", "name", "value"}...)
 			c.SetParamValues(paramValues[2:]...)
 
-			assert.NoError(t, UpdateHandler(c), "expected no errors")
+			assert.NoError(t, handler.UpdateHandler(c), "expected no errors")
 
 			res := w.Result()
 			// проверяем код ответа
