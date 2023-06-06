@@ -2,11 +2,12 @@ package repository
 
 import (
 	"fmt"
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
-	"github.com/stretchr/testify/assert"
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddMetricMemStorage(t *testing.T) {

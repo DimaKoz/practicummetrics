@@ -1,9 +1,10 @@
 package model_test
 
 import (
+	"testing"
+
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestMetricsGetPreparedValue(t *testing.T) {

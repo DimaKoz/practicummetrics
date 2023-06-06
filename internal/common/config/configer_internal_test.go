@@ -3,12 +3,13 @@ package config
 import (
 	"errors"
 	"fmt"
-	flag2 "github.com/spf13/pflag"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"log"
 	"os"
 	"testing"
+
+	flag2 "github.com/spf13/pflag"
+	"github.com/stretchr/testify/assert"
 )
 
 const (

@@ -2,10 +2,11 @@ package model_test
 
 import (
 	"errors"
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 )
 
 func TestNewMetricUnit(t *testing.T) {

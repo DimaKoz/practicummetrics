@@ -1,14 +1,15 @@
 package handler_test
 
 import (
-	"github.com/DimaKoz/practicummetrics/internal/server/handler"
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/server/handler"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 type wantUpdHandlerJSON struct {

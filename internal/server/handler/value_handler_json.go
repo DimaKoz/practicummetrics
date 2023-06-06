@@ -3,11 +3,12 @@ package handler
 import (
 	"encoding/json" // this import helps to pass some autotests
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/labstack/echo/v4"
-	"log"
-	"net/http"
 )
 
 // ValueHandlerJSON handles `/value`.

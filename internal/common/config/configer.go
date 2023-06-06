@@ -2,12 +2,13 @@ package config
 
 import (
 	"fmt"
-	"github.com/caarlos0/env/v6"
-	flag2 "github.com/spf13/pflag"
 	"log"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/caarlos0/env/v6"
+	flag2 "github.com/spf13/pflag"
 )
 
 const (

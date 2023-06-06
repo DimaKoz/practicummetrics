@@ -1,9 +1,10 @@
 package gather_test_test
 
 import (
+	"testing"
+
 	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
-	"testing"
 )
 
 func TestGetMetrics(t *testing.T) {

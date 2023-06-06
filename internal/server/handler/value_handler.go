@@ -2,10 +2,11 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 // ValueHandler handles `/value/`.

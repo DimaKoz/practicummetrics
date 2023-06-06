@@ -1,11 +1,12 @@
 package middleware
 
 import (
+	"testing"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"testing"
 )
 
 func TestLogValuesFunc(t *testing.T) {

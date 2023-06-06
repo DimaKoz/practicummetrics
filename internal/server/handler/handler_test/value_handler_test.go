@@ -1,12 +1,13 @@
 package handler_test
 
 import (
-	"github.com/DimaKoz/practicummetrics/internal/server/handler"
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/server/handler"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestValueHandler(t *testing.T) {
@@ -25,11 +26,7 @@ func TestValueHandler(t *testing.T) {
 			name:   "test 404 - 0",
 			method: http.MethodGet,
 			target: "/status",
-			want: want{
-				code:        http.StatusNotFound,
-				response:    ``,
-				contentType: "",
-			},
+			want:   want{code: http.StatusNotFound, response: ``, contentType: ""},
 		},
 		{
 			name:   "test 404 - 1",
