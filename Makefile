@@ -44,4 +44,4 @@ clean:
 	rm -f ./tempfile*
 
 lnt:
-	golangci-lint run --enable-all --disable gochecknoglobals
+	golangci-lint run --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable ifshort
