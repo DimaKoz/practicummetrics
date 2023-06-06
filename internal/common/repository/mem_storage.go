@@ -58,6 +58,7 @@ func GetAllMetrics() []model.MetricUnit {
 
 	memStorageSync.Lock()
 	defer memStorageSync.Unlock()
+
 	for _, v := range memStorage.storage {
 		result = append(result, v.Clone())
 	}
@@ -78,7 +79,6 @@ func Load() error {
 		return fmt.Errorf("filePathStorage is empty")
 	}
 	data, err := os.ReadFile(filePathStorage)
-
 	if err != nil {
 		return fmt.Errorf("can't read '%s' file with error: %w", filePathStorage, err)
 	}
@@ -112,7 +112,7 @@ func Save() error {
 	if saviningJSON, err = json.Marshal(metrics); err != nil {
 		return fmt.Errorf("can't marshal json with error: %w", err)
 	}
-	if err = os.WriteFile(filePathStorage, saviningJSON, 0666); err != nil {
+	if err = os.WriteFile(filePathStorage, saviningJSON, 0o666); err != nil {
 		return fmt.Errorf("can't write '%s' file with error: %w", filePathStorage, err)
 	}
 

@@ -186,6 +186,7 @@ func processAgentFlags(cfg *AgentConfig) error {
 
 func ProcessEnvServer(config *ServerConfig) error {
 	log.Println(os.Environ())
+
 	opts := env.Options{
 		OnSet: func(tag string, value interface{}, isDefault bool) {
 			if tag == "RESTORE" {
@@ -220,12 +221,15 @@ func setupDefaultServerValues(config *ServerConfig,
 	if config.Address == unknownStringFieldValue {
 		config.Address = defaultAddress
 	}
+
 	if config.StoreInterval == unknownIntFieldValue {
 		config.StoreInterval = defaultStoreInterval
 	}
+
 	if config.FileStoragePath == unknownStringFieldValue {
 		config.FileStoragePath = defaultFileStoragePath
 	}
+
 	if !config.hasRestore {
 		config.Restore = defaultRestore
 	}

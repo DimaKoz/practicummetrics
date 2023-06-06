@@ -45,3 +45,9 @@ clean:
 
 lnt:
 	golangci-lint run --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable ifshort
+
+
+fmt:
+	# to install it:
+	# go install mvdan.cc/gofumpt@latest
+	gofumpt -l -w .

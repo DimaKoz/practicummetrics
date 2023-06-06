@@ -16,7 +16,6 @@ func UpdateHandler(ctx echo.Context) error {
 	metricName := ctx.Param("name")
 	metricValue := ctx.Param("value")
 	metricUnit, err := model.NewMetricUnit(metricType, metricName, metricValue)
-
 	if err != nil {
 		statusCode := http.StatusBadRequest
 		if errors.Is(err, model.ErrUnknownType) {

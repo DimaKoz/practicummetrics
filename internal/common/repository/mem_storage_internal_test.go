@@ -155,5 +155,4 @@ func TestSetupFilePathStorage(t *testing.T) {
 
 	SetupFilePathStorage(want)
 	assert.Equal(t, want, filePathStorage)
-
 }

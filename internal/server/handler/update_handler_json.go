@@ -24,7 +24,6 @@ func UpdateHandlerJSON(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, fmt.Sprintf("UpdateHandlerJSON: failed to parse json: %s", err))
 	}
 	prepModelValue, err := m.GetPreparedValue()
-
 	if err != nil {
 		erDesc := fmt.Sprintf("UpdateHandlerJSON: Metrics contains nil: %s", err)
 		if err = ctx.String(http.StatusBadRequest, erDesc); err != nil {
@@ -34,7 +33,6 @@ func UpdateHandlerJSON(ctx echo.Context) error {
 		return err
 	}
 	muIncome, err := model.NewMetricUnit(m.MType, m.ID, prepModelValue)
-
 	if err != nil {
 		statusCode := http.StatusBadRequest
 		if errors.Is(err, model.ErrUnknownType) {
