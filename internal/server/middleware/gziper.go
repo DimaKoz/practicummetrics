@@ -2,10 +2,9 @@ package middleware
 
 import (
 	"compress/gzip"
-	"strings"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"strings"
 )
 
 var gzipSkipper = func(c echo.Context) bool {

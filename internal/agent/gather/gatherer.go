@@ -2,13 +2,12 @@ package gather
 
 import (
 	"fmt"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"math/rand"
 	"reflect"
 	"runtime"
 	"strconv"
 	"time"
-
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 )
 
 var metricsName = []string{

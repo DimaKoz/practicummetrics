@@ -2,11 +2,10 @@ package model_test
 
 import (
 	"errors"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"reflect"
 	"strings"
 	"testing"
-
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 )
 
 func TestNewMetricUnit(t *testing.T) {
@@ -103,7 +102,7 @@ func TestNewMetricUnit(t *testing.T) {
 			if !reflect.DeepEqual(got, test.want) {
 				t.Errorf("NewMetricUnit() got = %v, want %v", got, test.want)
 			}
-			if test.wantErr != got1 && !strings.Contains(test.wantErr.Error(), "bad value") {
+			if !errors.Is(test.wantErr, got1) && !strings.Contains(test.wantErr.Error(), "bad value") {
 				t.Errorf("processPath() got1 = %v, want %v", got1, test.wantErr)
 			}
 		})
@@ -134,7 +133,8 @@ func TestMetricUnitClone(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, testItem := range tests {
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			if got := test.pass.Clone(); !reflect.DeepEqual(got, test.want) {
 				t.Errorf("Clone() = %v, want %v", got, test.want)

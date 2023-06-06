@@ -1,12 +1,11 @@
 package sender
 
 import (
-	"log"
-	"strings"
-
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/go-resty/resty/v2"
+	"log"
+	"strings"
 )
 
 // ParcelsSend sends metrics.

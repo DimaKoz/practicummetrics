@@ -1,13 +1,12 @@
 package handler_test
 
 import (
-	"net/http"
-	"net/http/httptest"
-	"testing"
-
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
 func TestValueHandler(t *testing.T) {
@@ -53,8 +52,9 @@ func TestValueHandler(t *testing.T) {
 			},
 		},
 	}
-	for index, test := range tests {
+	for index, testItem := range tests {
 		ind := index
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			e := echo.New()
 			request := httptest.NewRequest(test.method, test.target, nil)

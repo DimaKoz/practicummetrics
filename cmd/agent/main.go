@@ -1,16 +1,15 @@
 package main
 
 import (
+	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
+	"github.com/DimaKoz/practicummetrics/internal/agent/sender"
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
+	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
-	"github.com/DimaKoz/practicummetrics/internal/agent/sender"
-	"github.com/DimaKoz/practicummetrics/internal/common/config"
-	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 )
 
 func main() {

@@ -3,12 +3,11 @@ package repository
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"log"
 	"os"
 	"strconv"
 	"sync"
-
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 )
 
 var (

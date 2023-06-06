@@ -1,15 +1,14 @@
 package main
 
 import (
-	"os"
-	"time"
-
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/DimaKoz/practicummetrics/internal/server"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+	"os"
+	"time"
 )
 
 func main() {

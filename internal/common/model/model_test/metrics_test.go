@@ -1,10 +1,9 @@
 package model_test
 
 import (
-	"testing"
-
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestMetricsGetPreparedValue(t *testing.T) {
@@ -88,7 +87,8 @@ func TestMetricsUpdateByMetricUnit(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, testItem := range tests {
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			if test.fValueWant != 0 {
 				test.want.Value = &test.fValueWant

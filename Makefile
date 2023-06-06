@@ -57,3 +57,8 @@ fmt:
 	# to install it:
 	# go install mvdan.cc/gofumpt@latest
 	gofumpt -l -w .
+
+gci:
+	# to install it:
+	# go install github.com/daixiang0/gci@latest
+	gci write --skip-generated -s default .

@@ -2,6 +2,9 @@ package sender
 
 import (
 	"bytes"
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"log"
 	"net"
@@ -9,10 +12,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
-
-	"github.com/DimaKoz/practicummetrics/internal/common/config"
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestParcelsSend(t *testing.T) {
