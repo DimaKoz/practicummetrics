@@ -53,7 +53,7 @@ func TestNewMetricUnit(t *testing.T) {
 				metricValue: "42",
 			},
 			want:    model.EmptyMetric,
-			wantErr: model.ErrorUnknownType,
+			wantErr: model.ErrUnknownType,
 		},
 		{
 			name: "empty name",
@@ -63,7 +63,7 @@ func TestNewMetricUnit(t *testing.T) {
 				metricValue: "42",
 			},
 			want:    model.EmptyMetric,
-			wantErr: model.ErrorEmptyValue,
+			wantErr: model.ErrEmptyValue,
 		},
 		{
 			name: "empty value",
@@ -73,7 +73,7 @@ func TestNewMetricUnit(t *testing.T) {
 				metricValue: "",
 			},
 			want:    model.EmptyMetric,
-			wantErr: model.ErrorEmptyValue,
+			wantErr: model.ErrEmptyValue,
 		},
 		{
 			name: "no float value",
@@ -96,14 +96,14 @@ func TestNewMetricUnit(t *testing.T) {
 			wantErr: errBadValue,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := model.NewMetricUnit(tt.args.metricType, tt.args.metricName, tt.args.metricValue)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewMetricUnit() got = %v, want %v", got, tt.want)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, got1 := model.NewMetricUnit(test.args.metricType, test.args.metricName, test.args.metricValue)
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("NewMetricUnit() got = %v, want %v", got, test.want)
 			}
-			if tt.wantErr != got1 && !strings.Contains(tt.wantErr.Error(), "bad value") {
-				t.Errorf("processPath() got1 = %v, want %v", got1, tt.wantErr)
+			if test.wantErr != got1 && !strings.Contains(test.wantErr.Error(), "bad value") {
+				t.Errorf("processPath() got1 = %v, want %v", got1, test.wantErr)
 			}
 		})
 	}
@@ -133,10 +133,10 @@ func TestMetricUnitClone(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.pass.Clone(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Clone() = %v, want %v", got, tt.want)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := test.pass.Clone(); !reflect.DeepEqual(got, test.want) {
+				t.Errorf("Clone() = %v, want %v", got, test.want)
 			}
 		})
 	}

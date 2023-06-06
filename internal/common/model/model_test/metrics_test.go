@@ -34,17 +34,17 @@ func TestMetricsGetPreparedValue(t *testing.T) {
 			want: "42",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.fValue != 0 {
-				tt.m.Value = &tt.fValue
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.fValue != 0 {
+				test.m.Value = &test.fValue
 			}
-			if tt.iValue != 0 {
-				tt.m.Delta = &tt.iValue
+			if test.iValue != 0 {
+				test.m.Delta = &test.iValue
 			}
-			got, err := tt.m.GetPreparedValue()
+			got, err := test.m.GetPreparedValue()
 			assert.NoError(t, err)
-			assert.Equalf(t, tt.want, got, "problem test name: \"%s\"", tt.name)
+			assert.Equalf(t, test.want, got, "problem test name: \"%s\"", test.name)
 		})
 	}
 }
@@ -87,17 +87,17 @@ func TestMetricsUpdateByMetricUnit(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.fValueWant != 0 {
-				tt.want.Value = &tt.fValueWant
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.fValueWant != 0 {
+				test.want.Value = &test.fValueWant
 			}
-			if tt.iValueWant != 0 {
-				tt.want.Delta = &tt.iValueWant
+			if test.iValueWant != 0 {
+				test.want.Delta = &test.iValueWant
 			}
 			got := &model.Metrics{}
-			got.UpdateByMetricUnit(tt.mu)
-			assert.Equalf(t, tt.want, got, "problem test name: \"%s\"", tt.name)
+			got.UpdateByMetricUnit(test.mu)
+			assert.Equalf(t, test.want, got, "problem test name: \"%s\"", test.name)
 		})
 	}
 }

@@ -19,43 +19,30 @@ func main() {
 	}
 
 	defer func(logger *zap.Logger) {
-		err := logger.Sync()
-		if err != nil {
+		if err = logger.Sync(); err != nil {
 			panic(err)
 		}
 	}(logger)
 
 	sugar := *logger.Sugar()
-
 	cfg := config.NewServerConfig()
 
-	err = config.LoadServerConfig(cfg, config.ProcessEnvServer)
-	if err != nil {
+	if err = config.LoadServerConfig(cfg, config.ProcessEnvServer); err != nil {
 		sugar.Fatalf("couldn't create a config %s", err)
 	}
 
-	// from cfg:
-	sugar.Info(
-		"cfg: \n", cfg.String(),
-	)
-	sugar.Infow(
-		"Starting server",
-	)
-	_, err = os.Stat(cfg.FileStoragePath)
-	if os.IsNotExist(err) {
+	printCfgInfo(cfg, sugar)
+
+	if _, err = os.Stat(cfg.FileStoragePath); os.IsNotExist(err) {
 		cfg.Restore = false
 		sugar.Info("%v file does not exist\n", cfg.FileStoragePath)
 	}
+
 	repository.SetupFilePathStorage(cfg.FileStoragePath)
-	if cfg.Restore && cfg.FileStoragePath != "" {
-		if err = repository.Load(); err != nil {
-			sugar.Fatalf("couldn't restore metrics by %s", err)
-		}
-	}
+	loadIfNeed(cfg, sugar)
 
 	if cfg.FileStoragePath != "" {
 		if cfg.StoreInterval != 0 {
-			handler.SetSyncSaveUpdateHandlerJSON(false)
 			ticker := time.NewTicker(time.Duration(cfg.StoreInterval) * time.Second)
 
 			defer ticker.Stop()
@@ -63,8 +50,7 @@ func main() {
 			go func() {
 				tickerChannel := ticker.C
 				for range tickerChannel {
-					err = repository.Save()
-					if err != nil {
+					if err = repository.Save(); err != nil {
 						sugar.Fatalf("server: cannot save metrics: %s", err)
 					}
 				}
@@ -74,11 +60,31 @@ func main() {
 		}
 	}
 
+	startServer(cfg, sugar)
+}
+
+func loadIfNeed(cfg *config.ServerConfig, sugar zap.SugaredLogger) {
+	needLoad := cfg.Restore && cfg.FileStoragePath != ""
+	if needLoad {
+		if err := repository.Load(); err != nil {
+			sugar.Fatalf("couldn't restore metrics by %s", err)
+		}
+	}
+}
+
+func printCfgInfo(cfg *config.ServerConfig, sugar zap.SugaredLogger) {
+	sugar.Info(
+		"cfg: \n", cfg.String(),
+	)
+	sugar.Infow("Starting server")
+}
+
+func startServer(cfg *config.ServerConfig, sugar zap.SugaredLogger) {
 	e := echo.New()
 	server.SetupMiddleware(e, sugar)
 	server.SetupRouter(e)
 
-	if err = e.Start(cfg.Address); err != nil {
+	if err := e.Start(cfg.Address); err != nil {
 		sugar.Fatalf("couldn't start the server by %s", err)
 	}
 }

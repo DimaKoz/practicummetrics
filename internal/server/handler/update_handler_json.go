@@ -18,26 +18,34 @@ func SetSyncSaveUpdateHandlerJSON(sync bool) {
 }
 
 // UpdateHandlerJSON handles `/update` with json.
-func UpdateHandlerJSON(c echo.Context) error {
+func UpdateHandlerJSON(ctx echo.Context) error {
 	m := &model.Metrics{}
-	if err := c.Bind(&m); err != nil {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("UpdateHandlerJSON: failed to parse json: %s", err))
+	if err := ctx.Bind(&m); err != nil {
+		return ctx.String(http.StatusBadRequest, fmt.Sprintf("UpdateHandlerJSON: failed to parse json: %s", err))
 	}
 	prepModelValue, err := m.GetPreparedValue()
-	if err != nil {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("UpdateHandlerJSON: Metrics contains nil: %s", err))
-	}
 
+	if err != nil {
+		erDesc := fmt.Sprintf("UpdateHandlerJSON: Metrics contains nil: %s", err)
+		if err = ctx.String(http.StatusBadRequest, erDesc); err != nil {
+			err = fmt.Errorf("failed to update metrics: %w", err)
+		}
+
+		return err
+	}
 	muIncome, err := model.NewMetricUnit(m.MType, m.ID, prepModelValue)
+
 	if err != nil {
 		statusCode := http.StatusBadRequest
-		if errors.Is(err, model.ErrorUnknownType) {
+		if errors.Is(err, model.ErrUnknownType) {
 			statusCode = http.StatusNotImplemented
 		}
-		return c.String(statusCode, fmt.Sprintf("UpdateHandlerJSON: cannot create metric: %s", err))
+
+		return ctx.String(statusCode, fmt.Sprintf("UpdateHandlerJSON: cannot create metric: %s", err))
 	}
 	mu := repository.AddMetric(muIncome)
 	m.UpdateByMetricUnit(mu)
+
 	if syncSaveUpdateHandlerJSON {
 		go func() {
 			err := repository.Save()
@@ -46,5 +54,6 @@ func UpdateHandlerJSON(c echo.Context) error {
 			}
 		}()
 	}
-	return c.JSON(http.StatusOK, m)
+
+	return ctx.JSON(http.StatusOK, m)
 }

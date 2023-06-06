@@ -118,15 +118,15 @@ func TestGetMetricsMemStorage(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			orig := memStorage.storage
 			memStorage.storage = make(map[string]model.MetricUnit, 0)
 			t.Cleanup(func() { memStorage.storage = orig })
-			for _, v := range tt.add {
+			for _, v := range test.add {
 				AddMetric(v)
 			}
-			assert.ElementsMatch(t, tt.want, GetAllMetrics(), "GetAllMetrics()")
+			assert.ElementsMatch(t, test.want, GetAllMetrics(), "GetAllMetrics()")
 		})
 	}
 }
@@ -134,6 +134,7 @@ func TestGetMetricsMemStorage(t *testing.T) {
 func TestLoadSaveEmptyFileStorageErr(t *testing.T) {
 	orig := filePathStorage
 	filePathStorage = ""
+
 	t.Cleanup(
 		func() {
 			filePathStorage = orig
@@ -148,9 +149,10 @@ func TestLoadSaveEmptyFileStorageErr(t *testing.T) {
 
 func TestSetupFilePathStorage(t *testing.T) {
 	orig := filePathStorage
+	want := filepath.Join(t.TempDir(), "abc.txt")
+
 	t.Cleanup(func() { filePathStorage = orig })
 
-	want := filepath.Join(t.TempDir(), "abc.txt")
 	SetupFilePathStorage(want)
 	assert.Equal(t, want, filePathStorage)
 

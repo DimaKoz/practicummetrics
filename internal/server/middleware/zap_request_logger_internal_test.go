@@ -60,14 +60,14 @@ func TestGetRequestLoggerConfig(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := GetRequestLoggerConfig(tt.args.sugar)
-			assert.Equal(t, got.LogMethod, tt.want.LogMethod)
-			assert.Equal(t, got.LogURI, tt.want.LogURI)
-			assert.Equal(t, got.LogStatus, tt.want.LogStatus)
-			assert.Equal(t, got.LogResponseSize, tt.want.LogResponseSize)
-			assert.Equal(t, got.LogLatency, tt.want.LogLatency)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := GetRequestLoggerConfig(test.args.sugar)
+			assert.Equal(t, got.LogMethod, test.want.LogMethod)
+			assert.Equal(t, got.LogURI, test.want.LogURI)
+			assert.Equal(t, got.LogStatus, test.want.LogStatus)
+			assert.Equal(t, got.LogResponseSize, test.want.LogResponseSize)
+			assert.Equal(t, got.LogLatency, test.want.LogLatency)
 		})
 	}
 }

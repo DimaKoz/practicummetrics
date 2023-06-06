@@ -24,19 +24,20 @@ type MemStorage struct {
 
 // AddMetric adds model.MetricUnit to '_memStorage.storage' storage
 // returns updated model.MetricUnit after that.
-func AddMetric(mu model.MetricUnit) model.MetricUnit {
+func AddMetric(metricUnit model.MetricUnit) model.MetricUnit {
 	memStorageSync.Lock()
 	defer memStorageSync.Unlock()
 
-	if mu.Type == model.MetricTypeCounter {
-		found, ok := memStorage.storage[mu.Name]
+	if metricUnit.Type == model.MetricTypeCounter {
+		found, ok := memStorage.storage[metricUnit.Name]
 		if ok {
-			mu.ValueInt += found.ValueInt
-			mu.Value = strconv.FormatInt(mu.ValueInt, 10)
+			metricUnit.ValueInt += found.ValueInt
+			metricUnit.Value = strconv.FormatInt(metricUnit.ValueInt, 10)
 		}
 	}
-	memStorage.storage[mu.Name] = mu
-	return mu.Clone()
+	memStorage.storage[metricUnit.Name] = metricUnit
+
+	return metricUnit.Clone()
 }
 
 // GetMetricByName returns a model.MetricUnit and nil error if found or model.EmptyMetric and error.
@@ -44,10 +45,10 @@ func GetMetricByName(name string) (model.MetricUnit, error) {
 	memStorageSync.Lock()
 	defer memStorageSync.Unlock()
 
-	found, ok := memStorage.storage[name]
-	if ok {
+	if found, ok := memStorage.storage[name]; ok {
 		return found.Clone(), nil
 	}
+
 	return model.EmptyMetric, fmt.Errorf("couldn't find a metric: %s", name)
 }
 
@@ -60,6 +61,7 @@ func GetAllMetrics() []model.MetricUnit {
 	for _, v := range memStorage.storage {
 		result = append(result, v.Clone())
 	}
+
 	return result
 }
 
@@ -70,28 +72,28 @@ func SetupFilePathStorage(pFilePathStorage string) {
 }
 
 func Load() error {
-
-	var m []model.MetricUnit
+	var metricUnits []model.MetricUnit
 
 	if filePathStorage == "" {
 		return fmt.Errorf("filePathStorage is empty")
 	}
 	data, err := os.ReadFile(filePathStorage)
+
 	if err != nil {
 		return fmt.Errorf("can't read '%s' file with error: %w", filePathStorage, err)
 	}
 
-	if err := json.Unmarshal(data, &m); err != nil {
+	if err := json.Unmarshal(data, &metricUnits); err != nil {
 		return fmt.Errorf("failed to parse json with error: %w", err)
 	}
 
 	memStorageSync.Lock()
 	defer memStorageSync.Unlock()
-	for _, v := range m {
+	for _, v := range metricUnits {
 		memStorage.storage[v.Name] = v
 	}
 
-	log.Printf("repository: loaded: %d \n", len(m))
+	log.Printf("repository: loaded: %d \n", len(metricUnits))
 
 	return nil
 }
@@ -102,15 +104,19 @@ func Save() error {
 	}
 
 	metrics := GetAllMetrics()
-	var saviningJSON []byte
-	var err error
+
+	var (
+		saviningJSON []byte
+		err          error
+	)
 	if saviningJSON, err = json.Marshal(metrics); err != nil {
 		return fmt.Errorf("can't marshal json with error: %w", err)
 	}
-	err = os.WriteFile(filePathStorage, saviningJSON, 0666)
-	if err != nil {
+	if err = os.WriteFile(filePathStorage, saviningJSON, 0666); err != nil {
 		return fmt.Errorf("can't write '%s' file with error: %w", filePathStorage, err)
 	}
+
 	log.Printf("repository: saved: %d \n", len(metrics))
+
 	return nil
 }

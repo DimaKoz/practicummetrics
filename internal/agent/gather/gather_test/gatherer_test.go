@@ -47,13 +47,13 @@ func TestGetMetrics(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got, _ := gather.GetMetrics(); got != nil && len(*got) != len(tt.wantKeys) {
-				t.Errorf("GetMetrics() = %v, want %v", got, tt.wantKeys)
-				checkMetricsName(t, tt.wantKeys, got)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got, _ := gather.GetMetrics(); got != nil && len(*got) != len(test.wantKeys) {
+				t.Errorf("GetMetrics() = %v, want %v", got, test.wantKeys)
+				checkMetricsName(t, test.wantKeys, got)
 			} else {
-				checkMetricsName(t, tt.wantKeys, got)
+				checkMetricsName(t, test.wantKeys, got)
 			}
 		})
 	}
@@ -61,11 +61,12 @@ func TestGetMetrics(t *testing.T) {
 
 func checkMetricsName(t *testing.T, wantKeys []string, got *[]model.MetricUnit) {
 	t.Helper()
-	for _, k := range wantKeys {
+
+	for _, wantKey := range wantKeys {
 		isPresent := false
 
 		for _, kk := range *got {
-			if kk.Name == k {
+			if kk.Name == wantKey {
 				isPresent = true
 
 				break
@@ -73,7 +74,7 @@ func checkMetricsName(t *testing.T, wantKeys []string, got *[]model.MetricUnit) 
 		}
 
 		if !isPresent {
-			t.Errorf("GetMetrics() -  we want %v but absentee", k)
+			t.Errorf("GetMetrics() -  we want %v but absentee", wantKey)
 		}
 	}
 }

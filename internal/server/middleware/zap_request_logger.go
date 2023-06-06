@@ -8,16 +8,16 @@ import (
 
 var zapSugar zap.SugaredLogger
 
-var logValuesFunc = func(c echo.Context, v middleware.RequestLoggerValues) error {
+var logValuesFunc = func(c echo.Context, loggerValues middleware.RequestLoggerValues) error {
 	zapSugar.Infow("request",
-		zap.String("Method", v.Method),
-		zap.String("URI", v.URI),
-		zap.Duration("latency", v.Latency),
+		zap.String("Method", loggerValues.Method),
+		zap.String("URI", loggerValues.URI),
+		zap.Duration("latency", loggerValues.Latency),
 	)
 	zapSugar.Infow("response",
-		zap.Int("status", v.Status),
-		zap.String("length", v.ContentLength),
-		zap.Int64("size", v.ResponseSize),
+		zap.Int("status", loggerValues.Status),
+		zap.String("length", loggerValues.ContentLength),
+		zap.Int64("size", loggerValues.ResponseSize),
 	)
 
 	return nil
@@ -25,7 +25,7 @@ var logValuesFunc = func(c echo.Context, v middleware.RequestLoggerValues) error
 
 func GetRequestLoggerConfig(sugar zap.SugaredLogger) middleware.RequestLoggerConfig {
 	zapSugar = sugar
-	return middleware.RequestLoggerConfig{
+	result := middleware.RequestLoggerConfig{
 		LogURI:           true,
 		LogStatus:        true,
 		LogLatency:       true,
@@ -34,6 +34,8 @@ func GetRequestLoggerConfig(sugar zap.SugaredLogger) middleware.RequestLoggerCon
 		LogMethod:        true,
 		LogValuesFunc:    logValuesFunc,
 	}
+
+	return result
 }
 
 func GetBodyLoggerHandler(sugar zap.SugaredLogger) middleware.BodyDumpHandler {

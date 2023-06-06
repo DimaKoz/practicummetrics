@@ -12,14 +12,15 @@ type Metrics struct {
 	Value *float64 `json:"value,omitempty"` // значение метрики в случае передачи gauge
 }
 
-func (m *Metrics) UpdateByMetricUnit(mu MetricUnit) {
-	m.ID = mu.Name
-	m.MType = mu.Type
-	if mu.Type == MetricTypeGauge {
-		m.Value = &mu.ValueFloat
+func (m *Metrics) UpdateByMetricUnit(metricUnit MetricUnit) {
+	m.ID = metricUnit.Name
+	m.MType = metricUnit.Type
+
+	if metricUnit.Type == MetricTypeGauge {
+		m.Value = &metricUnit.ValueFloat
 		m.Delta = nil
 	} else {
-		m.Delta = &mu.ValueInt
+		m.Delta = &metricUnit.ValueInt
 		m.Value = nil
 	}
 }
@@ -38,5 +39,6 @@ func (m *Metrics) GetPreparedValue() (string, error) {
 		}
 		metricValue = strconv.FormatInt(*m.Delta, 10)
 	}
+
 	return metricValue, nil
 }

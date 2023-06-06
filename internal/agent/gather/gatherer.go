@@ -70,7 +70,9 @@ func collectOtherTypeMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error)
 
 	// RandomValue
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
+
 	const randInterval = 100
+
 	randomValue := strconv.Itoa(random.Intn(randInterval))
 	if m, err := model.NewMetricUnit(model.MetricTypeGauge, "RandomValue", randomValue); err == nil {
 		result = append(result, m)
@@ -90,11 +92,11 @@ func collectOtherTypeMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error)
 
 // GetMetrics returns a list of the metrics.
 func GetMetrics() (*[]model.MetricUnit, error) {
-	var rtm runtime.MemStats
-
-	var result, m *[]model.MetricUnit
-
-	var err error
+	var (
+		rtm                 runtime.MemStats
+		result, metricUnits *[]model.MetricUnit
+		err                 error
+	)
 
 	runtime.ReadMemStats(&rtm)
 
@@ -102,11 +104,11 @@ func GetMetrics() (*[]model.MetricUnit, error) {
 		return nil, fmt.Errorf("cannot collectUintMetrics: %w", err)
 	}
 
-	if m, err = collectOtherTypeMetrics(&rtm); err != nil {
-		return m, fmt.Errorf("cannot collectOtherTypeMetrics: %w", err)
+	if metricUnits, err = collectOtherTypeMetrics(&rtm); err != nil {
+		return metricUnits, fmt.Errorf("cannot collectOtherTypeMetrics: %w", err)
 	}
 
-	*result = append(*result, *m...)
+	*result = append(*result, *metricUnits...)
 
 	return result, err
 }

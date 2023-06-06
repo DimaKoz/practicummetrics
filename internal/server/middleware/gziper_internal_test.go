@@ -11,11 +11,11 @@ import (
 )
 
 func TestGzipSkipperHasGzip(t *testing.T) {
-	e := echo.New()
+	echoFramework := echo.New()
 	request := httptest.NewRequest(http.MethodPost, "/", nil)
 	request.Header.Set(echo.HeaderAcceptEncoding, "gzip")
-	w := httptest.NewRecorder()
-	ctx := e.NewContext(request, w)
+	responseRecorder := httptest.NewRecorder()
+	ctx := echoFramework.NewContext(request, responseRecorder)
 	got := gzipSkipper(ctx)
 	assert.False(t, got)
 	contentEnc := ctx.Response().Header().Get(echo.HeaderContentEncoding)
@@ -71,14 +71,14 @@ func TestGetGzipMiddlewareConfig(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			orig := gzipSkipper
 			gzipSkipper = nil
 			t.Cleanup(func() {
 				gzipSkipper = orig
 			})
-			assert.NotNil(t, tt.want, GetGzipMiddlewareConfig(), "GetGzipMiddlewareConfig()")
+			assert.NotNil(t, test.want, GetGzipMiddlewareConfig(), "GetGzipMiddlewareConfig()")
 		})
 	}
 }

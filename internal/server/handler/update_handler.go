@@ -11,18 +11,21 @@ import (
 )
 
 // UpdateHandler handles `/update/`.
-func UpdateHandler(c echo.Context) error {
-	metricType := c.Param("type")
-	metricName := c.Param("name")
-	metricValue := c.Param("value")
-	mu, err := model.NewMetricUnit(metricType, metricName, metricValue)
+func UpdateHandler(ctx echo.Context) error {
+	metricType := ctx.Param("type")
+	metricName := ctx.Param("name")
+	metricValue := ctx.Param("value")
+	metricUnit, err := model.NewMetricUnit(metricType, metricName, metricValue)
+
 	if err != nil {
 		statusCode := http.StatusBadRequest
-		if errors.Is(err, model.ErrorUnknownType) {
+		if errors.Is(err, model.ErrUnknownType) {
 			statusCode = http.StatusNotImplemented
 		}
-		return c.String(statusCode, fmt.Sprintf("cannot create metric: %s", err))
+		return ctx.String(statusCode, fmt.Sprintf("cannot create metric: %s", err))
 	}
-	repository.AddMetric(mu)
-	return c.NoContent(http.StatusOK)
+
+	repository.AddMetric(metricUnit)
+
+	return ctx.NoContent(http.StatusOK)
 }

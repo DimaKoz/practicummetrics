@@ -45,17 +45,16 @@ func TestUpdateHandler(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			e := echo.New()
 			request := httptest.NewRequest(http.MethodPost, test.request, nil)
-			// создаём новый Recorder
-			w := httptest.NewRecorder()
-			c := e.NewContext(request, w)
+			responseRecorder := httptest.NewRecorder() // создаём новый Recorder
+			ctx := e.NewContext(request, responseRecorder)
 			paramValues := strings.Split(test.request, "/")
-			c.SetPath("/update/:type/:name/:value")
-			c.SetParamNames([]string{"type", "name", "value"}...)
-			c.SetParamValues(paramValues[2:]...)
+			ctx.SetPath("/update/:type/:name/:value")
+			ctx.SetParamNames([]string{"type", "name", "value"}...)
+			ctx.SetParamValues(paramValues[2:]...)
 
-			assert.NoError(t, handler.UpdateHandler(c), "expected no errors")
+			assert.NoError(t, handler.UpdateHandler(ctx), "expected no errors")
 
-			res := w.Result()
+			res := responseRecorder.Result()
 			// проверяем код ответа
 			got := res.StatusCode
 			assert.Equal(t, test.want.code, got, "StatusCode got: %v, want: %v", got, test.want.code)

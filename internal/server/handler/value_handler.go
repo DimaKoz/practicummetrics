@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"net/http"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
@@ -9,13 +10,23 @@ import (
 )
 
 // ValueHandler handles `/value/`.
-func ValueHandler(c echo.Context) error {
-	name := c.Param("name")
+func ValueHandler(ctx echo.Context) error {
+	name := ctx.Param("name")
 
-	mu, err := repository.GetMetricByName(name)
-	if err != nil {
-		return c.String(http.StatusNotFound, fmt.Sprintf(" 'value' handler: %s", err.Error()))
+	var (
+		metricUnit model.MetricUnit
+		err        error
+	)
+
+	if metricUnit, err = repository.GetMetricByName(name); err != nil {
+		err = fmt.Errorf("failed to get MetricUnit: %v", ctx.String(http.StatusNotFound, fmt.Sprintf(" 'value' handler: %s", err.Error())))
+
+		return err
 	}
 
-	return c.String(http.StatusOK, mu.Value)
+	if err = ctx.String(http.StatusOK, metricUnit.Value); err != nil {
+		err = fmt.Errorf("failed to send MetricUnit: %w", err)
+	}
+
+	return err
 }

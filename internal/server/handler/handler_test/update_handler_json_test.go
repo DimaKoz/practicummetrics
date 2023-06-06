@@ -12,23 +12,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type wantUpdHandlerJSON struct {
+	code        int
+	response    string
+	contentType string
+}
+
 func TestUpdateHandlerJSON(t *testing.T) {
-	type want struct {
-		code        int
-		response    string
-		contentType string
-	}
 	tests := []struct {
 		name    string
 		request string
 		reqJSON string
-		want    want
+		want    wantUpdHandlerJSON
 	}{
 		{
 			name:    "test no json",
 			request: "/update",
 			reqJSON: "",
-			want: want{
+			want: wantUpdHandlerJSON{
 				code:        http.StatusBadRequest,
 				response:    ``,
 				contentType: "",
@@ -38,7 +39,7 @@ func TestUpdateHandlerJSON(t *testing.T) {
 			name:    "test bad json",
 			request: "/update",
 			reqJSON: "{",
-			want: want{
+			want: wantUpdHandlerJSON{
 				code:        http.StatusBadRequest,
 				response:    ``,
 				contentType: "",
@@ -48,7 +49,7 @@ func TestUpdateHandlerJSON(t *testing.T) {
 			name:    "test wrong type metrics",
 			request: "/update",
 			reqJSON: "{\"id\":\"GetSet185\",\"type\":\"gauge1\",\"delta\":1}",
-			want: want{
+			want: wantUpdHandlerJSON{
 				code:        http.StatusNotImplemented,
 				response:    ``,
 				contentType: "",
@@ -58,41 +59,39 @@ func TestUpdateHandlerJSON(t *testing.T) {
 			name:    "test OK",
 			request: "/update",
 			reqJSON: `{"id":"GetSet186","type":"counter","delta":1}`,
-			want: want{
+			want: wantUpdHandlerJSON{
 				code:        http.StatusOK,
 				response:    "{\"id\":\"GetSet186\",\"type\":\"counter\",\"delta\":1}\n",
 				contentType: "",
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			e := echo.New()
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			echoFramework := echo.New()
 			var body io.Reader
-			if tt.reqJSON != "" {
-				body = strings.NewReader(tt.reqJSON)
+			if test.reqJSON != "" {
+				body = strings.NewReader(test.reqJSON)
 			}
 
-			request := httptest.NewRequest(http.MethodPost, tt.request, body)
+			request := httptest.NewRequest(http.MethodPost, test.request, body)
+			responseRecorder := httptest.NewRecorder()
 
 			request.Header.Set("Content-Type", "application/json")
-			// создаём новый Recorder
-			w := httptest.NewRecorder()
-			c := e.NewContext(request, w)
 
+			c := echoFramework.NewContext(request, responseRecorder)
 			err := handler.UpdateHandlerJSON(c)
 			assert.NoError(t, err, "expected no errors")
 
-			res := w.Result()
+			res := responseRecorder.Result()
 			defer res.Body.Close()
-			// проверяем код ответа
-			got := res.StatusCode
+			got := res.StatusCode // проверяем код ответа
 
-			assert.Equal(t, tt.want.code, got, "StatusCode got: %v, want: %v", got, tt.want.code)
+			assert.Equal(t, test.want.code, got, "StatusCode got: %v, want: %v", got, test.want.code)
 			b, err := io.ReadAll(res.Body)
 			assert.NoError(t, err, "expected no errors")
 			if got == http.StatusOK {
-				assert.Equal(t, tt.want.response, string(b))
+				assert.Equal(t, test.want.response, string(b))
 			}
 		})
 	}

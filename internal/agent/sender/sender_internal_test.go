@@ -99,6 +99,7 @@ func TestPrintSender(t *testing.T) {
 	want := `Post "http://localhost:8888/update/"`
 
 	var buf bytes.Buffer
+
 	log.SetOutput(&buf)
 
 	defer func() {

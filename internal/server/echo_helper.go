@@ -9,15 +9,15 @@ import (
 )
 
 // SetupMiddleware inits and some middlewares to Echo framework.
-func SetupMiddleware(e *echo.Echo, logger zap.SugaredLogger) {
+func SetupMiddleware(echoFramework *echo.Echo, logger zap.SugaredLogger) {
 	// Logging middlewares
 	// RequestLoggerWithConfig and BodyDump
 	loggerConfig := middleware2.GetRequestLoggerConfig(logger)
-	e.Use(middleware.RequestLoggerWithConfig(loggerConfig))
-	e.Use(middleware.BodyDump(middleware2.GetBodyLoggerHandler(logger)))
+	echoFramework.Use(middleware.RequestLoggerWithConfig(loggerConfig))
+	echoFramework.Use(middleware.BodyDump(middleware2.GetBodyLoggerHandler(logger)))
 
 	// Set up a compression middleware
-	e.Use(middleware2.GetGzipMiddlewareConfig())
+	echoFramework.Use(middleware2.GetGzipMiddlewareConfig())
 }
 
 // SetupRouter adds some paths to Echo framework.

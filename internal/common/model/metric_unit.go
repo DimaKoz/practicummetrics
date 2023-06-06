@@ -24,20 +24,21 @@ type MetricUnit struct {
 	ValueFloat float64
 }
 
-// ErrorUnknownType represents an error with an unknown type of the metric.
-var ErrorUnknownType = errors.New("unknown metric type") // should use for StatusCode: http.StatusNotImplemented
+// ErrUnknownType represents an error with an unknown type of the metric.
+var ErrUnknownType = errors.New("unknown metric type") // should use for StatusCode: http.StatusNotImplemented
 
-// ErrorEmptyValue represents an error which related to empty MetricUnit.Name and/or MetricUnit.Value.
+// ErrEmptyValue represents an error which related to empty MetricUnit.Name and/or MetricUnit.Value.
 // fo StatusCode: http.StatusBadRequest.
-var ErrorEmptyValue = errors.New("to create a metric you must provide `name` and `value`")
+var ErrEmptyValue = errors.New("to create a metric you must provide `name` and `value`")
 
 // NewMetricUnit creates an instance of MetricUnit or returns an error.
 func NewMetricUnit(metricType string, metricName string, metricValue string) (MetricUnit, error) {
 	if metricType != MetricTypeGauge && metricType != MetricTypeCounter {
-		return EmptyMetric, ErrorUnknownType
+		return EmptyMetric, ErrUnknownType
 	}
+
 	if metricName == "" || metricValue == "" {
-		return EmptyMetric, ErrorEmptyValue
+		return EmptyMetric, ErrEmptyValue
 	}
 	result := MetricUnit{}
 	result.Type = metricType

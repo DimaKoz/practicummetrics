@@ -92,6 +92,7 @@ func LoadAgentConfig() (*AgentConfig, error) {
 func processServerFlags(cfg *ServerConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
 	address := unknownStringFieldValue
+
 	if cfg.Address == unknownStringFieldValue {
 		flag2.StringVarP(&address, "a", "a", unknownStringFieldValue, "")
 	}
@@ -144,11 +145,7 @@ func processServerFlags(cfg *ServerConfig) error {
 func processAgentFlags(cfg *AgentConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
 
-	var address string
-
-	var pFlag string
-
-	var rFlag string
+	var address, pFlag, rFlag string
 
 	if cfg.Address == "" {
 		flag2.StringVarP(&address, "a", "a", "", "")

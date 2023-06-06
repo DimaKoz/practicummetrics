@@ -56,16 +56,14 @@ func TestValueHandler(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			e := echo.New()
 			request := httptest.NewRequest(test.method, test.target, nil)
-			// создаём новый Recorder
-			w := httptest.NewRecorder()
-			c := e.NewContext(request, w)
+			responseRecorder := httptest.NewRecorder() // создаём новый Recorder
+			ctx := e.NewContext(request, responseRecorder)
 			if i != len(tests)-1 {
-				c.SetParamNames([]string{"name"}...)
-				c.SetParamValues([]string{"testCounter132"}...)
+				ctx.SetParamNames([]string{"name"}...)
+				ctx.SetParamValues([]string{"testCounter132"}...)
 			}
-			_ = handler.ValueHandler(c)
-
-			res := w.Result()
+			_ = handler.ValueHandler(ctx)
+			res := responseRecorder.Result()
 			// проверяем код ответа
 			assert.Equal(t, test.want.code, res.StatusCode, "StatusCode got: %v, want: %v", res.StatusCode, test.want.code)
 

@@ -10,25 +10,30 @@ import (
 )
 
 // RootHandler handles `/`.
-func RootHandler(c echo.Context) error {
+func RootHandler(ctx echo.Context) error {
 	metrics := repository.GetAllMetrics()
 
 	str := getHTMLContent(metrics)
-	c.Response().Header().Set(echo.HeaderContentType, "text/html; charset=utf-8")
-	return c.String(http.StatusOK, str)
+
+	ctx.Response().Header().Set(echo.HeaderContentType, "text/html; charset=utf-8")
+
+	return ctx.String(http.StatusOK, str)
 }
 
 func getHTMLContent(metrics []model.MetricUnit) string {
-	b := strings.Builder{}
-	b.WriteString("<h1>Metrics:</h1><div>")
+	strBld := strings.Builder{}
+	strBld.WriteString("<h1>Metrics:</h1><div>")
 	for i, m := range metrics {
 		if i != 0 {
-			b.WriteString("<br></br>")
+			strBld.WriteString("<br></br>")
 		}
-		b.WriteString(m.Name)
-		b.WriteString(",")
-		b.WriteString(m.Value)
+
+		strBld.WriteString(m.Name)
+		strBld.WriteString(",")
+		strBld.WriteString(m.Value)
 	}
-	b.WriteString("</div>")
-	return b.String()
+
+	strBld.WriteString("</div>")
+
+	return strBld.String()
 }
