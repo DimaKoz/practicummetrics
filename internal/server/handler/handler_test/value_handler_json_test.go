@@ -60,7 +60,8 @@ func TestValueHandlerJSON(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, testItem := range tests {
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			tmpDir := t.TempDir()
 			fileStorage := filepath.Join(tmpDir, "rep_values.txt")

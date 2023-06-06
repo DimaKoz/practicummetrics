@@ -34,7 +34,8 @@ func TestMetricsGetPreparedValue(t *testing.T) {
 			want: "42",
 		},
 	}
-	for _, test := range tests {
+	for _, testItem := range tests {
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			if test.fValue != 0 {
 				test.m.Value = &test.fValue

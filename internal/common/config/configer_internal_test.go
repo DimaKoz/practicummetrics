@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"testing"
 
@@ -105,48 +106,49 @@ func TestAgentInitConfig(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
 			// ENV setup
-			if tt.args.envAddress != "" {
+			if test.args.envAddress != "" {
 				origAddress := os.Getenv(addressEnvName)
-				err := os.Setenv(addressEnvName, tt.args.envAddress)
+				err := os.Setenv(addressEnvName, test.args.envAddress)
 				newAddress := os.Getenv(addressEnvName)
-				fmt.Println("new address:", newAddress, " ", err)
+				log.Println("new address:", newAddress, " ", err)
 				t.Cleanup(func() { _ = os.Setenv(addressEnvName, origAddress) })
 			}
-			if tt.args.envPoll != "" {
+			if test.args.envPoll != "" {
 				origPoll := os.Getenv(pollEnvName)
-				_ = os.Setenv(pollEnvName, tt.args.envPoll)
+				_ = os.Setenv(pollEnvName, test.args.envPoll)
 				t.Cleanup(func() { _ = os.Setenv(pollEnvName, origPoll) })
 			}
-			if tt.args.envReport != "" {
+			if test.args.envReport != "" {
 				origReport := os.Getenv(reportEnvName)
-				_ = os.Setenv(reportEnvName, tt.args.envReport)
+				_ = os.Setenv(reportEnvName, test.args.envReport)
 				t.Cleanup(func() { _ = os.Setenv(reportEnvName, origReport) })
 			}
 
 			// Flags setup
 
-			if tt.args.flagAddress != "" || tt.args.flagPoll != "" || tt.args.flagReport != "" {
+			if test.args.flagAddress != "" || test.args.flagPoll != "" || test.args.flagReport != "" {
 				flag2.CommandLine = flag2.NewFlagSet(os.Args[0], flag2.ContinueOnError)
 				flag2.CommandLine.SetOutput(io.Discard)
 
 				osArgOrig := os.Args
 				os.Args = make([]string, 0)
 				os.Args = append(os.Args, osArgOrig[0])
-				if tt.args.flagAddress != "" {
+				if test.args.flagAddress != "" {
 					os.Args = append(os.Args, "-a")
-					os.Args = append(os.Args, tt.args.flagAddress)
+					os.Args = append(os.Args, test.args.flagAddress)
 				}
-				if tt.args.flagPoll != "" {
+				if test.args.flagPoll != "" {
 					os.Args = append(os.Args, "-p")
-					os.Args = append(os.Args, tt.args.flagPoll)
+					os.Args = append(os.Args, test.args.flagPoll)
 				}
 
-				if tt.args.flagReport != "" {
+				if test.args.flagReport != "" {
 					os.Args = append(os.Args, "-r")
-					os.Args = append(os.Args, tt.args.flagReport)
+					os.Args = append(os.Args, test.args.flagReport)
 				}
 
 				t.Cleanup(func() { os.Args = osArgOrig })
@@ -154,13 +156,13 @@ func TestAgentInitConfig(t *testing.T) {
 
 			got, gotErr := LoadAgentConfig()
 
-			if tt.wantErr != nil {
-				assert.EqualErrorf(t, gotErr, tt.wantErr.Error(), "Configs - got error: %v, want: %v", gotErr, tt.wantErr)
+			if test.wantErr != nil {
+				assert.EqualErrorf(t, gotErr, test.wantErr.Error(), "Configs - got error: %v, want: %v", gotErr, test.wantErr)
 			} else {
-				assert.NoError(t, gotErr, "Configs - got error: %v, want: %v", gotErr, tt.wantErr)
+				assert.NoError(t, gotErr, "Configs - got error: %v, want: %v", gotErr, test.wantErr)
 			}
 
-			assert.Equal(t, tt.want, got, "Configs - got: %v, want: %v", got, tt.want)
+			assert.Equal(t, test.want, got, "Configs - got: %v, want: %v", got, test.want)
 		})
 	}
 }
@@ -173,7 +175,7 @@ func TestProcessEnvError(t *testing.T) {
 }
 
 func TestProcessEnvNoError(t *testing.T) {
-	var wantErr error = nil
+	var wantErr error
 	gotErr := ProcessEnvServer(NewServerConfig())
 
 	assert.Equal(t, wantErr, gotErr, "Configs - got error: %v, want: %v", gotErr, wantErr)

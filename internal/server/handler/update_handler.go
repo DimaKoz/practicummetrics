@@ -21,6 +21,7 @@ func UpdateHandler(ctx echo.Context) error {
 		if errors.Is(err, model.ErrUnknownType) {
 			statusCode = http.StatusNotImplemented
 		}
+
 		return ctx.String(statusCode, fmt.Sprintf("cannot create metric: %s", err))
 	}
 

@@ -14,8 +14,9 @@ import (
 func TestGzipSkipperHasGzip(t *testing.T) {
 	echoFramework := echo.New()
 	request := httptest.NewRequest(http.MethodPost, "/", nil)
-	request.Header.Set(echo.HeaderAcceptEncoding, "gzip")
 	responseRecorder := httptest.NewRecorder()
+
+	request.Header.Set(echo.HeaderAcceptEncoding, "gzip")
 	ctx := echoFramework.NewContext(request, responseRecorder)
 	got := gzipSkipper(ctx)
 	assert.False(t, got)
@@ -52,9 +53,10 @@ func TestNewGzipConfig(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, newGzipConfig(tt.args.f), "newGzipConfig(%v)", tt.args.f)
+	for _, test := range tests {
+		testUnit := test
+		t.Run(testUnit.name, func(t *testing.T) {
+			assert.Equalf(t, testUnit.want, newGzipConfig(testUnit.args.f), "newGzipConfig(%v)", testUnit.args.f)
 		})
 	}
 }
@@ -72,7 +74,8 @@ func TestGetGzipMiddlewareConfig(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, testItem := range tests {
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			orig := gzipSkipper
 			gzipSkipper = nil

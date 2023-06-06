@@ -96,7 +96,8 @@ func TestNewMetricUnit(t *testing.T) {
 			wantErr: errBadValue,
 		},
 	}
-	for _, test := range tests {
+	for _, testItem := range tests {
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			got, got1 := model.NewMetricUnit(test.args.metricType, test.args.metricName, test.args.metricValue)
 			if !reflect.DeepEqual(got, test.want) {
@@ -160,10 +161,11 @@ func TestMetricUnitGetPath(t *testing.T) {
 			want: "gauge/b/42",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.mu.GetPath(); got != tt.want {
-				t.Errorf("GetPath() = %v, want %v", got, tt.want)
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			if got := test.mu.GetPath(); got != test.want {
+				t.Errorf("GetPath() = %v, want %v", got, test.want)
 			}
 		})
 	}

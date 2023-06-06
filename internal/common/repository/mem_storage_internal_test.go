@@ -30,14 +30,15 @@ func TestAddMetricMemStorage(t *testing.T) {
 			want:    &model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "52", ValueInt: 52, ValueFloat: 0},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			for _, unit := range tt.args {
+	for _, testItem := range tests {
+		test := testItem
+		t.Run(test.name, func(t *testing.T) {
+			for _, unit := range test.args {
 				AddMetric(unit.mu)
 			}
-			if got, ok := memStorage.storage[tt.wantKey]; ok {
-				if !reflect.DeepEqual(&got, tt.want) {
-					t.Errorf("AddMetric() got = %v, want %v", got, tt.want)
+			if got, ok := memStorage.storage[test.wantKey]; ok {
+				if !reflect.DeepEqual(&got, test.want) {
+					t.Errorf("AddMetric() got = %v, want %v", got, test.want)
 				}
 			} else {
 				t.Errorf("not found stored result")
@@ -79,18 +80,19 @@ func TestGetMetricByName(t *testing.T) {
 			wantErr: nil,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, testItem := range tests {
+		test := testItem
+		t.Run(test.name, func(t *testing.T) {
 			orig := memStorage.storage
 			memStorage.storage = make(map[string]model.MetricUnit, 0)
 			t.Cleanup(func() { memStorage.storage = orig })
-			for _, v := range tt.args.add {
+			for _, v := range test.args.add {
 				AddMetric(v)
 			}
-			got, err := GetMetricByName(tt.args.search)
-			assert.Equal(t, err, tt.wantErr, "GetMetricByName() error = %v, want error %v", err, tt.wantErr)
+			got, err := GetMetricByName(test.args.search)
+			assert.Equal(t, err, test.wantErr, "GetMetricByName() error = %v, want error %v", err, test.wantErr)
 
-			assert.Equal(t, got, tt.want, "GetMetricByName() = %v, want %v", got, tt.want)
+			assert.Equal(t, got, test.want, "GetMetricByName() = %v, want %v", got, test.want)
 		})
 	}
 }
@@ -118,7 +120,8 @@ func TestGetMetricsMemStorage(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, testItem := range tests {
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			orig := memStorage.storage
 			memStorage.storage = make(map[string]model.MetricUnit, 0)

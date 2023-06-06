@@ -44,7 +44,13 @@ clean:
 	rm -f ./tempfile*
 
 lnt:
-	golangci-lint run --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable ifshort
+	# excluded 'paralleltest' by the reason - not now
+	# excluded 'wsl' by the reason - 'wsl' and 'gofumpt' fights between each other
+	# excluded 'gochecknoglobals' by reason - I need global variables sometimes
+	# excluded 'exhaustivestruct' - deprecated
+	# excluded 'depguard' - no need in it
+	# excluded 'ifshort' - deprecated
+	golangci-lint run --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable ifshort --disable wsl
 
 
 fmt:

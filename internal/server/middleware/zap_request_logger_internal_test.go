@@ -60,7 +60,8 @@ func TestGetRequestLoggerConfig(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, testItem := range tests {
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			got := GetRequestLoggerConfig(test.args.sugar)
 			assert.Equal(t, got.LogMethod, test.want.LogMethod)

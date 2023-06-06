@@ -33,7 +33,8 @@ func TestRootHandler(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, testItem := range tests {
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			e := echo.New()
 			request := httptest.NewRequest(test.method, test.target, nil)
@@ -72,9 +73,10 @@ func TestGetHtmlContent(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, getHTMLContent(tt.metrics), "getHtmlContent(%v)", tt.metrics)
+	for _, testItem := range tests {
+		test := testItem
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equalf(t, test.want, getHTMLContent(test.metrics), "getHtmlContent(%v)", test.metrics)
 		})
 	}
 }

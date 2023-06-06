@@ -16,12 +16,13 @@ func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 	m := &model.Metrics{}
 
 	for _, unit := range metrics {
-		r := client.R()
-		r.SetHeader("Content-Type", "application/json")
-		r.SetHeader("Accept-Encoding", "gzip")
+		request := client.R()
+		request.SetHeader("Content-Type", "application/json")
+		request.SetHeader("Accept-Encoding", "gzip")
 		m.UpdateByMetricUnit(unit)
-		r.SetBody(m)
-		if _, err := r.Post(targetURL); err != nil {
+		request.SetBody(m)
+
+		if _, err := request.Post(targetURL); err != nil {
 			log.Printf("could not create the request: %s \n", err)
 			log.Println("waiting for the next tick")
 

@@ -23,14 +23,14 @@ func RootHandler(ctx echo.Context) error {
 func getHTMLContent(metrics []model.MetricUnit) string {
 	strBld := strings.Builder{}
 	strBld.WriteString("<h1>Metrics:</h1><div>")
-	for i, m := range metrics {
+	for i, metricUnit := range metrics {
 		if i != 0 {
 			strBld.WriteString("<br></br>")
 		}
 
-		strBld.WriteString(m.Name)
+		strBld.WriteString(metricUnit.Name)
 		strBld.WriteString(",")
-		strBld.WriteString(m.Value)
+		strBld.WriteString(metricUnit.Value)
 	}
 
 	strBld.WriteString("</div>")

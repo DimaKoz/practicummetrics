@@ -32,5 +32,6 @@ func ValueHandlerJSON(ctx echo.Context) error {
 	}
 	m := &model.Metrics{}
 	m.UpdateByMetricUnit(mu)
+
 	return ctx.JSON(http.StatusOK, m)
 }

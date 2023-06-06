@@ -66,7 +66,8 @@ func TestUpdateHandlerJSON(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, testUnit := range tests {
+		test := testUnit
 		t.Run(test.name, func(t *testing.T) {
 			echoFramework := echo.New()
 			var body io.Reader

@@ -112,7 +112,8 @@ func Save() error {
 	if saviningJSON, err = json.Marshal(metrics); err != nil {
 		return fmt.Errorf("can't marshal json with error: %w", err)
 	}
-	if err = os.WriteFile(filePathStorage, saviningJSON, 0o666); err != nil {
+	var perm os.FileMode = 0o600
+	if err = os.WriteFile(filePathStorage, saviningJSON, perm); err != nil {
 		return fmt.Errorf("can't write '%s' file with error: %w", filePathStorage, err)
 	}
 

@@ -65,6 +65,7 @@ func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
 	if err := processServerFlags(cfg); err != nil {
 		return fmt.Errorf("server config: cannot process flags variables: %w", err)
 	}
+
 	setupDefaultServerValues(cfg,
 		defaultAddress,
 		defaultStoreInterval,
@@ -80,6 +81,7 @@ func LoadAgentConfig() (*AgentConfig, error) {
 	if err := processEnvAgent(cfg); err != nil {
 		return nil, fmt.Errorf("agent config: cannot process ENV variables: %w", err)
 	}
+
 	if err := processAgentFlags(cfg); err != nil {
 		return nil, fmt.Errorf("cannot process flags variables: %w", err)
 	}
@@ -243,6 +245,7 @@ func setupDefaultAgentValues(config *AgentConfig,
 	if config.Address == "" {
 		config.Address = defaultAddress
 	}
+
 	if config.ReportInterval == 0 {
 		config.ReportInterval = int64(defaultRepInterval)
 	}
@@ -252,5 +255,7 @@ func setupDefaultAgentValues(config *AgentConfig,
 }
 
 func (cfg ServerConfig) String() string {
-	return fmt.Sprintf("Address: %s \n StoreInterval: %d \n FileStoragePath: %s \n Restore: %t \n", cfg.Address, cfg.StoreInterval, cfg.FileStoragePath, cfg.Restore)
+	return fmt.Sprintf("Address: %s \n StoreInterval: %d \n"+
+		" FileStoragePath: %s \n "+
+		"Restore: %t \n", cfg.Address, cfg.StoreInterval, cfg.FileStoragePath, cfg.Restore)
 }

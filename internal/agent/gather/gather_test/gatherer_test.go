@@ -47,7 +47,8 @@ func TestGetMetrics(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, testItem := range tests {
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			if got, _ := gather.GetMetrics(); got != nil && len(*got) != len(test.wantKeys) {
 				t.Errorf("GetMetrics() = %v, want %v", got, test.wantKeys)

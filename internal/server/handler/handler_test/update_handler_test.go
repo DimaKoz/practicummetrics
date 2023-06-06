@@ -41,7 +41,8 @@ func TestUpdateHandler(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, testItem := range tests {
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			e := echo.New()
 			request := httptest.NewRequest(http.MethodPost, test.request, nil)
