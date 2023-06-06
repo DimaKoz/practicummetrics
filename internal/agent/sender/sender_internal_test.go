@@ -48,7 +48,7 @@ func TestParcelsSend(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock := http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			mock := http.HandlerFunc(func(responseWriter http.ResponseWriter, req *http.Request) {
 				// Test request parameters
 				defer req.Body.Close()
 				println(req.URL.Path)
@@ -58,7 +58,7 @@ func TestParcelsSend(t *testing.T) {
 					return
 				}
 				got := string(body)
-				_, err = rw.Write([]byte(`OK`))
+				_, err = responseWriter.Write([]byte(`OK`))
 				assert.NoError(t, err, "got: %v, want no error", got)
 				if err != nil {
 					return

@@ -14,6 +14,7 @@ func TestLogValuesFunc(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	defer func(logger *zap.Logger) {
 		_ = logger.Sync()
 	}(logger)

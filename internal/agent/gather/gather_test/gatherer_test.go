@@ -60,6 +60,7 @@ func TestGetMetrics(t *testing.T) {
 }
 
 func checkMetricsName(t *testing.T, wantKeys []string, got *[]model.MetricUnit) {
+	t.Helper()
 	for _, k := range wantKeys {
 		isPresent := false
 

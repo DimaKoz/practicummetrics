@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -30,7 +31,7 @@ func UpdateHandlerJSON(c echo.Context) error {
 	muIncome, err := model.NewMetricUnit(m.MType, m.ID, prepModelValue)
 	if err != nil {
 		statusCode := http.StatusBadRequest
-		if err == model.ErrorUnknownType {
+		if errors.Is(err, model.ErrorUnknownType) {
 			statusCode = http.StatusNotImplemented
 		}
 		return c.String(statusCode, fmt.Sprintf("UpdateHandlerJSON: cannot create metric: %s", err))

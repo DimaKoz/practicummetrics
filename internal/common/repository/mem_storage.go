@@ -90,7 +90,9 @@ func Load() error {
 	for _, v := range m {
 		memStorage.storage[v.Name] = v
 	}
+
 	log.Printf("repository: loaded: %d \n", len(m))
+
 	return nil
 }
 
@@ -98,12 +100,14 @@ func Save() error {
 	if filePathStorage == "" {
 		return fmt.Errorf("filePathStorage is empty")
 	}
+
 	metrics := GetAllMetrics()
-	j, err := json.Marshal(metrics)
-	if err != nil {
+	var saviningJSON []byte
+	var err error
+	if saviningJSON, err = json.Marshal(metrics); err != nil {
 		return fmt.Errorf("can't marshal json with error: %w", err)
 	}
-	err = os.WriteFile(filePathStorage, j, 0666)
+	err = os.WriteFile(filePathStorage, saviningJSON, 0666)
 	if err != nil {
 		return fmt.Errorf("can't write '%s' file with error: %w", filePathStorage, err)
 	}

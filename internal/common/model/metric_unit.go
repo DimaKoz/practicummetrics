@@ -25,10 +25,11 @@ type MetricUnit struct {
 }
 
 // ErrorUnknownType represents an error with an unknown type of the metric.
-var ErrorUnknownType = errors.New("unknown metric type") //should use for StatusCode: http.StatusNotImplemented
+var ErrorUnknownType = errors.New("unknown metric type") // should use for StatusCode: http.StatusNotImplemented
 
 // ErrorEmptyValue represents an error which related to empty MetricUnit.Name and/or MetricUnit.Value.
-var ErrorEmptyValue = errors.New("to create a metric you must provide `name` and `value`") // StatusCode: http.StatusBadRequest
+// fo StatusCode: http.StatusBadRequest.
+var ErrorEmptyValue = errors.New("to create a metric you must provide `name` and `value`")
 
 // NewMetricUnit creates an instance of MetricUnit or returns an error.
 func NewMetricUnit(metricType string, metricName string, metricValue string) (MetricUnit, error) {
@@ -47,7 +48,9 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (Me
 		if s, err := strconv.ParseFloat(metricValue, 64); err == nil {
 			result.ValueFloat = s
 		} else {
-			return EmptyMetric, fmt.Errorf("bad value: failed to parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
+			err = fmt.Errorf("bad value: failed to parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
+
+			return EmptyMetric, err
 		}
 	}
 
@@ -55,7 +58,9 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (Me
 		if s, err := strconv.ParseInt(metricValue, 10, 64); err == nil {
 			result.ValueInt = s
 		} else {
-			return EmptyMetric, fmt.Errorf("bad value: failed to parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
+			err = fmt.Errorf("bad value: failed to parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
+
+			return EmptyMetric, err
 		}
 	}
 

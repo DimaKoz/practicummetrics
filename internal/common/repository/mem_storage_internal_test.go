@@ -134,7 +134,10 @@ func TestGetMetricsMemStorage(t *testing.T) {
 func TestLoadSaveEmptyFileStorageErr(t *testing.T) {
 	orig := filePathStorage
 	filePathStorage = ""
-	t.Cleanup(func() { filePathStorage = orig })
+	t.Cleanup(
+		func() {
+			filePathStorage = orig
+		})
 
 	err := Load()
 	assert.Error(t, err)

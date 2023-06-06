@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -17,7 +18,7 @@ func UpdateHandler(c echo.Context) error {
 	mu, err := model.NewMetricUnit(metricType, metricName, metricValue)
 	if err != nil {
 		statusCode := http.StatusBadRequest
-		if err == model.ErrorUnknownType {
+		if errors.Is(err, model.ErrorUnknownType) {
 			statusCode = http.StatusNotImplemented
 		}
 		return c.String(statusCode, fmt.Sprintf("cannot create metric: %s", err))

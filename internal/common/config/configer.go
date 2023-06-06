@@ -61,6 +61,7 @@ func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
 	if err := processing(cfg); err != nil {
 		return fmt.Errorf("server config: cannot process ENV variables: %w", err)
 	}
+
 	if err := processServerFlags(cfg); err != nil {
 		return fmt.Errorf("server config: cannot process flags variables: %w", err)
 	}
@@ -82,7 +83,9 @@ func LoadAgentConfig() (*AgentConfig, error) {
 	if err := processAgentFlags(cfg); err != nil {
 		return nil, fmt.Errorf("cannot process flags variables: %w", err)
 	}
+
 	setupDefaultAgentValues(cfg, defaultAddress, defaultReportInterval, defaultPollInterval)
+
 	return cfg, nil
 }
 
