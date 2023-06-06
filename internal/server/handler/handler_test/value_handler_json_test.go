@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
-
 	"strings"
 	"testing"
 )
@@ -27,7 +26,6 @@ func TestValueHandlerJSON(t *testing.T) {
 		reqJSON string
 		want    want
 	}{
-
 		{
 			name:    "test no json",
 			request: "/value",
@@ -75,7 +73,7 @@ func TestValueHandlerJSON(t *testing.T) {
 			})
 
 			e := echo.New()
-			var body io.Reader = nil
+			var body io.Reader
 			if tt.reqJSON != "" {
 				body = strings.NewReader(tt.reqJSON)
 			}
@@ -101,8 +99,6 @@ func TestValueHandlerJSON(t *testing.T) {
 			if got == http.StatusOK {
 				assert.Equal(t, tt.want.response, string(b))
 			}
-
 		})
-
 	}
 }

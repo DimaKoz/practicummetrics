@@ -26,6 +26,7 @@ func (m *Metrics) UpdateByMetricUnit(mu MetricUnit) {
 
 func (m *Metrics) GetPreparedValue() (string, error) {
 	var metricValue string
+
 	if m.MType == MetricTypeGauge {
 		if m.Value == nil {
 			return "", fmt.Errorf("couldn't convert Metrics.Value to a string, it must not be nil")

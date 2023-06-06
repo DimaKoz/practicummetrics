@@ -1,13 +1,14 @@
 package handler_test
 
 import (
-	"github.com/DimaKoz/practicummetrics/internal/server/handler"
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/server/handler"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUpdateHandler(t *testing.T) {
@@ -60,7 +61,6 @@ func TestUpdateHandler(t *testing.T) {
 			assert.Equal(t, test.want.code, got, "StatusCode got: %v, want: %v", got, test.want.code)
 
 			_ = res.Body.Close()
-
 		})
 	}
 }

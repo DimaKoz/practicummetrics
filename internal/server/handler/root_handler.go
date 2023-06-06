@@ -1,14 +1,15 @@
 package handler
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/labstack/echo/v4"
-	"net/http"
-	"strings"
 )
 
-// RootHandler handles `/`
+// RootHandler handles `/`.
 func RootHandler(c echo.Context) error {
 	metrics := repository.GetAllMetrics()
 

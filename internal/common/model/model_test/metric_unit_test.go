@@ -2,19 +2,22 @@ package model_test
 
 import (
 	"errors"
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 )
 
 func TestNewMetricUnit(t *testing.T) {
 	errBadValue := errors.New("bad value")
+
 	type args struct {
 		metricType  string
 		metricName  string
 		metricValue string
 	}
+
 	//goland:noinspection SpellCheckingInspection
 	tests := []struct {
 		name    string
@@ -22,7 +25,8 @@ func TestNewMetricUnit(t *testing.T) {
 		want    model.MetricUnit
 		wantErr error
 	}{
-		{name: "normal counter",
+		{
+			name: "normal counter",
 			args: args{
 				metricType:  model.MetricTypeCounter,
 				metricName:  "test",
@@ -31,7 +35,8 @@ func TestNewMetricUnit(t *testing.T) {
 			want:    model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "42", ValueInt: 42, ValueFloat: 0},
 			wantErr: nil,
 		},
-		{name: "normal gauge",
+		{
+			name: "normal gauge",
 			args: args{
 				metricType:  model.MetricTypeGauge,
 				metricName:  "test",
@@ -40,7 +45,8 @@ func TestNewMetricUnit(t *testing.T) {
 			want:    model.MetricUnit{Type: model.MetricTypeGauge, Name: "test", Value: "42", ValueInt: 0, ValueFloat: 42},
 			wantErr: nil,
 		},
-		{name: "unknown type",
+		{
+			name: "unknown type",
 			args: args{
 				metricType:  "xyz",
 				metricName:  "test",
@@ -49,7 +55,8 @@ func TestNewMetricUnit(t *testing.T) {
 			want:    model.EmptyMetric,
 			wantErr: model.ErrorUnknownType,
 		},
-		{name: "empty name",
+		{
+			name: "empty name",
 			args: args{
 				metricType:  model.MetricTypeGauge,
 				metricName:  "",
@@ -58,7 +65,8 @@ func TestNewMetricUnit(t *testing.T) {
 			want:    model.EmptyMetric,
 			wantErr: model.ErrorEmptyValue,
 		},
-		{name: "empty value",
+		{
+			name: "empty value",
 			args: args{
 				metricType:  model.MetricTypeGauge,
 				metricName:  "qaz",
@@ -67,7 +75,8 @@ func TestNewMetricUnit(t *testing.T) {
 			want:    model.EmptyMetric,
 			wantErr: model.ErrorEmptyValue,
 		},
-		{name: "no float value",
+		{
+			name: "no float value",
 			args: args{
 				metricType:  model.MetricTypeGauge,
 				metricName:  "qaz",
@@ -76,7 +85,8 @@ func TestNewMetricUnit(t *testing.T) {
 			want:    model.EmptyMetric,
 			wantErr: errBadValue,
 		},
-		{name: "no int value",
+		{
+			name: "no int value",
 			args: args{
 				metricType:  model.MetricTypeCounter,
 				metricName:  "qaz",
@@ -133,7 +143,6 @@ func TestMetricUnitClone(t *testing.T) {
 }
 
 func TestMetricUnitGetPath(t *testing.T) {
-
 	tests := []struct {
 		name string
 		mu   model.MetricUnit

@@ -1,22 +1,23 @@
 package main
 
 import (
+	"os"
+	"time"
+
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/DimaKoz/practicummetrics/internal/server"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
-	"os"
-	"time"
 )
 
 func main() {
-
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		panic(err)
 	}
+
 	defer func(logger *zap.Logger) {
 		err := logger.Sync()
 		if err != nil {
@@ -54,9 +55,11 @@ func main() {
 
 	if cfg.FileStoragePath != "" {
 		if cfg.StoreInterval != 0 {
-			handler.SyncSaveUpdateHandlerJSON = false
+			handler.SetSyncSaveUpdateHandlerJSON(false)
 			ticker := time.NewTicker(time.Duration(cfg.StoreInterval) * time.Second)
+
 			defer ticker.Stop()
+
 			go func() {
 				tickerChannel := ticker.C
 				for range tickerChannel {
@@ -67,7 +70,7 @@ func main() {
 				}
 			}()
 		} else {
-			handler.SyncSaveUpdateHandlerJSON = true
+			handler.SetSyncSaveUpdateHandlerJSON(true)
 		}
 	}
 

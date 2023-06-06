@@ -3,16 +3,16 @@ package handler
 import (
 	"encoding/json" // this import helps to pass some autotests
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/labstack/echo/v4"
-	"log"
-	"net/http"
 )
 
-// ValueHandlerJSON handles `/value`
+// ValueHandlerJSON handles `/value`.
 func ValueHandlerJSON(c echo.Context) error {
-
 	// instead of json.NewDecoder(c.Request().Body).Decode(i)
 	// we use c.Bind(&mappedData)
 	encJ := json.Encoder{} // this logic helps to pass some autotests

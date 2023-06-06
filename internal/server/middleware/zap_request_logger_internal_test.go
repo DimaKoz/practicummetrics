@@ -1,11 +1,12 @@
 package middleware
 
 import (
+	"testing"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"testing"
 )
 
 func TestLogValuesFunc(t *testing.T) {
@@ -27,6 +28,7 @@ func TestGetRequestLoggerConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	defer func(logger *zap.Logger) {
 		_ = logger.Sync()
 	}(logger)
@@ -65,7 +67,6 @@ func TestGetRequestLoggerConfig(t *testing.T) {
 			assert.Equal(t, got.LogStatus, tt.want.LogStatus)
 			assert.Equal(t, got.LogResponseSize, tt.want.LogResponseSize)
 			assert.Equal(t, got.LogLatency, tt.want.LogLatency)
-
 		})
 	}
 }

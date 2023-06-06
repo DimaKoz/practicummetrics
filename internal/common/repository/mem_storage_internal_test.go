@@ -2,15 +2,15 @@ package repository
 
 import (
 	"fmt"
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
-	"github.com/stretchr/testify/assert"
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddMetricMemStorage(t *testing.T) {
-
 	type args struct {
 		mu model.MetricUnit
 	}
@@ -20,7 +20,8 @@ func TestAddMetricMemStorage(t *testing.T) {
 		wantKey string
 		want    *model.MetricUnit
 	}{
-		{name: "counter",
+		{
+			name: "counter",
 			args: []args{
 				{mu: model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "42", ValueInt: 42, ValueFloat: 0}},
 				{mu: model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "10", ValueInt: 10, ValueFloat: 0}},
@@ -43,7 +44,6 @@ func TestAddMetricMemStorage(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestGetMetricByName(t *testing.T) {
@@ -96,7 +96,6 @@ func TestGetMetricByName(t *testing.T) {
 }
 
 func TestGetMetricsMemStorage(t *testing.T) {
-
 	tests := []struct {
 		add  []model.MetricUnit
 		name string
@@ -106,7 +105,8 @@ func TestGetMetricsMemStorage(t *testing.T) {
 			name: "empty",
 			add:  []model.MetricUnit{},
 			want: []model.MetricUnit{},
-		}, {name: "wanted key",
+		}, {
+			name: "wanted key",
 			add: []model.MetricUnit{
 				{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueInt: 42, ValueFloat: 0},
 				{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueInt: 43, ValueFloat: 0},
@@ -132,7 +132,6 @@ func TestGetMetricsMemStorage(t *testing.T) {
 }
 
 func TestLoadSaveEmptyFileStorageErr(t *testing.T) {
-
 	orig := filePathStorage
 	filePathStorage = ""
 	t.Cleanup(func() { filePathStorage = orig })
@@ -145,12 +144,11 @@ func TestLoadSaveEmptyFileStorageErr(t *testing.T) {
 }
 
 func TestSetupFilePathStorage(t *testing.T) {
-
 	orig := filePathStorage
 	t.Cleanup(func() { filePathStorage = orig })
 
 	want := filepath.Join(t.TempDir(), "abc.txt")
 	SetupFilePathStorage(want)
 	assert.Equal(t, want, filePathStorage)
-	
+
 }

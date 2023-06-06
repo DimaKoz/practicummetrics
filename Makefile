@@ -42,3 +42,6 @@ clean:
 	rm -f ./cmd/agent/agent ./cmd/server/server
 	rm -f ./log*.txt
 	rm -f ./tempfile*
+
+lnt:
+	golangci-lint run --enable-all --disable gochecknoglobals

@@ -1,14 +1,15 @@
 package handler_test
 
 import (
-	"github.com/DimaKoz/practicummetrics/internal/server/handler"
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/server/handler"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUpdateHandlerJSON(t *testing.T) {
@@ -23,7 +24,6 @@ func TestUpdateHandlerJSON(t *testing.T) {
 		reqJSON string
 		want    want
 	}{
-
 		{
 			name:    "test no json",
 			request: "/update",
@@ -68,7 +68,7 @@ func TestUpdateHandlerJSON(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := echo.New()
-			var body io.Reader = nil
+			var body io.Reader
 			if tt.reqJSON != "" {
 				body = strings.NewReader(tt.reqJSON)
 			}
@@ -94,8 +94,6 @@ func TestUpdateHandlerJSON(t *testing.T) {
 			if got == http.StatusOK {
 				assert.Equal(t, tt.want.response, string(b))
 			}
-
 		})
-
 	}
 }

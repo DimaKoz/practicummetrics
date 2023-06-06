@@ -2,12 +2,13 @@ package config
 
 import (
 	"fmt"
-	"github.com/caarlos0/env/v6"
-	flag2 "github.com/spf13/pflag"
 	"log"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/caarlos0/env/v6"
+	flag2 "github.com/spf13/pflag"
 )
 
 const (
@@ -22,7 +23,7 @@ const (
 	defaultRestore          = true
 )
 
-// Config represents a config of the agent and/or the server
+// Config represents a config of the agent and/or the server.
 type Config struct {
 	Address string `env:"ADDRESS"`
 }
@@ -55,9 +56,8 @@ func NewServerConfig() *ServerConfig {
 // ProcessEnv receives and sets up the ServerConfig.
 type ProcessEnv func(config *ServerConfig) error
 
-// LoadServerConfig loads data to the passed ServerConfig
+// LoadServerConfig loads data to the passed ServerConfig.
 func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
-
 	if err := processing(cfg); err != nil {
 		return fmt.Errorf("server config: cannot process ENV variables: %w", err)
 	}
@@ -88,12 +88,12 @@ func LoadAgentConfig() (*AgentConfig, error) {
 
 func processServerFlags(cfg *ServerConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
-	var address = unknownStringFieldValue
+	address := unknownStringFieldValue
 	if cfg.Address == unknownStringFieldValue {
 		flag2.StringVarP(&address, "a", "a", unknownStringFieldValue, "")
 	}
 
-	var rFlag = unknownStringFieldValue
+	rFlag := unknownStringFieldValue
 	if !cfg.hasRestore {
 		flag2.StringVarP(&rFlag, "r", "r", unknownStringFieldValue, "")
 	}
@@ -103,7 +103,7 @@ func processServerFlags(cfg *ServerConfig) error {
 		flag2.StringVarP(&iFlag, "i", "i", "", "")
 	}
 
-	var fFlag = unknownStringFieldValue
+	fFlag := unknownStringFieldValue
 	if cfg.FileStoragePath == unknownStringFieldValue {
 		flag2.StringVarP(&fFlag, "f", "f", "unknownStringFieldValue", "")
 	}
@@ -140,8 +140,11 @@ func processServerFlags(cfg *ServerConfig) error {
 
 func processAgentFlags(cfg *AgentConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
+
 	var address string
+
 	var pFlag string
+
 	var rFlag string
 
 	if cfg.Address == "" {
@@ -202,7 +205,7 @@ func ProcessEnvServer(config *ServerConfig) error {
 var processEnvAgent = func(config *AgentConfig) error {
 	err := env.Parse(config)
 	if err != nil {
-		return fmt.Errorf("failed to parse an enviroment, error: %w", err)
+		return fmt.Errorf("failed to parse an environment, error: %w", err)
 	}
 
 	return nil
@@ -212,7 +215,8 @@ func setupDefaultServerValues(config *ServerConfig,
 	defaultAddress string,
 	defaultStoreInterval int64,
 	defaultFileStoragePath string,
-	defaultRestore bool) {
+	defaultRestore bool,
+) {
 	if config.Address == unknownStringFieldValue {
 		config.Address = defaultAddress
 	}
@@ -230,7 +234,8 @@ func setupDefaultServerValues(config *ServerConfig,
 func setupDefaultAgentValues(config *AgentConfig,
 	defaultAddress string,
 	defaultRepInterval time.Duration,
-	defaultPollInterval time.Duration) {
+	defaultPollInterval time.Duration,
+) {
 	if config.Address == "" {
 		config.Address = defaultAddress
 	}

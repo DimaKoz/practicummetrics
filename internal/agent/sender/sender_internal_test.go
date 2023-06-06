@@ -2,9 +2,6 @@ package sender
 
 import (
 	"bytes"
-	"github.com/DimaKoz/practicummetrics/internal/common/config"
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"log"
 	"net"
@@ -12,6 +9,10 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParcelsSend(t *testing.T) {
@@ -47,7 +48,6 @@ func TestParcelsSend(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			mock := http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				// Test request parameters
 				defer req.Body.Close()
@@ -65,7 +65,6 @@ func TestParcelsSend(t *testing.T) {
 				}
 				assert.Equal(t, tt.want, got, "got: %v, want: %v", got, tt.want)
 				// Send response to be tested
-
 			})
 			// Start a local HTTP server
 			srv := httptest.NewUnstartedServer(mock)
@@ -101,6 +100,7 @@ func TestPrintSender(t *testing.T) {
 
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
+
 	defer func() {
 		log.SetOutput(os.Stderr)
 	}()

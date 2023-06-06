@@ -1,9 +1,10 @@
 package gather_test_test
 
 import (
+	"testing"
+
 	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
-	"testing"
 )
 
 func TestGetMetrics(t *testing.T) {
@@ -42,13 +43,13 @@ func TestGetMetrics(t *testing.T) {
 				"Sys",
 				"TotalAlloc",
 				"PollCount",
-				"RandomValue"},
+				"RandomValue",
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got, _ := gather.GetMetrics(); got != nil && len(*got) != len(tt.wantKeys) {
-
 				t.Errorf("GetMetrics() = %v, want %v", got, tt.wantKeys)
 				checkMetricsName(t, tt.wantKeys, got)
 			} else {
@@ -61,6 +62,7 @@ func TestGetMetrics(t *testing.T) {
 func checkMetricsName(t *testing.T, wantKeys []string, got *[]model.MetricUnit) {
 	for _, k := range wantKeys {
 		isPresent := false
+
 		for _, kk := range *got {
 			if kk.Name == k {
 				isPresent = true
@@ -68,9 +70,9 @@ func checkMetricsName(t *testing.T, wantKeys []string, got *[]model.MetricUnit) 
 				break
 			}
 		}
+
 		if !isPresent {
 			t.Errorf("GetMetrics() -  we want %v but absentee", k)
 		}
 	}
-
 }

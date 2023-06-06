@@ -8,9 +8,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// SetupMiddleware inits and some middlewares to Echo framework
+// SetupMiddleware inits and some middlewares to Echo framework.
 func SetupMiddleware(e *echo.Echo, logger zap.SugaredLogger) {
-
 	// Logging middlewares
 	// RequestLoggerWithConfig and BodyDump
 	loggerConfig := middleware2.GetRequestLoggerConfig(logger)
@@ -21,7 +20,7 @@ func SetupMiddleware(e *echo.Echo, logger zap.SugaredLogger) {
 	e.Use(middleware2.GetGzipMiddlewareConfig())
 }
 
-// SetupRouter adds some paths to Echo framework
+// SetupRouter adds some paths to Echo framework.
 func SetupRouter(e *echo.Echo) {
 	e.POST("/update/:type/:name/:value", handler.UpdateHandler)
 	e.POST("/update/", handler.UpdateHandlerJSON)

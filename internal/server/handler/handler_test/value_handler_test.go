@@ -62,7 +62,6 @@ func TestValueHandler(t *testing.T) {
 			if i != len(tests)-1 {
 				c.SetParamNames([]string{"name"}...)
 				c.SetParamValues([]string{"testCounter132"}...)
-
 			}
 			_ = handler.ValueHandler(c)
 
@@ -71,7 +70,6 @@ func TestValueHandler(t *testing.T) {
 			assert.Equal(t, test.want.code, res.StatusCode, "StatusCode got: %v, want: %v", res.StatusCode, test.want.code)
 
 			_ = res.Body.Close()
-
 		})
 	}
 }

@@ -3,11 +3,12 @@ package config
 import (
 	"errors"
 	"fmt"
-	flag2 "github.com/spf13/pflag"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"os"
 	"testing"
+
+	flag2 "github.com/spf13/pflag"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -26,13 +27,12 @@ func TestAgentInitConfig(t *testing.T) {
 		flagPoll    string
 		flagReport  string
 	}
-	var tests = []struct {
+	tests := []struct {
 		name    string
 		args    args
 		want    *AgentConfig
 		wantErr error
 	}{
-
 		{
 			name: "default values (agent)",
 			args: args{},
@@ -48,7 +48,6 @@ func TestAgentInitConfig(t *testing.T) {
 		{
 			name: "env values without flags",
 			args: args{
-
 				envAddress: "127.0.0.1:59483",
 				envPoll:    "15",
 				envReport:  "16",
@@ -90,7 +89,6 @@ func TestAgentInitConfig(t *testing.T) {
 		{
 			name: "flags values + env",
 			args: args{
-
 				envAddress:  "127.0.0.1:59483",
 				envPoll:     "3",
 				envReport:   "4",
@@ -109,7 +107,6 @@ func TestAgentInitConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			// ENV setup
 			if tt.args.envAddress != "" {
 				origAddress := os.Getenv(addressEnvName)
@@ -164,7 +161,6 @@ func TestAgentInitConfig(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.want, got, "Configs - got: %v, want: %v", got, tt.want)
-
 		})
 	}
 }
@@ -174,7 +170,6 @@ func TestProcessEnvError(t *testing.T) {
 	gotErr := ProcessEnvServer(nil)
 
 	assert.Equal(t, wantErr, gotErr, "Configs - got error: %v, want: %v", gotErr, wantErr)
-
 }
 
 func TestProcessEnvNoError(t *testing.T) {
@@ -182,7 +177,6 @@ func TestProcessEnvNoError(t *testing.T) {
 	gotErr := ProcessEnvServer(NewServerConfig())
 
 	assert.Equal(t, wantErr, gotErr, "Configs - got error: %v, want: %v", gotErr, wantErr)
-
 }
 
 func TestProcessEnvMock(t *testing.T) {
@@ -193,28 +187,24 @@ func TestProcessEnvMock(t *testing.T) {
 	os.Args = make([]string, 0)
 	os.Args = append(os.Args, osArgOrig[0])
 
-	//processEnvOrig := processEnv
 	t.Cleanup(func() {
 		os.Args = osArgOrig
-		//processEnv = processEnvOrig
 	})
 
 	processEnv := func(config *ServerConfig) error {
 		return fmt.Errorf("any error")
 	}
 
-	var want = NewServerConfig()
-	var wantErr = errors.New("server config: cannot process ENV variables: any error")
+	want := NewServerConfig()
+	wantErr := errors.New("server config: cannot process ENV variables: any error")
 	got := NewServerConfig()
 	gotErr := LoadServerConfig(got, processEnv)
 
 	assert.Equal(t, wantErr.Error(), gotErr.Error(), "Configs - got error: %v, want: %v", gotErr, wantErr)
 	assert.Equal(t, want, got, "Configs - got: %v, want: %v", got, want)
-
 }
 
 func TestLoadServerConfig(t *testing.T) {
-
 	want := &ServerConfig{
 		Config: Config{
 			Address: defaultAddress,
@@ -228,5 +218,4 @@ func TestLoadServerConfig(t *testing.T) {
 	err := LoadServerConfig(got, ProcessEnvServer)
 	assert.NoError(t, err, "error must be nil")
 	assert.Equal(t, want, got, "Configs - got: %v, want: %v", got, want)
-
 }

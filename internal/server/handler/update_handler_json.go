@@ -2,16 +2,21 @@ package handler
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/labstack/echo/v4"
-	"log"
-	"net/http"
 )
 
-var SyncSaveUpdateHandlerJSON = false
+var syncSaveUpdateHandlerJSON = false
 
-// UpdateHandlerJSON handles `/update` with json
+func SetSyncSaveUpdateHandlerJSON(sync bool) {
+	syncSaveUpdateHandlerJSON = sync
+}
+
+// UpdateHandlerJSON handles `/update` with json.
 func UpdateHandlerJSON(c echo.Context) error {
 	m := &model.Metrics{}
 	if err := c.Bind(&m); err != nil {
@@ -32,7 +37,7 @@ func UpdateHandlerJSON(c echo.Context) error {
 	}
 	mu := repository.AddMetric(muIncome)
 	m.UpdateByMetricUnit(mu)
-	if SyncSaveUpdateHandlerJSON {
+	if syncSaveUpdateHandlerJSON {
 		go func() {
 			err := repository.Save()
 			if err != nil {

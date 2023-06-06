@@ -7,15 +7,15 @@ import (
 )
 
 const (
-	// MetricTypeGauge represents "gauge" MetricUnit.Type
+	// MetricTypeGauge represents "gauge" MetricUnit.Type.
 	MetricTypeGauge = "gauge"
-	// MetricTypeCounter represents "counter" MetricUnit.Type
+	// MetricTypeCounter represents "counter" MetricUnit.Type.
 	MetricTypeCounter = "counter"
 )
 
 var EmptyMetric = MetricUnit{}
 
-// MetricUnit represents a metric
+// MetricUnit represents a metric.
 type MetricUnit struct {
 	Type       string
 	Name       string
@@ -24,13 +24,13 @@ type MetricUnit struct {
 	ValueFloat float64
 }
 
-// ErrorUnknownType represents an error with an unknown type of the metric
+// ErrorUnknownType represents an error with an unknown type of the metric.
 var ErrorUnknownType = errors.New("unknown metric type") //should use for StatusCode: http.StatusNotImplemented
 
-// ErrorEmptyValue represents an error which related to empty MetricUnit.Name and/or MetricUnit.Value
+// ErrorEmptyValue represents an error which related to empty MetricUnit.Name and/or MetricUnit.Value.
 var ErrorEmptyValue = errors.New("to create a metric you must provide `name` and `value`") // StatusCode: http.StatusBadRequest
 
-// NewMetricUnit creates an instance of MetricUnit or returns an error
+// NewMetricUnit creates an instance of MetricUnit or returns an error.
 func NewMetricUnit(metricType string, metricName string, metricValue string) (MetricUnit, error) {
 	if metricType != MetricTypeGauge && metricType != MetricTypeCounter {
 		return EmptyMetric, ErrorUnknownType
@@ -38,7 +38,7 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (Me
 	if metricName == "" || metricValue == "" {
 		return EmptyMetric, ErrorEmptyValue
 	}
-	var result = MetricUnit{}
+	result := MetricUnit{}
 	result.Type = metricType
 	result.Name = metricName
 	result.Value = metricValue
@@ -58,8 +58,8 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (Me
 			return EmptyMetric, fmt.Errorf("bad value: failed to parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
 		}
 	}
-	return result, nil
 
+	return result, nil
 }
 
 func (mu MetricUnit) Clone() MetricUnit {

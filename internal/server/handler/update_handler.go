@@ -2,15 +2,15 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
-// UpdateHandler handles `/update/`
+// UpdateHandler handles `/update/`.
 func UpdateHandler(c echo.Context) error {
-
 	metricType := c.Param("type")
 	metricName := c.Param("name")
 	metricValue := c.Param("value")

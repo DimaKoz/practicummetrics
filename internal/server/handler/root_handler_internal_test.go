@@ -46,7 +46,6 @@ func TestRootHandler(t *testing.T) {
 			assert.Equal(t, test.want.code, res.StatusCode, "StatusCode got: %v, want: %v", res.StatusCode, test.want.code)
 
 			_ = res.Body.Close()
-
 		})
 	}
 }
