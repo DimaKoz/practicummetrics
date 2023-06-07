@@ -2,6 +2,7 @@ package repository
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -20,6 +21,12 @@ var (
 
 type MemStorage struct {
 	storage map[string]model.MetricUnit
+}
+
+var errRepo = errors.New("couldn't find a metric")
+
+func repositoryError(err error, msg string) error {
+	return fmt.Errorf("%w: %s", err, msg)
 }
 
 // AddMetric adds model.MetricUnit to '_memStorage.storage' storage
@@ -49,7 +56,7 @@ func GetMetricByName(name string) (model.MetricUnit, error) {
 		return found.Clone(), nil
 	}
 
-	return model.EmptyMetric, fmt.Errorf("couldn't find a metric: %s", name)
+	return model.EmptyMetric, repositoryError(errRepo, name)
 }
 
 // GetAllMetrics returns a list of model.MetricUnit from the storage.
@@ -72,11 +79,13 @@ func SetupFilePathStorage(pFilePathStorage string) {
 	filePathStorage = pFilePathStorage
 }
 
+var errEmptyPath = errors.New("filePathStorage is empty")
+
 func Load() error {
 	var metricUnits []model.MetricUnit
 
 	if filePathStorage == "" {
-		return fmt.Errorf("filePathStorage is empty")
+		return errEmptyPath
 	}
 	data, err := os.ReadFile(filePathStorage)
 	if err != nil {
@@ -100,7 +109,7 @@ func Load() error {
 
 func Save() error {
 	if filePathStorage == "" {
-		return fmt.Errorf("filePathStorage is empty")
+		return errEmptyPath
 	}
 
 	metrics := GetAllMetrics()

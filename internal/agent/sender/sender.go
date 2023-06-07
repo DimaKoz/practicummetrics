@@ -13,14 +13,14 @@ import (
 func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 	client := resty.New()
 	targetURL := getTargetURL(cfg.Address)
-	m := &model.Metrics{}
+	emptyMetrics := model.NewEmptyMetrics()
 
 	for _, unit := range metrics {
 		request := client.R()
 		request.SetHeader("Content-Type", "application/json")
 		request.SetHeader("Accept-Encoding", "gzip")
-		m.UpdateByMetricUnit(unit)
-		request.SetBody(m)
+		emptyMetrics.UpdateByMetricUnit(unit)
+		request.SetBody(emptyMetrics)
 
 		if _, err := request.Post(targetURL); err != nil {
 			log.Printf("could not create the request: %s \n", err)

@@ -21,11 +21,19 @@ func UpdateHandler(ctx echo.Context) error {
 		if errors.Is(err, model.ErrUnknownType) {
 			statusCode = http.StatusNotImplemented
 		}
+		err = ctx.String(statusCode, fmt.Sprintf("cannot create metric: %s", err))
+		if err != nil {
+			err = fmt.Errorf("%w", err)
+		}
 
-		return ctx.String(statusCode, fmt.Sprintf("cannot create metric: %s", err))
+		return err
 	}
 
 	repository.AddMetric(metricUnit)
 
-	return ctx.NoContent(http.StatusOK)
+	if err = ctx.NoContent(http.StatusOK); err != nil {
+		err = fmt.Errorf("%w", err)
+	}
+
+	return err
 }

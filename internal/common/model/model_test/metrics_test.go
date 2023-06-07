@@ -18,22 +18,21 @@ func TestMetricsGetPreparedValue(t *testing.T) {
 		{
 			name:   model.MetricTypeGauge,
 			fValue: 340255.4088704579,
-			m: &model.Metrics{
-				ID:    "test0",
-				MType: model.MetricTypeGauge,
-			},
-			want: "340255.4088704579",
+			m:      model.NewEmptyMetrics(),
+			want:   "340255.4088704579",
 		},
 		{
 			name:   model.MetricTypeCounter,
 			iValue: 42,
-			m: &model.Metrics{
-				ID:    "test1",
-				MType: model.MetricTypeCounter,
-			},
-			want: "42",
+			m:      model.NewEmptyMetrics(),
+			want:   "42",
 		},
 	}
+	tests[0].m.ID = "test0"
+	tests[0].m.MType = model.MetricTypeGauge
+
+	tests[1].m.ID = "test1"
+	tests[1].m.MType = model.MetricTypeCounter
 	for _, testItem := range tests {
 		test := testItem
 		t.Run(test.name, func(t *testing.T) {
@@ -65,6 +64,7 @@ func TestMetricsUpdateByMetricUnit(t *testing.T) {
 				Name:       "test0",
 				Value:      "3342.55",
 				ValueFloat: 3342.55,
+				ValueInt:   0,
 			},
 			fValueWant: 3342.55,
 			want: &model.Metrics{
@@ -97,7 +97,7 @@ func TestMetricsUpdateByMetricUnit(t *testing.T) {
 			if test.iValueWant != 0 {
 				test.want.Delta = &test.iValueWant
 			}
-			got := &model.Metrics{}
+			got := model.NewEmptyMetrics()
 			got.UpdateByMetricUnit(test.mu)
 			assert.Equalf(t, test.want, got, "problem test name: \"%s\"", test.name)
 		})

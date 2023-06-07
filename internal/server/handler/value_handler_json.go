@@ -21,17 +21,30 @@ func ValueHandlerJSON(ctx echo.Context) error {
 	log.Println("ValueHandlerJSON")
 	mappedData := echo.Map{}
 	if err := ctx.Bind(&mappedData); err != nil {
-		return ctx.String(http.StatusBadRequest, fmt.Sprintf("failed to parse json: %s", err))
+		err = ctx.String(http.StatusBadRequest, fmt.Sprintf("failed to parse json: %s", err))
+		if err != nil {
+			err = fmt.Errorf("%w", err)
+		}
+
+		return err
 	}
 
 	name := fmt.Sprintf("%v", mappedData["id"])
 
-	mu, err := repository.GetMetricByName(name)
+	metricUnit, err := repository.GetMetricByName(name)
 	if err != nil {
-		return ctx.String(http.StatusNotFound, fmt.Sprintf(" 'value' json handler: %s", err.Error()))
-	}
-	m := &model.Metrics{}
-	m.UpdateByMetricUnit(mu)
+		err = ctx.String(http.StatusNotFound, fmt.Sprintf(" 'value' json handler: %s", err.Error()))
+		if err != nil {
+			err = fmt.Errorf("%w", err)
+		}
 
-	return ctx.JSON(http.StatusOK, m)
+		return err
+	}
+	m := model.NewEmptyMetrics()
+	m.UpdateByMetricUnit(metricUnit)
+	if err = ctx.JSON(http.StatusOK, m); err != nil {
+		err = fmt.Errorf("%w", err)
+	}
+
+	return err
 }

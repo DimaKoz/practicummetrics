@@ -28,30 +28,15 @@ func TestValueHandlerJSON(t *testing.T) {
 		want    want
 	}{
 		{
-			name:    "test no json",
-			request: "/value",
-			reqJSON: "",
-			want: want{
-				code:        http.StatusNotFound,
-				response:    ``,
-				contentType: "",
-			},
+			name: "test no json", request: "/value",
+			reqJSON: "", want: want{code: http.StatusNotFound, response: ``, contentType: ""},
 		},
 		{
-			name:    "test bad json",
-			request: "/update",
-			reqJSON: "{",
-			want: want{
-				code:        http.StatusBadRequest,
-				response:    ``,
-				contentType: "",
-			},
+			name: "test bad json", request: "/update",
+			reqJSON: "{", want: want{code: http.StatusBadRequest, response: ``, contentType: ""},
 		},
-
 		{
-			name:    "test OK",
-			request: "/update",
-			reqJSON: `{"id":"GetSet187"}`,
+			name: "test OK", request: "/update", reqJSON: `{"id":"GetSet187"}`,
 			want: want{
 				code:        http.StatusOK,
 				response:    "{\"id\":\"GetSet187\",\"type\":\"gauge\",\"value\":42}\n",
@@ -70,31 +55,16 @@ func TestValueHandlerJSON(t *testing.T) {
 			mu, err := model.NewMetricUnit("gauge", "GetSet187", "42")
 			assert.NoError(t, err)
 			repository.AddMetric(mu)
-			t.Cleanup(func() {
-				_ = repository.Load()
-			})
-
+			t.Cleanup(func() { _ = repository.Load() })
 			echoFramework := echo.New()
-			var body io.Reader
-			if test.reqJSON != "" {
-				body = strings.NewReader(test.reqJSON)
-			}
-
-			request := httptest.NewRequest(http.MethodPost, test.request, body)
-
-			request.Header.Set("Content-Type", "application/json")
-
-			respRecorder := httptest.NewRecorder()
-			c := echoFramework.NewContext(request, respRecorder)
-
-			err = handler.ValueHandlerJSON(c)
+			request, respRecorder := setupEchoHandlerJSONTest(test.reqJSON, test.request)
+			ctx := echoFramework.NewContext(request, respRecorder)
+			err = handler.ValueHandlerJSON(ctx)
 			assert.NoError(t, err, "expected no errors")
 
 			res := respRecorder.Result()
 			defer res.Body.Close()
-			// проверяем код ответа
-			got := res.StatusCode
-
+			got := res.StatusCode // проверяем код ответа
 			assert.Equal(t, test.want.code, got, "StatusCode got: %v, want: %v", got, test.want.code)
 			b, err := io.ReadAll(res.Body)
 			assert.NoError(t, err, "expected no errors")
@@ -103,4 +73,19 @@ func TestValueHandlerJSON(t *testing.T) {
 			}
 		})
 	}
+}
+
+func setupEchoHandlerJSONTest(reqJSON string, req string) (*http.Request, *httptest.ResponseRecorder) {
+	var body io.Reader
+	if reqJSON != "" {
+		body = strings.NewReader(reqJSON)
+	}
+
+	request := httptest.NewRequest(http.MethodPost, req, body)
+
+	request.Header.Set("Content-Type", "application/json")
+
+	respRecorder := httptest.NewRecorder()
+
+	return request, respRecorder
 }

@@ -18,6 +18,12 @@ const (
 	reportEnvName  = "REPORT_INTERVAL"
 )
 
+var (
+	longErrD = "cannot process flags variables: couldn't convert the request interval" +
+		" to int, rFlag: abc, err: strconv.ParseInt: parsing \"abc\": invalid syntax"
+	errInitConfig = errors.New(longErrD)
+)
+
 func TestAgentInitConfig(t *testing.T) {
 	type args struct {
 		envAddress string
@@ -84,7 +90,7 @@ func TestAgentInitConfig(t *testing.T) {
 				flagReport:  "abc",
 			},
 			want:    nil,
-			wantErr: errors.New("cannot process flags variables: couldn't convert the request interval to int, rFlag: abc, err: strconv.ParseInt: parsing \"abc\": invalid syntax"),
+			wantErr: errInitConfig,
 		},
 
 		{
@@ -167,8 +173,10 @@ func TestAgentInitConfig(t *testing.T) {
 	}
 }
 
+var errTestProcessEnvError = errors.New("env: expected a pointer to a Struct")
+
 func TestProcessEnvError(t *testing.T) {
-	wantErr := fmt.Errorf("failed to parse an environment, error: %w", fmt.Errorf("env: expected a pointer to a Struct"))
+	wantErr := fmt.Errorf("failed to parse an environment, error: %w", errTestProcessEnvError)
 	gotErr := ProcessEnvServer(nil)
 
 	assert.Equal(t, wantErr, gotErr, "Configs - got error: %v, want: %v", gotErr, wantErr)
@@ -180,6 +188,11 @@ func TestProcessEnvNoError(t *testing.T) {
 
 	assert.Equal(t, wantErr, gotErr, "Configs - got error: %v, want: %v", gotErr, wantErr)
 }
+
+var (
+	errAny                    = errors.New("any error")
+	errWantTestProcessEnvMock = errors.New("server config: cannot process ENV variables: any error")
+)
 
 func TestProcessEnvMock(t *testing.T) {
 	flag2.CommandLine = flag2.NewFlagSet(os.Args[0], flag2.ContinueOnError)
@@ -194,14 +207,13 @@ func TestProcessEnvMock(t *testing.T) {
 	})
 
 	processEnv := func(config *ServerConfig) error {
-		return fmt.Errorf("any error")
+		return errAny
 	}
 
 	want := NewServerConfig()
-	wantErr := errors.New("server config: cannot process ENV variables: any error")
 	got := NewServerConfig()
 	gotErr := LoadServerConfig(got, processEnv)
-
+	wantErr := errWantTestProcessEnvMock
 	assert.Equal(t, wantErr.Error(), gotErr.Error(), "Configs - got error: %v, want: %v", gotErr, wantErr)
 	assert.Equal(t, want, got, "Configs - got: %v, want: %v", got, want)
 }

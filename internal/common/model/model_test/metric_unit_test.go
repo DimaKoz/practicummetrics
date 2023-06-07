@@ -9,9 +9,9 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 )
 
-func TestNewMetricUnit(t *testing.T) {
-	errBadValue := errors.New("bad value")
+var errBadValue = errors.New("bad value")
 
+func TestNewMetricUnit(t *testing.T) {
 	type args struct {
 		metricType  string
 		metricName  string

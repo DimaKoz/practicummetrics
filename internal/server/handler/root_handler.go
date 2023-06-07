@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -17,7 +18,11 @@ func RootHandler(ctx echo.Context) error {
 
 	ctx.Response().Header().Set(echo.HeaderContentType, "text/html; charset=utf-8")
 
-	return ctx.String(http.StatusOK, str)
+	if err := ctx.String(http.StatusOK, str); err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	return nil
 }
 
 func getHTMLContent(metrics []model.MetricUnit) string {

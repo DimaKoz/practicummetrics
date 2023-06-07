@@ -19,7 +19,8 @@ func ValueHandler(ctx echo.Context) error {
 	)
 
 	if metricUnit, err = repository.GetMetricByName(name); err != nil {
-		err = fmt.Errorf("failed to get MetricUnit: %v", ctx.String(http.StatusNotFound, fmt.Sprintf(" 'value' handler: %s", err.Error())))
+		errDesc := fmt.Sprintf(" 'value' handler: %s", err.Error())
+		err = fmt.Errorf("failed to get MetricUnit: %w", ctx.String(http.StatusNotFound, errDesc))
 
 		return err
 	}

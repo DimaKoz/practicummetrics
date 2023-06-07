@@ -26,39 +26,20 @@ func TestUpdateHandlerJSON(t *testing.T) {
 		want    wantUpdHandlerJSON
 	}{
 		{
-			name:    "test no json",
-			request: "/update",
-			reqJSON: "",
-			want: wantUpdHandlerJSON{
-				code:        http.StatusBadRequest,
-				response:    ``,
-				contentType: "",
-			},
+			name: "test no json", request: "/update", reqJSON: "",
+			want: wantUpdHandlerJSON{code: http.StatusBadRequest, response: ``, contentType: ""},
 		},
 		{
-			name:    "test bad json",
-			request: "/update",
-			reqJSON: "{",
-			want: wantUpdHandlerJSON{
-				code:        http.StatusBadRequest,
-				response:    ``,
-				contentType: "",
-			},
+			name: "test bad json", request: "/update", reqJSON: "{",
+			want: wantUpdHandlerJSON{code: http.StatusBadRequest, response: ``, contentType: ""},
 		},
 		{
-			name:    "test wrong type metrics",
-			request: "/update",
+			name: "test wrong type metrics", request: "/update",
 			reqJSON: "{\"id\":\"GetSet185\",\"type\":\"gauge1\",\"delta\":1}",
-			want: wantUpdHandlerJSON{
-				code:        http.StatusNotImplemented,
-				response:    ``,
-				contentType: "",
-			},
+			want:    wantUpdHandlerJSON{code: http.StatusNotImplemented, response: ``, contentType: ""},
 		},
 		{
-			name:    "test OK",
-			request: "/update",
-			reqJSON: `{"id":"GetSet186","type":"counter","delta":1}`,
+			name: "test OK", request: "/update", reqJSON: `{"id":"GetSet186","type":"counter","delta":1}`,
 			want: wantUpdHandlerJSON{
 				code:        http.StatusOK,
 				response:    "{\"id\":\"GetSet186\",\"type\":\"counter\",\"delta\":1}\n",
@@ -77,7 +58,6 @@ func TestUpdateHandlerJSON(t *testing.T) {
 
 			request := httptest.NewRequest(http.MethodPost, test.request, body)
 			responseRecorder := httptest.NewRecorder()
-
 			request.Header.Set("Content-Type", "application/json")
 
 			c := echoFramework.NewContext(request, responseRecorder)

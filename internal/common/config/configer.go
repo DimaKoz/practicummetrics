@@ -91,28 +91,31 @@ func LoadAgentConfig() (*AgentConfig, error) {
 	return cfg, nil
 }
 
+func addServerFlags(cfg *ServerConfig, address *string, rFlag *string, iFlag *string, fFlag *string) {
+	if cfg.Address == unknownStringFieldValue {
+		flag2.StringVarP(address, "a", "a", unknownStringFieldValue, "")
+	}
+
+	if !cfg.hasRestore {
+		flag2.StringVarP(rFlag, "r", "r", unknownStringFieldValue, "")
+	}
+
+	if cfg.StoreInterval == unknownIntFieldValue {
+		flag2.StringVarP(iFlag, "i", "i", "", "")
+	}
+
+	if cfg.FileStoragePath == unknownStringFieldValue {
+		flag2.StringVarP(fFlag, "f", "f", "unknownStringFieldValue", "")
+	}
+}
+
 func processServerFlags(cfg *ServerConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
 	address := unknownStringFieldValue
-
-	if cfg.Address == unknownStringFieldValue {
-		flag2.StringVarP(&address, "a", "a", unknownStringFieldValue, "")
-	}
-
 	rFlag := unknownStringFieldValue
-	if !cfg.hasRestore {
-		flag2.StringVarP(&rFlag, "r", "r", unknownStringFieldValue, "")
-	}
-
-	var iFlag string
-	if cfg.StoreInterval == unknownIntFieldValue {
-		flag2.StringVarP(&iFlag, "i", "i", "", "")
-	}
-
 	fFlag := unknownStringFieldValue
-	if cfg.FileStoragePath == unknownStringFieldValue {
-		flag2.StringVarP(&fFlag, "f", "f", "unknownStringFieldValue", "")
-	}
+	var iFlag string
+	addServerFlags(cfg, &address, &rFlag, &iFlag, &fFlag)
 
 	flag2.Parse()
 
@@ -144,23 +147,26 @@ func processServerFlags(cfg *ServerConfig) error {
 	return nil
 }
 
+func addAgentFlags(cfg *AgentConfig, address *string, pollInterval *string, reportInterval *string) {
+	if cfg.Address == "" {
+		flag2.StringVarP(address, "a", "a", "", "")
+	}
+
+	if cfg.PollInterval == 0 {
+		flag2.StringVarP(pollInterval, "p", "p", "", "")
+	}
+
+	if cfg.ReportInterval == 0 {
+		flag2.StringVarP(reportInterval, "r", "r", "", "")
+	}
+}
+
 func processAgentFlags(cfg *AgentConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
 
 	var address, pFlag, rFlag string
 
-	if cfg.Address == "" {
-		flag2.StringVarP(&address, "a", "a", "", "")
-	}
-
-	if cfg.PollInterval == 0 {
-		flag2.StringVarP(&pFlag, "p", "p", "", "")
-	}
-
-	if cfg.ReportInterval == 0 {
-		flag2.StringVarP(&rFlag, "r", "r", "", "")
-	}
-
+	addAgentFlags(cfg, &address, &pFlag, &rFlag)
 	flag2.Parse()
 
 	if address != "" {

@@ -19,30 +19,32 @@ func SetSyncSaveUpdateHandlerJSON(sync bool) {
 
 // UpdateHandlerJSON handles `/update` with json.
 func UpdateHandlerJSON(ctx echo.Context) error {
-	m := &model.Metrics{}
-	if err := ctx.Bind(&m); err != nil {
-		return ctx.String(http.StatusBadRequest, fmt.Sprintf("UpdateHandlerJSON: failed to parse json: %s", err))
-	}
-	prepModelValue, err := m.GetPreparedValue()
-	if err != nil {
-		erDesc := fmt.Sprintf("UpdateHandlerJSON: Metrics contains nil: %s", err)
-		if err = ctx.String(http.StatusBadRequest, erDesc); err != nil {
-			err = fmt.Errorf("failed to update metrics: %w", err)
+	metrics := model.NewEmptyMetrics()
+	if err := ctx.Bind(&metrics); err != nil {
+		err = ctx.String(http.StatusBadRequest, fmt.Sprintf("UpdateHandlerJSON: failed to parse json: %s", err))
+		if err != nil {
+			err = fmt.Errorf("%w", err)
 		}
 
 		return err
 	}
-	muIncome, err := model.NewMetricUnit(m.MType, m.ID, prepModelValue)
+	prepModelValue, err := metrics.GetPreparedValue()
+	if err != nil {
+		erDesc := fmt.Sprintf("UpdateHandlerJSON: Metrics contains nil: %s", err)
+
+		return wrapUpdHandlerErr(ctx, http.StatusBadRequest, erDesc, err)
+	}
+	muIncome, err := model.NewMetricUnit(metrics.MType, metrics.ID, prepModelValue)
 	if err != nil {
 		statusCode := http.StatusBadRequest
 		if errors.Is(err, model.ErrUnknownType) {
 			statusCode = http.StatusNotImplemented
 		}
 
-		return ctx.String(statusCode, fmt.Sprintf("UpdateHandlerJSON: cannot create metric: %s", err))
+		return wrapUpdHandlerErr(ctx, statusCode, "UpdateHandlerJSON: cannot create metric: %s", err)
 	}
 	mu := repository.AddMetric(muIncome)
-	m.UpdateByMetricUnit(mu)
+	metrics.UpdateByMetricUnit(mu)
 
 	if syncSaveUpdateHandlerJSON {
 		go func() {
@@ -52,6 +54,18 @@ func UpdateHandlerJSON(ctx echo.Context) error {
 			}
 		}()
 	}
+	if err = ctx.JSON(http.StatusOK, metrics); err != nil {
+		err = fmt.Errorf("%w", err)
+	}
 
-	return ctx.JSON(http.StatusOK, m)
+	return err
+}
+
+func wrapUpdHandlerErr(ctx echo.Context, statusCode int, msg string, errIn error) error {
+	err := ctx.String(statusCode, fmt.Sprintf(msg, errIn))
+	if err != nil {
+		err = fmt.Errorf("%w", err)
+	}
+
+	return err
 }

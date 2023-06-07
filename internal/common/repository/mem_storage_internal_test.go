@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"fmt"
+	"errors"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -47,6 +47,8 @@ func TestAddMetricMemStorage(t *testing.T) {
 	}
 }
 
+var errTestGetMetricByName = errors.New("couldn't find a metric: ")
+
 func TestGetMetricByName(t *testing.T) {
 	type args struct {
 		search string
@@ -65,7 +67,7 @@ func TestGetMetricByName(t *testing.T) {
 				add:    []model.MetricUnit{},
 			},
 			want:    model.EmptyMetric,
-			wantErr: fmt.Errorf("couldn't find a metric: %s", ""),
+			wantErr: errTestGetMetricByName,
 		},
 		{
 			name: "wanted key",
@@ -90,7 +92,11 @@ func TestGetMetricByName(t *testing.T) {
 				AddMetric(v)
 			}
 			got, err := GetMetricByName(test.args.search)
-			assert.Equal(t, err, test.wantErr, "GetMetricByName() error = %v, want error %v", err, test.wantErr)
+			if test.wantErr != nil {
+				assert.EqualError(t, err, test.wantErr.Error())
+			} else {
+				assert.Nil(t, err, " want no error")
+			}
 
 			assert.Equal(t, got, test.want, "GetMetricByName() = %v, want %v", got, test.want)
 		})
