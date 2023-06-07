@@ -25,7 +25,7 @@ var logValuesFunc = func(c echo.Context, loggerValues middleware.RequestLoggerVa
 
 func GetRequestLoggerConfig(sugar zap.SugaredLogger) middleware.RequestLoggerConfig {
 	zapSugar = sugar
-	result := middleware.RequestLoggerConfig{
+	result := middleware.RequestLoggerConfig{ //nolint:exhaustruct
 		LogURI:           true,
 		LogStatus:        true,
 		LogLatency:       true,

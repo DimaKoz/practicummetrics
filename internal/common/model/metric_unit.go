@@ -13,7 +13,7 @@ const (
 	MetricTypeCounter = "counter"
 )
 
-var EmptyMetric = MetricUnit{}
+var EmptyMetric = MetricUnit{} //nolint:exhaustruct
 
 // MetricUnit represents a metric.
 type MetricUnit struct {
@@ -40,7 +40,7 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (Me
 	if metricName == "" || metricValue == "" {
 		return EmptyMetric, ErrEmptyValue
 	}
-	result := MetricUnit{}
+	result := MetricUnit{} //nolint:exhaustruct
 	result.Type = metricType
 	result.Name = metricName
 	result.Value = metricValue

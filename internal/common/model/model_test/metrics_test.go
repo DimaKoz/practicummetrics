@@ -67,7 +67,7 @@ func TestMetricsUpdateByMetricUnit(t *testing.T) {
 				ValueInt:   0,
 			},
 			fValueWant: 3342.55,
-			want: &model.Metrics{
+			want: &model.Metrics{ //nolint:exhaustruct
 				ID:    "test0",
 				MType: model.MetricTypeGauge,
 			},
@@ -82,7 +82,7 @@ func TestMetricsUpdateByMetricUnit(t *testing.T) {
 				ValueFloat: 0,
 			},
 			iValueWant: 42,
-			want: &model.Metrics{
+			want: &model.Metrics{ //nolint:exhaustruct
 				ID:    "test1",
 				MType: model.MetricTypeCounter,
 			},

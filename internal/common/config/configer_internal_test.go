@@ -24,139 +24,71 @@ var (
 	errInitConfig = errors.New(longErrD)
 )
 
+type argTestConfig struct {
+	envAddress  string
+	envPoll     string
+	envReport   string
+	flagAddress string
+	flagPoll    string
+	flagReport  string
+}
+
+var (
+	wantConfig1 = &AgentConfig{Config: Config{Address: "127.0.0.1:59483"}, PollInterval: 15, ReportInterval: 16}
+	wantConfig4 = &AgentConfig{Config: Config{Address: "127.0.0.1:59483"}, PollInterval: 3, ReportInterval: 4}
+)
+
+var testsCasesAgentInitConfig = []struct {
+	name    string
+	args    argTestConfig
+	want    *AgentConfig
+	wantErr error
+}{
+	{
+		name: "default values (agent)", args: argTestConfig{}, wantErr: nil, //nolint:exhaustruct
+		want: &AgentConfig{
+			Config:       Config{Address: "localhost:8080"},
+			PollInterval: int64(defaultPollInterval), ReportInterval: int64(defaultReportInterval),
+		},
+	},
+	{
+		name: "env", args: argTestConfig{envAddress: "127.0.0.1:59483", envPoll: "15", envReport: "16"}, //nolint:exhaustruct
+		want: wantConfig1,
+	},
+	{
+		name: "flags",
+		args: argTestConfig{flagAddress: "127.0.0.1:59455", flagPoll: "12", flagReport: "15"}, //nolint:exhaustruct
+		want: &AgentConfig{Config: Config{Address: "127.0.0.1:59455"}, PollInterval: 12, ReportInterval: 15},
+	},
+	{
+		name: "flags values without env and without any report interval", want: nil, wantErr: errInitConfig,
+		args: argTestConfig{flagAddress: "127.0.0.1:59455", flagPoll: "5", flagReport: "abc"}, //nolint:exhaustruct
+	},
+	{
+		name: "flags&env", want: wantConfig4,
+		args: argTestConfig{
+			envAddress: "127.0.0.1:59483", envPoll: "3", envReport: "4",
+			flagAddress: "127.0.0.1:59455", flagPoll: "12", flagReport: "15",
+		},
+	},
+}
+
 func TestAgentInitConfig(t *testing.T) {
-	type args struct {
-		envAddress string
-		envPoll    string
-		envReport  string
-
-		flagAddress string
-		flagPoll    string
-		flagReport  string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *AgentConfig
-		wantErr error
-	}{
-		{
-			name: "default values (agent)",
-			args: args{},
-			want: &AgentConfig{
-				Config: Config{
-					Address: "localhost:8080",
-				},
-				PollInterval:   int64(defaultPollInterval),
-				ReportInterval: int64(defaultReportInterval),
-			},
-			wantErr: nil,
-		},
-		{
-			name: "env values without flags",
-			args: args{
-				envAddress: "127.0.0.1:59483",
-				envPoll:    "15",
-				envReport:  "16",
-			},
-			want: &AgentConfig{
-				Config: Config{
-					Address: "127.0.0.1:59483",
-				},
-				PollInterval:   15,
-				ReportInterval: 16,
-			},
-		},
-		{
-			name: "flags values without env",
-			args: args{
-				flagAddress: "127.0.0.1:59455",
-				flagPoll:    "12",
-				flagReport:  "15",
-			},
-			want: &AgentConfig{
-				Config: Config{
-					Address: "127.0.0.1:59455",
-				},
-				PollInterval:   12,
-				ReportInterval: 15,
-			},
-		},
-		{
-			name: "flags values without env and without any report interval",
-			args: args{
-				flagAddress: "127.0.0.1:59455",
-				flagPoll:    "5",
-				flagReport:  "abc",
-			},
-			want:    nil,
-			wantErr: errInitConfig,
-		},
-
-		{
-			name: "flags values + env",
-			args: args{
-				envAddress:  "127.0.0.1:59483",
-				envPoll:     "3",
-				envReport:   "4",
-				flagAddress: "127.0.0.1:59455",
-				flagPoll:    "12",
-				flagReport:  "15",
-			},
-			want: &AgentConfig{
-				Config: Config{
-					Address: "127.0.0.1:59483",
-				},
-				PollInterval:   3,
-				ReportInterval: 4,
-			},
-		},
-	}
-	for _, test := range tests {
+	for _, test := range testsCasesAgentInitConfig {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			// ENV setup
-			if test.args.envAddress != "" {
-				origAddress := os.Getenv(addressEnvName)
-				err := os.Setenv(addressEnvName, test.args.envAddress)
-				newAddress := os.Getenv(addressEnvName)
-				log.Println("new address:", newAddress, " ", err)
-				t.Cleanup(func() { _ = os.Setenv(addressEnvName, origAddress) })
-			}
-			if test.args.envPoll != "" {
-				origPoll := os.Getenv(pollEnvName)
-				_ = os.Setenv(pollEnvName, test.args.envPoll)
-				t.Cleanup(func() { _ = os.Setenv(pollEnvName, origPoll) })
-			}
-			if test.args.envReport != "" {
-				origReport := os.Getenv(reportEnvName)
-				_ = os.Setenv(reportEnvName, test.args.envReport)
-				t.Cleanup(func() { _ = os.Setenv(reportEnvName, origReport) })
-			}
-
-			// Flags setup
-
-			if test.args.flagAddress != "" || test.args.flagPoll != "" || test.args.flagReport != "" {
+			envArgsAgentInitConfig(t, addressEnvName, test.args.envAddress) // ENV setup
+			envArgsAgentInitConfig(t, pollEnvName, test.args.envPoll)
+			envArgsAgentInitConfig(t, reportEnvName, test.args.envReport)
+			if test.args.flagAddress != "" || test.args.flagPoll != "" || test.args.flagReport != "" { // Flags setup
+				osArgOrig := os.Args
 				flag2.CommandLine = flag2.NewFlagSet(os.Args[0], flag2.ContinueOnError)
 				flag2.CommandLine.SetOutput(io.Discard)
-
-				osArgOrig := os.Args
 				os.Args = make([]string, 0)
 				os.Args = append(os.Args, osArgOrig[0])
-				if test.args.flagAddress != "" {
-					os.Args = append(os.Args, "-a")
-					os.Args = append(os.Args, test.args.flagAddress)
-				}
-				if test.args.flagPoll != "" {
-					os.Args = append(os.Args, "-p")
-					os.Args = append(os.Args, test.args.flagPoll)
-				}
-
-				if test.args.flagReport != "" {
-					os.Args = append(os.Args, "-r")
-					os.Args = append(os.Args, test.args.flagReport)
-				}
-
+				appendArgsAgentInitConfig(&os.Args, "-a", test.args.flagAddress)
+				appendArgsAgentInitConfig(&os.Args, "-p", test.args.flagPoll)
+				appendArgsAgentInitConfig(&os.Args, "-r", test.args.flagReport)
 				t.Cleanup(func() { os.Args = osArgOrig })
 			}
 
@@ -170,6 +102,24 @@ func TestAgentInitConfig(t *testing.T) {
 
 			assert.Equal(t, test.want, got, "Configs - got: %v, want: %v", got, test.want)
 		})
+	}
+}
+
+func envArgsAgentInitConfig(t *testing.T, key string, value string) {
+	t.Helper()
+	if value != "" {
+		origValue := os.Getenv(key)
+		err := os.Setenv(key, value)
+		log.Println("new "+key+":", value, " err:", err)
+		assert.NoError(t, err)
+		t.Cleanup(func() { _ = os.Setenv(key, origValue) })
+	}
+}
+
+func appendArgsAgentInitConfig(target *[]string, key string, value string) {
+	if value != "" {
+		*target = append(*target, key)
+		*target = append(*target, value)
 	}
 }
 

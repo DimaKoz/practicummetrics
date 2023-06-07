@@ -26,74 +26,36 @@ func TestNewMetricUnit(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "normal counter",
-			args: args{
-				metricType:  model.MetricTypeCounter,
-				metricName:  "test",
-				metricValue: "42",
-			},
+			name:    "normal counter",
+			args:    args{metricType: model.MetricTypeCounter, metricName: "test", metricValue: "42"},
 			want:    model.MetricUnit{Type: model.MetricTypeCounter, Name: "test", Value: "42", ValueInt: 42, ValueFloat: 0},
 			wantErr: nil,
 		},
 		{
-			name: "normal gauge",
-			args: args{
-				metricType:  model.MetricTypeGauge,
-				metricName:  "test",
-				metricValue: "42",
-			},
+			name:    "normal gauge",
+			args:    args{metricType: model.MetricTypeGauge, metricName: "test", metricValue: "42"},
 			want:    model.MetricUnit{Type: model.MetricTypeGauge, Name: "test", Value: "42", ValueInt: 0, ValueFloat: 42},
 			wantErr: nil,
 		},
 		{
-			name: "unknown type",
-			args: args{
-				metricType:  "xyz",
-				metricName:  "test",
-				metricValue: "42",
-			},
-			want:    model.EmptyMetric,
-			wantErr: model.ErrUnknownType,
+			name: "unknown type", want: model.EmptyMetric, wantErr: model.ErrUnknownType,
+			args: args{metricType: "xyz", metricName: "test", metricValue: "42"},
 		},
 		{
-			name: "empty name",
-			args: args{
-				metricType:  model.MetricTypeGauge,
-				metricName:  "",
-				metricValue: "42",
-			},
-			want:    model.EmptyMetric,
-			wantErr: model.ErrEmptyValue,
+			name: "empty name", want: model.EmptyMetric, wantErr: model.ErrEmptyValue,
+			args: args{metricType: model.MetricTypeGauge, metricName: "", metricValue: "42"},
 		},
 		{
-			name: "empty value",
-			args: args{
-				metricType:  model.MetricTypeGauge,
-				metricName:  "qaz",
-				metricValue: "",
-			},
-			want:    model.EmptyMetric,
-			wantErr: model.ErrEmptyValue,
+			name: "empty value", want: model.EmptyMetric, wantErr: model.ErrEmptyValue,
+			args: args{metricType: model.MetricTypeGauge, metricName: "qaz", metricValue: ""},
 		},
 		{
-			name: "no float value",
-			args: args{
-				metricType:  model.MetricTypeGauge,
-				metricName:  "qaz",
-				metricValue: "xexe",
-			},
-			want:    model.EmptyMetric,
-			wantErr: errBadValue,
+			name: "no float value", want: model.EmptyMetric, wantErr: errBadValue,
+			args: args{metricType: model.MetricTypeGauge, metricName: "qaz", metricValue: "xexe"},
 		},
 		{
-			name: "no int value",
-			args: args{
-				metricType:  model.MetricTypeCounter,
-				metricName:  "qaz",
-				metricValue: "xexe",
-			},
-			want:    model.EmptyMetric,
-			wantErr: errBadValue,
+			name: "no int value", want: model.EmptyMetric, wantErr: errBadValue,
+			args: args{metricType: model.MetricTypeCounter, metricName: "qaz", metricValue: "xexe"},
 		},
 	}
 	for _, testItem := range tests {

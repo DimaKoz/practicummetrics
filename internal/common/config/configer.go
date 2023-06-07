@@ -76,7 +76,7 @@ func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
 }
 
 func LoadAgentConfig() (*AgentConfig, error) {
-	cfg := &AgentConfig{}
+	cfg := &AgentConfig{} //nolint:exhaustruct
 
 	if err := processEnvAgent(cfg); err != nil {
 		return nil, fmt.Errorf("agent config: cannot process ENV variables: %w", err)
@@ -195,7 +195,7 @@ func processAgentFlags(cfg *AgentConfig) error {
 func ProcessEnvServer(config *ServerConfig) error {
 	log.Println(os.Environ())
 
-	opts := env.Options{
+	opts := env.Options{ //nolint:exhaustruct
 		OnSet: func(tag string, value interface{}, isDefault bool) {
 			if tag == "RESTORE" {
 				config.hasRestore = true

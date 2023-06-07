@@ -21,7 +21,7 @@ func TestLogValuesFunc(t *testing.T) {
 	sugar := *logger.Sugar()
 	zapSugar = sugar
 	e := echo.New()
-	assert.NoError(t, logValuesFunc(e.AcquireContext(), middleware.RequestLoggerValues{}))
+	assert.NoError(t, logValuesFunc(e.AcquireContext(), middleware.RequestLoggerValues{})) //nolint:exhaustruct
 }
 
 func TestGetRequestLoggerConfig(t *testing.T) {
@@ -48,7 +48,7 @@ func TestGetRequestLoggerConfig(t *testing.T) {
 			args: args{
 				sugar: sugar,
 			},
-			want: middleware.RequestLoggerConfig{
+			want: middleware.RequestLoggerConfig{ //nolint:exhaustruct
 				LogURI:           true,
 				LogStatus:        true,
 				LogLatency:       true,
