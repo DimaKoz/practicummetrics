@@ -32,7 +32,7 @@ jobs:
 
           # Optional: golangci-lint command line arguments.
           # args: --issues-exit-code=0
-          args: -v
+          args: -v --enable goerr113
           #args: --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable wsl --disable ifshort
 
 
