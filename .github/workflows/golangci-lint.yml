@@ -32,7 +32,7 @@ jobs:
 
           # Optional: golangci-lint command line arguments.
           # args: --issues-exit-code=0
-          args: -v -E goerr113 -E asasalint -E asciicheck -E bidichk -E bodyclose -E containedctx -E contextcheck -E cyclop -E deadcode -E decorder -E dogsled -E dupl -E dupword -E durationcheck -E errchkjson -E errname -E errorlint -E execinquery -E exhaustive -E exhaustruct -E exportloopref -E forbidigo -E forcetypeassert -E funlen -E gci -E ginkgolinter -E gocheckcompilerdirectives -E gochecknoinits -E gocognit -E goconst -E gocritic -E gocyclo -E godot -E godox -E gofmt -E gofumpt -E goheader -E goimports -E golint -E gomnd -E gomoddirectives -E gomodguard -E goprintffuncname -E gosec -E gosmopolitan -E grouper -E importas -E interfacebloat -E interfacer 
+          args: -v -E goerr113 -E asasalint -E asciicheck -E bidichk -E bodyclose -E containedctx -E contextcheck -E cyclop -E deadcode -E decorder -E dogsled -E dupl -E dupword -E durationcheck -E errchkjson -E errname -E errorlint -E execinquery -E exhaustive -E exhaustruct -E exportloopref -E forbidigo -E forcetypeassert -E funlen -E gci -E ginkgolinter -E gocheckcompilerdirectives -E gochecknoinits -E gocognit -E goconst -E gocritic -E gocyclo -E godot -E godox -E gofmt -E gofumpt -E goheader -E goimports -E golint -E gomnd -E gomoddirectives -E gomodguard -E goprintffuncname -E gosec -E gosmopolitan -E grouper -E importas -E interfacebloat -E interfacer -E ireturn -E lll -E loggercheck -E maintidx -E makezero -E maligned -E mirror -E misspell -E musttag 
           #args: --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable wsl --disable ifshort
 
 
