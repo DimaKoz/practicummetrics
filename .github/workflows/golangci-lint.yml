@@ -31,6 +31,7 @@ jobs:
 
           # Optional: golangci-lint command line arguments.
           # args: --issues-exit-code=0
+          args: --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable wsl
 
           # Optional: show only new issues if it's a pull request. The default value is `false`.
           # only-new-issues: true
