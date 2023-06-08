@@ -32,7 +32,7 @@ jobs:
 
           # Optional: golangci-lint command line arguments.
           # args: --issues-exit-code=0
-          args: -v -E goerr113 -E asasalint -E asciicheck -E bidichk -E bodyclose -E containedctx -E contextcheck -E cyclop -E deadcode -E decorder -E dogsled
+          args: -v -E goerr113 -E asasalint -E asciicheck -E bidichk -E bodyclose -E containedctx -E contextcheck -E cyclop -E deadcode -E decorder -E dogsled -E dupl -E -dupword
           #args: --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable wsl --disable ifshort
 
 
@@ -41,7 +41,7 @@ jobs:
 
           # Optional: if set to true then the all caching functionality will be complete disabled,
           #           takes precedence over all other caching options.
-          skip-cache: true
+          skip-cache: false
 
           # Optional: if set to true then the action don't cache or restore ~/go/pkg.
           # skip-pkg-cache: true
