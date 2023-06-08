@@ -4,8 +4,7 @@ on:
     tags:
       - v*
     branches:
-      - master
-      - main
+      - iter10
   pull_request:
 permissions:
   contents: read
