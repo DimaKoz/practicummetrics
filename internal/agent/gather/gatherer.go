@@ -1,12 +1,12 @@
 package gather
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"reflect"
 	"runtime"
 	"strconv"
-	"time"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 )
@@ -69,11 +69,14 @@ func collectOtherTypeMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error)
 	}
 
 	// RandomValue
-	random := rand.New(rand.NewSource(time.Now().UnixNano()))
+	var randInterval int64 = 100
+	var randomValue string
+	if n, err := rand.Int(rand.Reader, big.NewInt(randInterval)); err == nil {
+		randomValue = n.String()
+	} else {
+		return nil, fmt.Errorf(errFormatString, "RandomValue", err)
+	}
 
-	const randInterval = 100
-
-	randomValue := strconv.Itoa(random.Intn(randInterval))
 	if m, err := model.NewMetricUnit(model.MetricTypeGauge, "RandomValue", randomValue); err == nil {
 		result = append(result, m)
 	} else {
