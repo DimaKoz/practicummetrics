@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"time"
 
@@ -8,11 +9,17 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/DimaKoz/practicummetrics/internal/server"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
+	"github.com/DimaKoz/practicummetrics/internal/server/sqldb"
+	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
 
 func main() {
+	// DB connection
+	// urlExample := "postgres://videos:userpassword@localhost:5432/testdb"
+	// _ = os.Setenv("DATABASE_DSN", urlExample)
+
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		panic(err)
@@ -32,6 +39,13 @@ func main() {
 	}
 
 	printCfgInfo(cfg, sugar)
+
+	var conn *pgx.Conn
+	if conn, err = sqldb.ConnectDB(cfg, sugar); err == nil {
+		defer conn.Close(context.Background())
+	} else {
+		sugar.Warnf("failed to get a db connection by %s", err.Error())
+	}
 
 	if _, err = os.Stat(cfg.FileStoragePath); os.IsNotExist(err) {
 		cfg.Restore = false
@@ -60,7 +74,7 @@ func main() {
 		}
 	}
 
-	startServer(cfg, sugar)
+	startServer(cfg, conn, sugar)
 }
 
 func loadIfNeed(cfg *config.ServerConfig, sugar zap.SugaredLogger) {
@@ -79,10 +93,10 @@ func printCfgInfo(cfg *config.ServerConfig, sugar zap.SugaredLogger) {
 	sugar.Infow("Starting server")
 }
 
-func startServer(cfg *config.ServerConfig, sugar zap.SugaredLogger) {
+func startServer(cfg *config.ServerConfig, conn *pgx.Conn, sugar zap.SugaredLogger) {
 	e := echo.New()
 	server.SetupMiddleware(e, sugar)
-	server.SetupRouter(e)
+	server.SetupRouter(e, conn)
 
 	if err := e.Start(cfg.Address); err != nil {
 		sugar.Fatalf("couldn't start the server by %s", err)

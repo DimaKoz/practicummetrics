@@ -174,6 +174,7 @@ func TestLoadServerConfig(t *testing.T) {
 			Address: defaultAddress,
 		},
 		StoreInterval:   defaultStoreInterval,
+		ConnectionDB:    unknownStringFieldValue,
 		FileStoragePath: defaultFileStoragePath,
 		hasRestore:      true,
 		Restore:         defaultRestore,

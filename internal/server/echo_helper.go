@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	middleware2 "github.com/DimaKoz/practicummetrics/internal/server/middleware"
+	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
@@ -21,10 +22,13 @@ func SetupMiddleware(echoFramework *echo.Echo, logger zap.SugaredLogger) {
 }
 
 // SetupRouter adds some paths to Echo framework.
-func SetupRouter(e *echo.Echo) {
-	e.POST("/update/:type/:name/:value", handler.UpdateHandler)
-	e.POST("/update/", handler.UpdateHandlerJSON)
-	e.GET("/value/:type/:name", handler.ValueHandler)
-	e.POST("/value/", handler.ValueHandlerJSON)
-	e.GET("/", handler.RootHandler)
+func SetupRouter(echoFramework *echo.Echo, conn *pgx.Conn) {
+	echoFramework.POST("/update/:type/:name/:value", handler.UpdateHandler)
+	echoFramework.POST("/update/", handler.UpdateHandlerJSON)
+	echoFramework.GET("/value/:type/:name", handler.ValueHandler)
+	echoFramework.POST("/value/", handler.ValueHandlerJSON)
+	echoFramework.GET("/", handler.RootHandler)
+
+	dbHandler := handler.NewBaseHandler(conn)
+	echoFramework.GET("/ping", dbHandler.PingHandler)
 }

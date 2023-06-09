@@ -38,6 +38,7 @@ type ServerConfig struct {
 	Config
 	StoreInterval   int64  `env:"STORE_INTERVAL"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+	ConnectionDB    string `env:"DATABASE_DSN"`
 	hasRestore      bool
 	Restore         bool `env:"RESTORE"`
 }
@@ -48,6 +49,7 @@ func NewServerConfig() *ServerConfig {
 		Config:          Config{Address: unknownStringFieldValue},
 		StoreInterval:   unknownIntFieldValue,
 		FileStoragePath: unknownStringFieldValue,
+		ConnectionDB:    unknownStringFieldValue,
 		hasRestore:      false,
 		Restore:         true,
 	}
@@ -91,7 +93,7 @@ func LoadAgentConfig() (*AgentConfig, error) {
 	return cfg, nil
 }
 
-func addServerFlags(cfg *ServerConfig, address *string, rFlag *string, iFlag *string, fFlag *string) {
+func addServerFlags(cfg *ServerConfig, address *string, rFlag *string, iFlag *string, fFlag *string, dFlag *string) {
 	if cfg.Address == unknownStringFieldValue {
 		flag2.StringVarP(address, "a", "a", unknownStringFieldValue, "")
 	}
@@ -105,7 +107,11 @@ func addServerFlags(cfg *ServerConfig, address *string, rFlag *string, iFlag *st
 	}
 
 	if cfg.FileStoragePath == unknownStringFieldValue {
-		flag2.StringVarP(fFlag, "f", "f", "unknownStringFieldValue", "")
+		flag2.StringVarP(fFlag, "f", "f", unknownStringFieldValue, "")
+	}
+
+	if cfg.ConnectionDB == unknownStringFieldValue {
+		flag2.StringVarP(dFlag, "d", "d", unknownStringFieldValue, "")
 	}
 }
 
@@ -114,8 +120,9 @@ func processServerFlags(cfg *ServerConfig) error {
 	address := unknownStringFieldValue
 	rFlag := unknownStringFieldValue
 	fFlag := unknownStringFieldValue
+	dFlag := unknownStringFieldValue
 	var iFlag string
-	addServerFlags(cfg, &address, &rFlag, &iFlag, &fFlag)
+	addServerFlags(cfg, &address, &rFlag, &iFlag, &fFlag, &dFlag)
 
 	flag2.Parse()
 
@@ -125,6 +132,10 @@ func processServerFlags(cfg *ServerConfig) error {
 
 	if fFlag != unknownStringFieldValue {
 		cfg.FileStoragePath = fFlag
+	}
+
+	if dFlag != unknownStringFieldValue {
+		cfg.ConnectionDB = dFlag
 	}
 
 	if !cfg.hasRestore && rFlag != unknownStringFieldValue {
@@ -262,6 +273,7 @@ func setupDefaultAgentValues(config *AgentConfig,
 
 func (cfg ServerConfig) String() string {
 	return fmt.Sprintf("Address: %s \n StoreInterval: %d \n"+
-		" FileStoragePath: %s \n "+
-		"Restore: %t \n", cfg.Address, cfg.StoreInterval, cfg.FileStoragePath, cfg.Restore)
+		" FileStoragePath: %s \n"+
+		" ConnectionDB: %s \n"+
+		" Restore: %t \n", cfg.Address, cfg.StoreInterval, cfg.FileStoragePath, cfg.ConnectionDB, cfg.Restore)
 }

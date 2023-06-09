@@ -50,7 +50,7 @@ lnt:
 	# excluded 'exhaustivestruct' - deprecated
 	# excluded 'depguard' - no need in it
 	# excluded 'ifshort' - deprecated
-	golangci-lint run --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable ifshort --disable wsl
+	golangci-lint run -v --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable wsl
 
 
 fmt:

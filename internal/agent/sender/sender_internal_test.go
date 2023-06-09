@@ -79,10 +79,7 @@ func TestParcelsSend(t *testing.T) {
 }
 
 func readByte() {
-	err := io.EOF // force an error
-	if err != nil {
-		return
-	}
+	_ = io.EOF // force an error
 }
 
 func TestPrintSender(t *testing.T) {
