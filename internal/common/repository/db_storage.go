@@ -53,6 +53,8 @@ func AddMetricToDB(dbConn *pgx.Conn, metricUnit model.MetricUnit) (model.MetricU
 	return metricUnit, nil
 }
 
+// GetMetricByNameFromDB returns a model.MetricUnit and nil error if found
+// or model.EmptyMetric and an error.
 func GetMetricByNameFromDB(dbConn *pgx.Conn, name string) (model.MetricUnit, error) {
 	var nameM, typeM, valueM string
 	row := dbConn.QueryRow(context.Background(), "select name, type, value from metrics where name=$1", name)
