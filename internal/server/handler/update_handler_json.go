@@ -13,6 +13,7 @@ import (
 
 var syncSaveUpdateHandlerJSON = false
 
+// SetSyncSaveUpdateHandlerJSON enables synchronization to save data to a file.
 func SetSyncSaveUpdateHandlerJSON(sync bool) {
 	syncSaveUpdateHandlerJSON = sync
 }

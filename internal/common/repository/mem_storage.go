@@ -92,7 +92,7 @@ func Load() error {
 		return fmt.Errorf("can't read '%s' file with error: %w", filePathStorage, err)
 	}
 
-	if err := json.Unmarshal(data, &metricUnits); err != nil {
+	if err = json.Unmarshal(data, &metricUnits); err != nil {
 		return fmt.Errorf("failed to parse json with error: %w", err)
 	}
 

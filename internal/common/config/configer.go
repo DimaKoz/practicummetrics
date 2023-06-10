@@ -28,12 +28,14 @@ type Config struct {
 	Address string `env:"ADDRESS"`
 }
 
+// AgentConfig represents a config of the agent.
 type AgentConfig struct {
 	Config
 	ReportInterval int64 `env:"REPORT_INTERVAL"`
 	PollInterval   int64 `env:"POLL_INTERVAL"`
 }
 
+// ServerConfig represents a config of the server.
 type ServerConfig struct {
 	Config
 	StoreInterval   int64  `env:"STORE_INTERVAL"`
@@ -77,6 +79,7 @@ func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
 	return nil
 }
 
+// LoadAgentConfig returns *AgentConfig.
 func LoadAgentConfig() (*AgentConfig, error) {
 	cfg := &AgentConfig{} //nolint:exhaustruct
 
