@@ -274,6 +274,11 @@ func setupDefaultAgentValues(config *AgentConfig,
 	}
 }
 
+// IsUseDatabase shows an ability to use a DB by ServerConfig.
+func (cfg ServerConfig) IsUseDatabase() bool {
+	return cfg.ConnectionDB != "" && cfg.ConnectionDB != unknownStringFieldValue
+}
+
 func (cfg ServerConfig) String() string {
 	return fmt.Sprintf("Address: %s \n StoreInterval: %d \n"+
 		" FileStoragePath: %s \n"+

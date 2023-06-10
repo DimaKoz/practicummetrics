@@ -61,7 +61,7 @@ func TestValueHandler(t *testing.T) {
 				ctx.SetParamNames([]string{"name"}...)
 				ctx.SetParamValues([]string{"testCounter132"}...)
 			}
-			_ = handler.ValueHandler(ctx)
+			_ = handler.NewBaseHandler(nil).ValueHandler(ctx)
 			res := responseRecorder.Result()
 			assert.Equal(t, test.want.code, res.StatusCode, "StatusCode got: %v, want: %v", res.StatusCode, test.want.code)
 

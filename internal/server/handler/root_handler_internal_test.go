@@ -36,12 +36,13 @@ func TestRootHandler(t *testing.T) {
 	for _, testItem := range tests {
 		test := testItem
 		t.Run(test.name, func(t *testing.T) {
+			dbHandler := NewBaseHandler(nil)
 			e := echo.New()
 			request := httptest.NewRequest(test.method, test.target, nil)
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
 			c := e.NewContext(request, w)
-			_ = RootHandler(c)
+			_ = dbHandler.RootHandler(c)
 
 			res := w.Result()
 			// проверяем код ответа

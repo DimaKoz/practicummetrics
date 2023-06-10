@@ -59,7 +59,7 @@ func TestValueHandlerJSON(t *testing.T) {
 			echoFramework := echo.New()
 			request, respRecorder := setupEchoHandlerJSONTest(test.reqJSON, test.request)
 			ctx := echoFramework.NewContext(request, respRecorder)
-			err = handler.ValueHandlerJSON(ctx)
+			err = handler.NewBaseHandler(nil).ValueHandlerJSON(ctx)
 			assert.NoError(t, err, "expected no errors")
 
 			res := respRecorder.Result()

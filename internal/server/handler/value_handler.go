@@ -10,7 +10,7 @@ import (
 )
 
 // ValueHandler handles `/value/`.
-func ValueHandler(ctx echo.Context) error {
+func (h *BaseHandler) ValueHandler(ctx echo.Context) error {
 	name := ctx.Param("name")
 
 	var (
@@ -18,7 +18,13 @@ func ValueHandler(ctx echo.Context) error {
 		err        error
 	)
 
-	if metricUnit, err = repository.GetMetricByName(name); err != nil {
+	if h != nil && h.conn != nil {
+		metricUnit, err = repository.GetMetricByNameFromDB(h.conn, name)
+	} else {
+		metricUnit, err = repository.GetMetricByName(name)
+	}
+
+	if err != nil {
 		errDesc := fmt.Sprintf(" 'value' handler: %s", err.Error())
 		err = fmt.Errorf("failed to get MetricUnit: %w", ctx.String(http.StatusNotFound, errDesc))
 

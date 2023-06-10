@@ -19,15 +19,10 @@ func SetSyncSaveUpdateHandlerJSON(sync bool) {
 }
 
 // UpdateHandlerJSON handles `/update` with json.
-func UpdateHandlerJSON(ctx echo.Context) error {
+func (h *BaseHandler) UpdateHandlerJSON(ctx echo.Context) error {
 	metrics := model.NewEmptyMetrics()
 	if err := ctx.Bind(&metrics); err != nil {
-		err = ctx.String(http.StatusBadRequest, fmt.Sprintf("UpdateHandlerJSON: failed to parse json: %s", err))
-		if err != nil {
-			err = fmt.Errorf("%w", err)
-		}
-
-		return err
+		return wrapUpdHandlerErr(ctx, http.StatusBadRequest, "UpdateHandlerJSON: failed to parse json: %s", err)
 	}
 	prepModelValue, err := metrics.GetPreparedValue()
 	if err != nil {
@@ -44,9 +39,26 @@ func UpdateHandlerJSON(ctx echo.Context) error {
 
 		return wrapUpdHandlerErr(ctx, statusCode, "UpdateHandlerJSON: cannot create metric: %s", err)
 	}
-	mu := repository.AddMetric(muIncome)
-	metrics.UpdateByMetricUnit(mu)
+	var metricUnit model.MetricUnit
+	if h != nil && h.conn != nil {
+		if metricUnit, err = repository.AddMetricToDB(h.conn, muIncome); err != nil {
+			return wrapUpdHandlerErr(ctx, http.StatusInternalServerError, "UpdateHandlerJSON: cannot create metric: %s", err)
+		}
+	} else {
+		metricUnit = repository.AddMetric(muIncome)
+	}
 
+	metrics.UpdateByMetricUnit(metricUnit)
+
+	save()
+	if err = ctx.JSON(http.StatusOK, metrics); err != nil {
+		err = fmt.Errorf("%w", err)
+	}
+
+	return err
+}
+
+func save() {
 	if syncSaveUpdateHandlerJSON {
 		go func() {
 			err := repository.Save()
@@ -55,11 +67,6 @@ func UpdateHandlerJSON(ctx echo.Context) error {
 			}
 		}()
 	}
-	if err = ctx.JSON(http.StatusOK, metrics); err != nil {
-		err = fmt.Errorf("%w", err)
-	}
-
-	return err
 }
 
 func wrapUpdHandlerErr(ctx echo.Context, statusCode int, msg string, errIn error) error {

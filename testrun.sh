@@ -132,3 +132,17 @@ export RESTORE=true
 metricstest-darwin-amd64 -test.v -test.run=^TestIteration10[AB]$ -database-dsn='postgres://videos:userpassword@localhost:5432/testdb' -file-storage-path=$TEMP_FILE -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log10.txt
 CLEAN_AFTER_TEST
 echo "Iter 10: $(tail -1 ./log10.txt)"
+
+
+echo "Iter 11..."
+rm /tmp/metrics-db.json
+RANDOM_PORT=$(EPHEMERAL_PORT)
+echo RANDOM_PORT: "$RANDOM_PORT"
+export ADDRESS="localhost:${RANDOM_PORT}"
+export TEMP_FILE="./tempfile${RANDOM_PORT}"
+echo TEMP FILE: "$TEMP_FILE"
+export RESTORE=true
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration11$ -database-dsn='postgres://localhost:5432/testdb?sslmode=disable' -file-storage-path=$TEMP_FILE -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log11.txt
+CLEAN_AFTER_TEST
+echo "Iter 11: $(tail -1 ./log11.txt)"
+

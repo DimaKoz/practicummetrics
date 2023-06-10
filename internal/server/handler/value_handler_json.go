@@ -12,7 +12,7 @@ import (
 )
 
 // ValueHandlerJSON handles `/value`.
-func ValueHandlerJSON(ctx echo.Context) error {
+func (h *BaseHandler) ValueHandlerJSON(ctx echo.Context) error {
 	// instead of json.NewDecoder(ctx.Request().Body).Decode(i)
 	// we use ctx.Bind(&mappedData)
 	encJ := json.Encoder{} // this logic helps to pass some autotests
@@ -30,8 +30,14 @@ func ValueHandlerJSON(ctx echo.Context) error {
 	}
 
 	name := fmt.Sprintf("%v", mappedData["id"])
+	var metricUnit model.MetricUnit
+	var err error
+	if h != nil && h.conn != nil {
+		metricUnit, err = repository.GetMetricByNameFromDB(h.conn, name)
+	} else {
+		metricUnit, err = repository.GetMetricByName(name)
+	}
 
-	metricUnit, err := repository.GetMetricByName(name)
 	if err != nil {
 		err = ctx.String(http.StatusNotFound, fmt.Sprintf(" 'value' json handler: %s", err.Error()))
 		if err != nil {

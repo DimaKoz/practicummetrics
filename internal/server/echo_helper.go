@@ -23,12 +23,12 @@ func SetupMiddleware(echoFramework *echo.Echo, logger zap.SugaredLogger) {
 
 // SetupRouter adds some paths to Echo framework.
 func SetupRouter(echoFramework *echo.Echo, conn *pgx.Conn) {
-	echoFramework.POST("/update/:type/:name/:value", handler.UpdateHandler)
-	echoFramework.POST("/update/", handler.UpdateHandlerJSON)
-	echoFramework.GET("/value/:type/:name", handler.ValueHandler)
-	echoFramework.POST("/value/", handler.ValueHandlerJSON)
-	echoFramework.GET("/", handler.RootHandler)
-
 	dbHandler := handler.NewBaseHandler(conn)
+	echoFramework.POST("/update/:type/:name/:value", handler.UpdateHandler)
+	echoFramework.POST("/update/", dbHandler.UpdateHandlerJSON)
+	echoFramework.GET("/value/:type/:name", dbHandler.ValueHandler)
+	echoFramework.POST("/value/", dbHandler.ValueHandlerJSON)
+	echoFramework.GET("/", dbHandler.RootHandler)
+
 	echoFramework.GET("/ping", dbHandler.PingHandler)
 }

@@ -18,6 +18,7 @@ import (
 func main() {
 	// DB connection
 	// urlExample := "postgres://videos:userpassword@localhost:5432/testdb"
+	// urlExample := "postgres://localhost:5432/testdb?sslmode=disable"
 	// _ = os.Setenv("DATABASE_DSN", urlExample)
 
 	logger, err := zap.NewDevelopment()
@@ -78,6 +79,9 @@ func main() {
 }
 
 func loadIfNeed(cfg *config.ServerConfig, sugar zap.SugaredLogger) {
+	if cfg.IsUseDatabase() {
+		return
+	}
 	needLoad := cfg.Restore && cfg.FileStoragePath != ""
 	if needLoad {
 		if err := repository.Load(); err != nil {

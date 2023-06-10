@@ -61,7 +61,7 @@ func TestUpdateHandlerJSON(t *testing.T) {
 			request.Header.Set("Content-Type", "application/json")
 
 			c := echoFramework.NewContext(request, responseRecorder)
-			err := handler.UpdateHandlerJSON(c)
+			err := handler.NewBaseHandler(nil).UpdateHandlerJSON(c)
 			assert.NoError(t, err, "expected no errors")
 
 			res := responseRecorder.Result()

@@ -11,14 +11,20 @@ import (
 )
 
 // RootHandler handles `/`.
-func RootHandler(ctx echo.Context) error {
-	metrics := repository.GetAllMetrics()
+func (h *BaseHandler) RootHandler(ctx echo.Context) error {
+	var metrics []model.MetricUnit
+	var err error
+	if h != nil && h.conn != nil {
+		metrics, _ = repository.GetAllMetricsFromDB(h.conn)
+	} else {
+		metrics = repository.GetAllMetrics()
+	}
 
 	str := getHTMLContent(metrics)
 
 	ctx.Response().Header().Set(echo.HeaderContentType, "text/html; charset=utf-8")
 
-	if err := ctx.String(http.StatusOK, str); err != nil {
+	if err = ctx.String(http.StatusOK, str); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
