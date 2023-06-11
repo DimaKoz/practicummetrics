@@ -15,7 +15,7 @@ func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 	var targetURL string
 	if len(metrics) < minimumBatchNumber { // sending one by one
 		emptyMetrics := model.NewEmptyMetrics()
-		targetURL = getOneMetricTargetURL(cfg.Address)
+		targetURL = getMetricsUpdateTargetURL(cfg.Address, endpointParcelSend)
 		for _, unit := range metrics {
 			request := client.R()
 			emptyMetrics.UpdateByMetricUnit(unit)
@@ -28,7 +28,7 @@ func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 			}
 		}
 	} else { // do batch request
-		targetURL = getMetricsTargetURL(cfg.Address)
+		targetURL = getMetricsUpdateTargetURL(cfg.Address, endpointParcelsSend)
 		request := client.R()
 		addHeadersToRequest(request)
 		metrcsSending := make([]model.Metrics, 0, len(metrics))
@@ -61,24 +61,13 @@ const (
 	minimumBatchNumber  = 2
 )
 
-func getOneMetricTargetURL(address string) string {
-	buffLen := len(protocolParcelsSend) + len(endpointParcelSend) + len(address)
+func getMetricsUpdateTargetURL(address string, endpoint string) string {
+	buffLen := len(protocolParcelsSend) + len(endpoint) + len(address)
 	strBld := strings.Builder{}
 	strBld.Grow(buffLen)
 	strBld.WriteString(protocolParcelsSend)
 	strBld.WriteString(address)
-	strBld.WriteString(endpointParcelSend)
-
-	return strBld.String()
-}
-
-func getMetricsTargetURL(address string) string {
-	buffLen := len(protocolParcelsSend) + len(endpointParcelsSend) + len(address)
-	strBld := strings.Builder{}
-	strBld.Grow(buffLen)
-	strBld.WriteString(protocolParcelsSend)
-	strBld.WriteString(address)
-	strBld.WriteString(endpointParcelsSend)
+	strBld.WriteString(endpoint)
 
 	return strBld.String()
 }

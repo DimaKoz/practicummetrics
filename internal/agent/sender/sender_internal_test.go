@@ -130,7 +130,8 @@ func TestGetTargetURL(t *testing.T) {
 	for _, testItem := range tests {
 		test := testItem
 		t.Run(test.name, func(t *testing.T) {
-			assert.Equalf(t, test.want, getOneMetricTargetURL(test.args.address), "getOneMetricTargetURL(%v)", test.args.address)
+			got := getMetricsUpdateTargetURL(test.args.address, endpointParcelSend)
+			assert.Equalf(t, test.want, got, "getMetricsUpdateTargetURL(%v)", test.args.address)
 		})
 	}
 }

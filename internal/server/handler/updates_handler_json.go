@@ -38,27 +38,9 @@ func (h *BaseHandler) UpdatesHandlerJSON(ctx echo.Context) error {
 	}
 
 	if h != nil && h.conn != nil {
-		/*transaction, err := h.conn.Begin(context.TODO())
-		if err != nil {
-			return wrapUpdsHandlerErr(ctx, http.StatusBadRequest, "UpdatesHandlerJSON: failed to get a transaction: %s", err)
-		}*/
 		if err := processMetricUnits(ctx, h.conn, metricUnits); err != nil {
 			return err
 		}
-		/*		for _, unit := range metricUnits {
-							if metricUnit, err = repository.AddMetricTxToDB(&transaction, unit); err != nil {
-								_ = transaction.Rollback(context.TODO())
-
-								return wrapUpdsHandlerErr(ctx,
-				http.StatusInternalServerError, "UpdatesHandlerJSON: cannot create metric: %s", err)
-							}
-							metrics.UpdateByMetricUnit(metricUnit)
-						}
-		*/
-		/*if err = transaction.Commit(context.TODO()); err != nil {
-			return wrapUpdsHandlerErr(ctx, http.StatusInternalServerError,
-				"UpdatesHandlerJSON: failed to commit a transaction: %s", err)
-		}*/
 	} else {
 		for _, unit := range metricUnits {
 			_ = repository.AddMetric(unit)
