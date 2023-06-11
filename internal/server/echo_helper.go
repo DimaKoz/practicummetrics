@@ -25,6 +25,7 @@ func SetupMiddleware(echoFramework *echo.Echo, logger zap.SugaredLogger) {
 func SetupRouter(echoFramework *echo.Echo, conn *pgx.Conn) {
 	dbHandler := handler.NewBaseHandler(conn)
 	echoFramework.POST("/update/:type/:name/:value", handler.UpdateHandler)
+	echoFramework.POST("/updates/", dbHandler.UpdatesHandlerJSON)
 	echoFramework.POST("/update/", dbHandler.UpdateHandlerJSON)
 	echoFramework.GET("/value/:type/:name", dbHandler.ValueHandler)
 	echoFramework.POST("/value/", dbHandler.ValueHandlerJSON)
