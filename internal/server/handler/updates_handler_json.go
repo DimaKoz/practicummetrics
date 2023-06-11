@@ -9,13 +9,14 @@ import (
 
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
+	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 )
 
 // UpdatesHandlerJSON handles `/updates/` with json.
 func (h *BaseHandler) UpdatesHandlerJSON(ctx echo.Context) error {
 	metricsSlice := make([]model.Metrics, 0)
-	metrics := model.NewEmptyMetrics()
+
 	if err := ctx.Bind(&metricsSlice); err != nil {
 		return wrapUpdsHandlerErr(ctx, http.StatusBadRequest, "UpdatesHandlerJSON: failed to parse json: %s", err)
 	}
@@ -29,35 +30,35 @@ func (h *BaseHandler) UpdatesHandlerJSON(ctx echo.Context) error {
 		}
 		muIncome, err := model.NewMetricUnit(item.MType, item.ID, prepModelValue)
 		if err != nil {
-			statusCode := http.StatusBadRequest
-			if errors.Is(err, model.ErrUnknownType) {
-				statusCode = http.StatusNotImplemented
-			}
+			statusCode := getUpdatesStatusCode(err)
 
 			return wrapUpdsHandlerErr(ctx, statusCode, "UpdatesHandlerJSON: cannot create metric: %s", err)
 		}
 		metricUnits = append(metricUnits, muIncome)
 	}
-	var metricUnit model.MetricUnit
+
 	if h != nil && h.conn != nil {
-		tx, err := h.conn.Begin(context.TODO())
+		/*transaction, err := h.conn.Begin(context.TODO())
 		if err != nil {
 			return wrapUpdsHandlerErr(ctx, http.StatusBadRequest, "UpdatesHandlerJSON: failed to get a transaction: %s", err)
+		}*/
+		if err := processMetricUnits(ctx, h.conn, metricUnits); err != nil {
+			return err
 		}
-		for _, unit := range metricUnits {
-			if metricUnit, err = repository.AddMetricTxToDB(&tx, unit); err != nil {
-				_ = tx.Rollback(context.TODO())
-				return wrapUpdsHandlerErr(ctx, http.StatusInternalServerError, "UpdatesHandlerJSON: cannot create metric: %s", err)
-			} else {
-				metrics.UpdateByMetricUnit(metricUnit)
-			}
-		}
-		if err = tx.Commit(context.TODO()); err != nil {
+		/*		for _, unit := range metricUnits {
+							if metricUnit, err = repository.AddMetricTxToDB(&transaction, unit); err != nil {
+								_ = transaction.Rollback(context.TODO())
 
-			return wrapUpdsHandlerErr(ctx, http.StatusInternalServerError, "UpdatesHandlerJSON: failed to commit a transaction: %s", err)
-
-		}
-
+								return wrapUpdsHandlerErr(ctx,
+				http.StatusInternalServerError, "UpdatesHandlerJSON: cannot create metric: %s", err)
+							}
+							metrics.UpdateByMetricUnit(metricUnit)
+						}
+		*/
+		/*if err = transaction.Commit(context.TODO()); err != nil {
+			return wrapUpdsHandlerErr(ctx, http.StatusInternalServerError,
+				"UpdatesHandlerJSON: failed to commit a transaction: %s", err)
+		}*/
 	} else {
 		for _, unit := range metricUnits {
 			_ = repository.AddMetric(unit)
@@ -66,6 +67,7 @@ func (h *BaseHandler) UpdatesHandlerJSON(ctx echo.Context) error {
 	saveUpdates()
 	if err := ctx.NoContent(http.StatusOK); err != nil {
 		err = fmt.Errorf("%w", err)
+
 		return err
 	}
 
@@ -83,6 +85,15 @@ func saveUpdates() {
 	}
 }
 
+func getUpdatesStatusCode(err error) int {
+	statusCode := http.StatusBadRequest
+	if errors.Is(err, model.ErrUnknownType) {
+		statusCode = http.StatusNotImplemented
+	}
+
+	return statusCode
+}
+
 func wrapUpdsHandlerErr(ctx echo.Context, statusCode int, msg string, errIn error) error {
 	err := ctx.String(statusCode, fmt.Sprintf(msg, errIn))
 	if err != nil {
@@ -90,4 +101,25 @@ func wrapUpdsHandlerErr(ctx echo.Context, statusCode int, msg string, errIn erro
 	}
 
 	return err
+}
+
+func processMetricUnits(ctx echo.Context, conn *pgx.Conn, metricUnits []model.MetricUnit) error {
+	transaction, err := conn.Begin(context.TODO())
+	if err != nil {
+		return wrapUpdsHandlerErr(ctx, http.StatusBadRequest, "UpdatesHandlerJSON: failed to get a transaction: %s", err)
+	}
+
+	for _, unit := range metricUnits {
+		if _, err := repository.AddMetricTxToDB(&transaction, unit); err != nil {
+			_ = transaction.Rollback(context.TODO())
+
+			return wrapUpdsHandlerErr(ctx, http.StatusInternalServerError, "UpdatesHandlerJSON: cannot create metric: %s", err)
+		}
+	}
+	if err = transaction.Commit(context.TODO()); err != nil {
+		return wrapUpdsHandlerErr(ctx, http.StatusInternalServerError,
+			"UpdatesHandlerJSON: failed to commit a transaction: %s", err)
+	}
+
+	return nil
 }

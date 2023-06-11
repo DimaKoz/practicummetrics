@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -32,10 +31,7 @@ func (h *BaseHandler) UpdateHandlerJSON(ctx echo.Context) error {
 	}
 	muIncome, err := model.NewMetricUnit(metrics.MType, metrics.ID, prepModelValue)
 	if err != nil {
-		statusCode := http.StatusBadRequest
-		if errors.Is(err, model.ErrUnknownType) {
-			statusCode = http.StatusNotImplemented
-		}
+		statusCode := getUpdatesStatusCode(err)
 
 		return wrapUpdHandlerErr(ctx, statusCode, "UpdateHandlerJSON: cannot create metric: %s", err)
 	}
