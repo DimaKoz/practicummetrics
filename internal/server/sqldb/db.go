@@ -8,8 +8,19 @@ import (
 
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"go.uber.org/zap"
 )
+
+type PgxIface interface {
+	Begin(context.Context) (pgx.Tx, error)
+	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
+	QueryRow(context.Context, string, ...interface{}) pgx.Row
+	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
+	Ping(context.Context) error
+	Prepare(context.Context, string, string) (*pgconn.StatementDescription, error)
+	Close(context.Context) error
+}
 
 var errNoInfoConnectionDB = errors.New("no DB connection info")
 
@@ -22,7 +33,9 @@ func ConnectDB(cfg *config.ServerConfig, sugar zap.SugaredLogger) (*pgx.Conn, er
 	if err != nil {
 		return nil, fmt.Errorf("failed to get a DB connection: %w", err)
 	}
-	if err = createTables(conn); err != nil {
+	timeout := 10
+	var db PgxIface = conn
+	if err = createTables(&db, timeout); err != nil {
 		return nil, err
 	}
 	sugar.Info("successfully connected to db", conn)
@@ -32,7 +45,7 @@ func ConnectDB(cfg *config.ServerConfig, sugar zap.SugaredLogger) (*pgx.Conn, er
 	return conn, nil
 }
 
-func createTables(pgConn *pgx.Conn) error {
+func createTables(pgConn *PgxIface, timeout int) error {
 	sqlString := `CREATE TABLE IF NOT EXISTS metrics
 (
     id   SERIAL PRIMARY KEY,
@@ -41,11 +54,10 @@ func createTables(pgConn *pgx.Conn) error {
     value VARCHAR (200) NOT NULL
 );`
 
-	timeout := 10
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 	defer cancel()
 
-	if _, err := pgConn.Exec(ctx, sqlString); err != nil {
+	if _, err := (*pgConn).Exec(ctx, sqlString); err != nil {
 		return fmt.Errorf("failed to create tables: %w", err)
 	}
 
