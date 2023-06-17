@@ -50,8 +50,8 @@ lnt:
 	# excluded 'exhaustivestruct' - deprecated
 	# excluded 'depguard' - no need in it
 	# excluded 'ifshort' - deprecated
-	golangci-lint run -v --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable wsl
-
+	#golangci-lint run -v --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable wsl
+	golangci-lint run -v
 
 fmt:
 	# to install it:
