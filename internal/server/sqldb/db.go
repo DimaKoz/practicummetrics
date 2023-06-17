@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS metrics
     type  VARCHAR(100) NOT NULL,
     value VARCHAR(200) NOT NULL
 );
-CREATE INDEX IF NOT EXISTS name
+CREATE INDEX IF NOT EXISTS idx_metrics_name
     ON metrics USING hash (name);
 `
 
