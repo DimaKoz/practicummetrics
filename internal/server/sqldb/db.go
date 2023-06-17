@@ -46,13 +46,17 @@ func ConnectDB(cfg *config.ServerConfig, sugar zap.SugaredLogger) (*pgx.Conn, er
 }
 
 func createTables(pgConn *PgxIface, timeout int) error {
-	sqlString := `CREATE TABLE IF NOT EXISTS metrics
+	sqlString := `
+CREATE TABLE IF NOT EXISTS metrics
 (
-    id   SERIAL PRIMARY KEY,
-    name VARCHAR(200) NOT NULL,
-    type VARCHAR(100) NOT NULL,
-    value VARCHAR (200) NOT NULL
-);`
+    id    SERIAL PRIMARY KEY,
+    name  VARCHAR(200) NOT NULL,
+    type  VARCHAR(100) NOT NULL,
+    value VARCHAR(200) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS name
+    ON metrics USING hash (name);
+`
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 	defer cancel()
