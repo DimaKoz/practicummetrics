@@ -1,0 +1,14 @@
+BEGIN TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS metrics
+(
+    id    SERIAL PRIMARY KEY,
+    name  VARCHAR(200) NOT NULL,
+    type  VARCHAR(100) NOT NULL,
+    value VARCHAR(200) NOT NULL
+    );
+
+CREATE INDEX IF NOT EXISTS idx_metrics_name
+    ON metrics USING hash (name);
+
+COMMIT;

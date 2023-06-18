@@ -1,0 +1,7 @@
+BEGIN TRANSACTION;
+
+DROP INDEX IF EXISTS idx_metrics_name;
+
+DROP TABLE IF EXISTS metrics;
+
+COMMIT;
