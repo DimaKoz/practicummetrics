@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 
@@ -15,27 +16,34 @@ import (
 
 // ParcelsSend sends metrics.
 func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
-	var targetURL string
 	if len(metrics) < minimumBatchNumber { // sending one by one
 		sendingSingle(resty.New(), cfg, metrics)
 	} else { // do batch request
-		targetURL = getMetricsUpdateTargetURL(cfg.Address, endpointParcelsSend)
-		request := resty.New().R()
-		addHeadersToRequest(request)
-		metrcsSending := make([]model.Metrics, 0, len(metrics))
-		for _, unit := range metrics {
-			emptyMetrics := model.NewEmptyMetrics()
-			emptyMetrics.UpdateByMetricUnit(unit)
-			metrcsSending = append(metrcsSending, *emptyMetrics)
-		}
-		if cfg.HashKey != "" {
-			appendHash(request, cfg.HashKey, metrcsSending)
-		}
+		sendingBatch(cfg, metrics)
+	}
+}
 
-		request.SetBody(metrcsSending)
-		if _, err := request.Post(targetURL); err != nil {
+func sendingBatch(cfg *config.AgentConfig, metrics []model.MetricUnit) {
+	targetURL := getMetricsUpdateTargetURL(cfg.Address, endpointParcelsSend)
+	request := resty.New().R()
+	addHeadersToRequest(request)
+	metrcsSending := make([]model.Metrics, 0, len(metrics))
+	for _, unit := range metrics {
+		emptyMetrics := model.NewEmptyMetrics()
+		emptyMetrics.UpdateByMetricUnit(unit)
+		metrcsSending = append(metrcsSending, *emptyMetrics)
+	}
+	if cfg.HashKey != "" {
+		if err := appendHash(request, cfg.HashKey, metrcsSending); err != nil {
 			logSendingErr(err)
+
+			return
 		}
+	}
+
+	request.SetBody(metrcsSending)
+	if _, err := request.Post(targetURL); err != nil {
+		logSendingErr(err)
 	}
 }
 
@@ -47,7 +55,11 @@ func sendingSingle(rClient *resty.Client, cfg *config.AgentConfig, metrics []mod
 		emptyMetrics.UpdateByMetricUnit(unit)
 		request.SetBody(emptyMetrics)
 		if cfg.HashKey != "" {
-			appendHash(request, cfg.HashKey, emptyMetrics)
+			if err := appendHash(request, cfg.HashKey, emptyMetrics); err != nil {
+				logSendingErr(err)
+
+				return
+			}
 		}
 		addHeadersToRequest(request)
 		if _, err := request.Post(targetURL); err != nil {
@@ -58,15 +70,20 @@ func sendingSingle(rClient *resty.Client, cfg *config.AgentConfig, metrics []mod
 	}
 }
 
-func appendHash(request *resty.Request, hashKey string, v interface{}) {
-	b, _ := json.Marshal(v) //nolint:errchkjson
+func appendHash(request *resty.Request, hashKey string, v interface{}) error {
+	bJSON, err := json.Marshal(v)
+	if err != nil {
+		return fmt.Errorf("agent: can't get json: %w", err)
+	}
 
 	key := []byte(hashKey)
 	h := hmac.New(sha256.New, key)
-	h.Write(b)
+	h.Write(bJSON)
 	hmacString := hex.EncodeToString(h.Sum(nil))
 
 	request.SetHeader("HashSHA256", hmacString)
+
+	return nil
 }
 
 func logSendingErr(err error) {
