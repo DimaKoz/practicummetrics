@@ -16,6 +16,7 @@ const (
 	addressEnvName = "ADDRESS"
 	pollEnvName    = "POLL_INTERVAL"
 	reportEnvName  = "REPORT_INTERVAL"
+	keyEnvName     = "KEY"
 )
 
 var (
@@ -28,14 +29,22 @@ type argTestConfig struct {
 	envAddress  string
 	envPoll     string
 	envReport   string
+	envKey      string
 	flagAddress string
+	flagKey     string
 	flagPoll    string
 	flagReport  string
 }
 
 var (
-	wantConfig1 = &AgentConfig{Config: Config{Address: "127.0.0.1:59483"}, PollInterval: 15, ReportInterval: 16}
-	wantConfig4 = &AgentConfig{Config: Config{Address: "127.0.0.1:59483"}, PollInterval: 3, ReportInterval: 4}
+	wantConfig1 = &AgentConfig{
+		Config:       Config{Address: "127.0.0.1:59483", HashKey: "e"},
+		PollInterval: 15, ReportInterval: 16,
+	}
+	wantConfig4 = &AgentConfig{
+		Config:       Config{Address: "127.0.0.1:59483", HashKey: ""},
+		PollInterval: 3, ReportInterval: 4,
+	}
 )
 
 var testsCasesAgentInitConfig = []struct {
@@ -47,18 +56,25 @@ var testsCasesAgentInitConfig = []struct {
 	{
 		name: "default values (agent)", args: argTestConfig{}, wantErr: nil, //nolint:exhaustruct
 		want: &AgentConfig{
-			Config:       Config{Address: "localhost:8080"},
+			Config:       Config{Address: "localhost:8080", HashKey: ""},
 			PollInterval: int64(defaultPollInterval), ReportInterval: int64(defaultReportInterval),
 		},
 	},
 	{
-		name: "env", args: argTestConfig{envAddress: "127.0.0.1:59483", envPoll: "15", envReport: "16"}, //nolint:exhaustruct
+		name: "env", args: argTestConfig{ //nolint:exhaustruct
+			envAddress: "127.0.0.1:59483",
+			envPoll:    "15",
+			envReport:  "16",
+			envKey:     "e",
+		},
 		want: wantConfig1,
 	},
 	{
 		name: "flags",
-		args: argTestConfig{flagAddress: "127.0.0.1:59455", flagPoll: "12", flagReport: "15"}, //nolint:exhaustruct
-		want: &AgentConfig{Config: Config{Address: "127.0.0.1:59455"}, PollInterval: 12, ReportInterval: 15},
+		args: argTestConfig{ //nolint:exhaustruct
+			flagAddress: "127.0.0.1:59455", flagPoll: "12", flagReport: "15", flagKey: "ww",
+		},
+		want: &AgentConfig{Config: Config{Address: "127.0.0.1:59455", HashKey: "ww"}, PollInterval: 12, ReportInterval: 15},
 	},
 	{
 		name: "flags values without env and without any report interval", want: nil, wantErr: errInitConfig,
@@ -66,7 +82,7 @@ var testsCasesAgentInitConfig = []struct {
 	},
 	{
 		name: "flags&env", want: wantConfig4,
-		args: argTestConfig{
+		args: argTestConfig{ //nolint:exhaustruct
 			envAddress: "127.0.0.1:59483", envPoll: "3", envReport: "4",
 			flagAddress: "127.0.0.1:59455", flagPoll: "12", flagReport: "15",
 		},
@@ -80,13 +96,18 @@ func TestAgentInitConfig(t *testing.T) {
 			envArgsAgentInitConfig(t, addressEnvName, test.args.envAddress) // ENV setup
 			envArgsAgentInitConfig(t, pollEnvName, test.args.envPoll)
 			envArgsAgentInitConfig(t, reportEnvName, test.args.envReport)
-			if test.args.flagAddress != "" || test.args.flagPoll != "" || test.args.flagReport != "" { // Flags setup
+			envArgsAgentInitConfig(t, keyEnvName, test.args.envKey)
+			if test.args.flagAddress != "" ||
+				test.args.flagKey != "" ||
+				test.args.flagPoll != "" ||
+				test.args.flagReport != "" { // Flags setup
 				osArgOrig := os.Args
 				flag2.CommandLine = flag2.NewFlagSet(os.Args[0], flag2.ContinueOnError)
 				flag2.CommandLine.SetOutput(io.Discard)
 				os.Args = make([]string, 0)
 				os.Args = append(os.Args, osArgOrig[0])
 				appendArgsAgentInitConfig(&os.Args, "-a", test.args.flagAddress)
+				appendArgsAgentInitConfig(&os.Args, "-k", test.args.flagKey)
 				appendArgsAgentInitConfig(&os.Args, "-p", test.args.flagPoll)
 				appendArgsAgentInitConfig(&os.Args, "-r", test.args.flagReport)
 				t.Cleanup(func() { os.Args = osArgOrig })
@@ -172,6 +193,7 @@ func TestLoadServerConfig(t *testing.T) {
 	want := &ServerConfig{
 		Config: Config{
 			Address: defaultAddress,
+			HashKey: unknownStringFieldValue,
 		},
 		StoreInterval:   defaultStoreInterval,
 		ConnectionDB:    unknownStringFieldValue,

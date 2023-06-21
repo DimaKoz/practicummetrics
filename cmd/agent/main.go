@@ -28,6 +28,7 @@ func main() {
 	// from cfg:
 	infoLog.Println("cfg:")
 	infoLog.Println("address:", cfg.Address)
+	infoLog.Println("key:", cfg.HashKey)
 	infoLog.Println("reportInterval:", cfg.ReportInterval)
 	infoLog.Println("pollInterval:", cfg.PollInterval)
 

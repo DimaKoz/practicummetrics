@@ -26,6 +26,7 @@ const (
 // Config represents a config of the agent and/or the server.
 type Config struct {
 	Address string `env:"ADDRESS"`
+	HashKey string `env:"KEY"`
 }
 
 // AgentConfig represents a config of the agent.
@@ -48,7 +49,7 @@ type ServerConfig struct {
 // NewServerConfig creates an instance of ServerConfig.
 func NewServerConfig() *ServerConfig {
 	return &ServerConfig{
-		Config:          Config{Address: unknownStringFieldValue},
+		Config:          Config{Address: unknownStringFieldValue, HashKey: unknownStringFieldValue},
 		StoreInterval:   unknownIntFieldValue,
 		FileStoragePath: unknownStringFieldValue,
 		ConnectionDB:    unknownStringFieldValue,
@@ -82,6 +83,7 @@ func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
 // LoadAgentConfig returns *AgentConfig.
 func LoadAgentConfig() (*AgentConfig, error) {
 	cfg := &AgentConfig{} //nolint:exhaustruct
+	cfg.HashKey = unknownStringFieldValue
 
 	if err := processEnvAgent(cfg); err != nil {
 		return nil, fmt.Errorf("agent config: cannot process ENV variables: %w", err)
@@ -161,9 +163,13 @@ func processServerFlags(cfg *ServerConfig) error {
 	return nil
 }
 
-func addAgentFlags(cfg *AgentConfig, address *string, pollInterval *string, reportInterval *string) {
+func addAgentFlags(cfg *AgentConfig, address *string, hashKey *string, pollInterval *string, reportInterval *string) {
 	if cfg.Address == "" {
 		flag2.StringVarP(address, "a", "a", "", "")
+	}
+
+	if cfg.HashKey == unknownStringFieldValue {
+		flag2.StringVarP(hashKey, "k", "k", "", "")
 	}
 
 	if cfg.PollInterval == 0 {
@@ -178,13 +184,17 @@ func addAgentFlags(cfg *AgentConfig, address *string, pollInterval *string, repo
 func processAgentFlags(cfg *AgentConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
 
-	var address, pFlag, rFlag string
+	var address, keyFlag, pFlag, rFlag string
 
-	addAgentFlags(cfg, &address, &pFlag, &rFlag)
+	addAgentFlags(cfg, &address, &keyFlag, &pFlag, &rFlag)
 	flag2.Parse()
 
 	if address != "" {
 		cfg.Address = address
+	}
+
+	if keyFlag != "" {
+		cfg.HashKey = keyFlag
 	}
 
 	if cfg.PollInterval == 0 && pFlag != "" {
@@ -262,6 +272,10 @@ func setupDefaultAgentValues(config *AgentConfig,
 	defaultRepInterval time.Duration,
 	defaultPollInterval time.Duration,
 ) {
+	if config.HashKey == unknownStringFieldValue {
+		config.HashKey = ""
+	}
+
 	if config.Address == "" {
 		config.Address = defaultAddress
 	}
