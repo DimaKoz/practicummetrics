@@ -2,20 +2,22 @@ package middleware
 
 import (
 	"compress/gzip"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGzipSkipperHasGzip(t *testing.T) {
-	e := echo.New()
+	echoFramework := echo.New()
 	request := httptest.NewRequest(http.MethodPost, "/", nil)
+	responseRecorder := httptest.NewRecorder()
+
 	request.Header.Set(echo.HeaderAcceptEncoding, "gzip")
-	w := httptest.NewRecorder()
-	ctx := e.NewContext(request, w)
+	ctx := echoFramework.NewContext(request, responseRecorder)
 	got := gzipSkipper(ctx)
 	assert.False(t, got)
 	contentEnc := ctx.Response().Header().Get(echo.HeaderContentEncoding)
@@ -51,9 +53,10 @@ func TestNewGzipConfig(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, newGzipConfig(tt.args.f), "newGzipConfig(%v)", tt.args.f)
+	for _, test := range tests {
+		testUnit := test
+		t.Run(testUnit.name, func(t *testing.T) {
+			assert.Equalf(t, testUnit.want, newGzipConfig(testUnit.args.f), "newGzipConfig(%v)", testUnit.args.f)
 		})
 	}
 }
@@ -71,14 +74,15 @@ func TestGetGzipMiddlewareConfig(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, testItem := range tests {
+		test := testItem
+		t.Run(test.name, func(t *testing.T) {
 			orig := gzipSkipper
 			gzipSkipper = nil
 			t.Cleanup(func() {
 				gzipSkipper = orig
 			})
-			assert.NotNil(t, tt.want, GetGzipMiddlewareConfig(), "GetGzipMiddlewareConfig()")
+			assert.NotNil(t, test.want, GetGzipMiddlewareConfig(), "GetGzipMiddlewareConfig()")
 		})
 	}
 }

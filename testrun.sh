@@ -22,6 +22,7 @@ function EPHEMERAL_PORT() {
 function CLEAN_AFTER_TEST() {
 	unset ADDRESS
 	unset RANDOM_PORT
+	unset STORE_INTERVAL
 	if [ -f "${TEMP_FILE}" ]; then
 		echo "${TEMP_FILE} exists, deleting..."
 		rm "${TEMP_FILE}"
@@ -50,6 +51,7 @@ go build -o ./cmd/server/server ./cmd/server/*.go
 
 echo "building agent"
 go build -o ./cmd/agent/agent ./cmd/agent/*.go
+
 
 echo "Iter 1..."
 metricstest-darwin-amd64 -test.v -test.run=^TestIteration1$ -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server > log1.txt
@@ -120,3 +122,59 @@ export RESTORE=true
 metricstest-darwin-amd64 -test.v -test.run=^TestIteration9$ -file-storage-path=$TEMP_FILE -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log9.txt
 CLEAN_AFTER_TEST
 echo "Iter 9: $(tail -1 ./log9.txt)"
+
+echo "Iter 10..."
+rm /tmp/metrics-db.json
+RANDOM_PORT=$(EPHEMERAL_PORT)
+echo RANDOM_PORT: "$RANDOM_PORT"
+export ADDRESS="localhost:${RANDOM_PORT}"
+export TEMP_FILE="./tempfile${RANDOM_PORT}"
+echo TEMP FILE: "$TEMP_FILE"
+export RESTORE=true
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration10[AB]$ -database-dsn='postgres://localhost:5432/testdb?sslmode=disable' -file-storage-path=$TEMP_FILE -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log10.txt
+CLEAN_AFTER_TEST
+echo "Iter 10: $(tail -1 ./log10.txt)"
+
+
+echo "Iter 11..."
+psql --command="DROP TABLE metrics;" postgres://localhost:5432/testdb?sslmode=disable
+rm /tmp/metrics-db.json
+RANDOM_PORT=$(EPHEMERAL_PORT)
+echo RANDOM_PORT: "$RANDOM_PORT"
+export ADDRESS="localhost:${RANDOM_PORT}"
+export TEMP_FILE="./tempfile${RANDOM_PORT}"
+echo TEMP FILE: "$TEMP_FILE"
+export RESTORE=true
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration11$ -database-dsn='postgres://localhost:5432/testdb?sslmode=disable' -file-storage-path=$TEMP_FILE -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log11.txt
+CLEAN_AFTER_TEST
+echo "Iter 11: $(tail -1 ./log11.txt)"
+
+echo "Iter 12..."
+psql --command="DROP TABLE metrics;" postgres://localhost:5432/testdb?sslmode=disable
+rm /tmp/metrics-db.json
+RANDOM_PORT=$(EPHEMERAL_PORT)
+echo RANDOM_PORT: "$RANDOM_PORT"
+export ADDRESS="localhost:${RANDOM_PORT}"
+export TEMP_FILE="./tempfile${RANDOM_PORT}"
+echo TEMP FILE: "$TEMP_FILE"
+export RESTORE=true
+export STORE_INTERVAL=1
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration12$ -database-dsn='postgres://localhost:5432/testdb?sslmode=disable' -file-storage-path=$TEMP_FILE -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log12.txt
+CLEAN_AFTER_TEST
+echo "Iter 12: $(tail -1 ./log12.txt)"
+
+echo "Iter 13..."
+psql --command="DROP TABLE metrics;" postgres://localhost:5432/testdb?sslmode=disable
+rm /tmp/metrics-db.json
+RANDOM_PORT=$(EPHEMERAL_PORT)
+echo RANDOM_PORT: "$RANDOM_PORT"
+export ADDRESS="localhost:${RANDOM_PORT}"
+export TEMP_FILE="./tempfile${RANDOM_PORT}"
+echo TEMP FILE: "$TEMP_FILE"
+export RESTORE=true
+export STORE_INTERVAL=1
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration13$ -database-dsn='postgres://localhost:5432/testdb?sslmode=disable' -file-storage-path=$TEMP_FILE -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log13.txt
+CLEAN_AFTER_TEST
+echo "Iter 13: $(tail -1 ./log13.txt)"
+exit
+

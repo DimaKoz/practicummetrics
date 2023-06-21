@@ -2,12 +2,13 @@ package config
 
 import (
 	"fmt"
-	"github.com/caarlos0/env/v6"
-	flag2 "github.com/spf13/pflag"
 	"log"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/caarlos0/env/v6"
+	flag2 "github.com/spf13/pflag"
 )
 
 const (
@@ -22,21 +23,24 @@ const (
 	defaultRestore          = true
 )
 
-// Config represents a config of the agent and/or the server
+// Config represents a config of the agent and/or the server.
 type Config struct {
 	Address string `env:"ADDRESS"`
 }
 
+// AgentConfig represents a config of the agent.
 type AgentConfig struct {
 	Config
 	ReportInterval int64 `env:"REPORT_INTERVAL"`
 	PollInterval   int64 `env:"POLL_INTERVAL"`
 }
 
+// ServerConfig represents a config of the server.
 type ServerConfig struct {
 	Config
 	StoreInterval   int64  `env:"STORE_INTERVAL"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+	ConnectionDB    string `env:"DATABASE_DSN"`
 	hasRestore      bool
 	Restore         bool `env:"RESTORE"`
 }
@@ -47,6 +51,7 @@ func NewServerConfig() *ServerConfig {
 		Config:          Config{Address: unknownStringFieldValue},
 		StoreInterval:   unknownIntFieldValue,
 		FileStoragePath: unknownStringFieldValue,
+		ConnectionDB:    unknownStringFieldValue,
 		hasRestore:      false,
 		Restore:         true,
 	}
@@ -55,15 +60,16 @@ func NewServerConfig() *ServerConfig {
 // ProcessEnv receives and sets up the ServerConfig.
 type ProcessEnv func(config *ServerConfig) error
 
-// LoadServerConfig loads data to the passed ServerConfig
+// LoadServerConfig loads data to the passed ServerConfig.
 func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
-
 	if err := processing(cfg); err != nil {
 		return fmt.Errorf("server config: cannot process ENV variables: %w", err)
 	}
+
 	if err := processServerFlags(cfg); err != nil {
 		return fmt.Errorf("server config: cannot process flags variables: %w", err)
 	}
+
 	setupDefaultServerValues(cfg,
 		defaultAddress,
 		defaultStoreInterval,
@@ -73,40 +79,53 @@ func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
 	return nil
 }
 
+// LoadAgentConfig returns *AgentConfig.
 func LoadAgentConfig() (*AgentConfig, error) {
-	cfg := &AgentConfig{}
+	cfg := &AgentConfig{} //nolint:exhaustruct
 
 	if err := processEnvAgent(cfg); err != nil {
 		return nil, fmt.Errorf("agent config: cannot process ENV variables: %w", err)
 	}
+
 	if err := processAgentFlags(cfg); err != nil {
 		return nil, fmt.Errorf("cannot process flags variables: %w", err)
 	}
+
 	setupDefaultAgentValues(cfg, defaultAddress, defaultReportInterval, defaultPollInterval)
+
 	return cfg, nil
+}
+
+func addServerFlags(cfg *ServerConfig, address *string, rFlag *string, iFlag *string, fFlag *string, dFlag *string) {
+	if cfg.Address == unknownStringFieldValue {
+		flag2.StringVarP(address, "a", "a", unknownStringFieldValue, "")
+	}
+
+	if !cfg.hasRestore {
+		flag2.StringVarP(rFlag, "r", "r", unknownStringFieldValue, "")
+	}
+
+	if cfg.StoreInterval == unknownIntFieldValue {
+		flag2.StringVarP(iFlag, "i", "i", "", "")
+	}
+
+	if cfg.FileStoragePath == unknownStringFieldValue {
+		flag2.StringVarP(fFlag, "f", "f", unknownStringFieldValue, "")
+	}
+
+	if cfg.ConnectionDB == unknownStringFieldValue {
+		flag2.StringVarP(dFlag, "d", "d", unknownStringFieldValue, "")
+	}
 }
 
 func processServerFlags(cfg *ServerConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
-	var address = unknownStringFieldValue
-	if cfg.Address == unknownStringFieldValue {
-		flag2.StringVarP(&address, "a", "a", unknownStringFieldValue, "")
-	}
-
-	var rFlag = unknownStringFieldValue
-	if !cfg.hasRestore {
-		flag2.StringVarP(&rFlag, "r", "r", unknownStringFieldValue, "")
-	}
-
+	address := unknownStringFieldValue
+	rFlag := unknownStringFieldValue
+	fFlag := unknownStringFieldValue
+	dFlag := unknownStringFieldValue
 	var iFlag string
-	if cfg.StoreInterval == unknownIntFieldValue {
-		flag2.StringVarP(&iFlag, "i", "i", "", "")
-	}
-
-	var fFlag = unknownStringFieldValue
-	if cfg.FileStoragePath == unknownStringFieldValue {
-		flag2.StringVarP(&fFlag, "f", "f", "unknownStringFieldValue", "")
-	}
+	addServerFlags(cfg, &address, &rFlag, &iFlag, &fFlag, &dFlag)
 
 	flag2.Parse()
 
@@ -116,6 +135,10 @@ func processServerFlags(cfg *ServerConfig) error {
 
 	if fFlag != unknownStringFieldValue {
 		cfg.FileStoragePath = fFlag
+	}
+
+	if dFlag != unknownStringFieldValue {
+		cfg.ConnectionDB = dFlag
 	}
 
 	if !cfg.hasRestore && rFlag != unknownStringFieldValue {
@@ -138,24 +161,26 @@ func processServerFlags(cfg *ServerConfig) error {
 	return nil
 }
 
-func processAgentFlags(cfg *AgentConfig) error {
-	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
-	var address string
-	var pFlag string
-	var rFlag string
-
+func addAgentFlags(cfg *AgentConfig, address *string, pollInterval *string, reportInterval *string) {
 	if cfg.Address == "" {
-		flag2.StringVarP(&address, "a", "a", "", "")
+		flag2.StringVarP(address, "a", "a", "", "")
 	}
 
 	if cfg.PollInterval == 0 {
-		flag2.StringVarP(&pFlag, "p", "p", "", "")
+		flag2.StringVarP(pollInterval, "p", "p", "", "")
 	}
 
 	if cfg.ReportInterval == 0 {
-		flag2.StringVarP(&rFlag, "r", "r", "", "")
+		flag2.StringVarP(reportInterval, "r", "r", "", "")
 	}
+}
 
+func processAgentFlags(cfg *AgentConfig) error {
+	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
+
+	var address, pFlag, rFlag string
+
+	addAgentFlags(cfg, &address, &pFlag, &rFlag)
 	flag2.Parse()
 
 	if address != "" {
@@ -183,7 +208,8 @@ func processAgentFlags(cfg *AgentConfig) error {
 
 func ProcessEnvServer(config *ServerConfig) error {
 	log.Println(os.Environ())
-	opts := env.Options{
+
+	opts := env.Options{ //nolint:exhaustruct
 		OnSet: func(tag string, value interface{}, isDefault bool) {
 			if tag == "RESTORE" {
 				config.hasRestore = true
@@ -192,18 +218,19 @@ func ProcessEnvServer(config *ServerConfig) error {
 		},
 	}
 
-	err := env.Parse(config, opts)
-	if err != nil {
-		return fmt.Errorf("failed to parse an enviroment, error: %w", err)
+	if err := env.Parse(config, opts); err != nil {
+		return fmt.Errorf("failed to parse an environment, error: %w", err)
 	}
+
 	return nil
 }
 
 var processEnvAgent = func(config *AgentConfig) error {
 	err := env.Parse(config)
 	if err != nil {
-		return fmt.Errorf("failed to parse an enviroment, error: %w", err)
+		return fmt.Errorf("failed to parse an environment, error: %w", err)
 	}
+
 	return nil
 }
 
@@ -211,16 +238,20 @@ func setupDefaultServerValues(config *ServerConfig,
 	defaultAddress string,
 	defaultStoreInterval int64,
 	defaultFileStoragePath string,
-	defaultRestore bool) {
+	defaultRestore bool,
+) {
 	if config.Address == unknownStringFieldValue {
 		config.Address = defaultAddress
 	}
+
 	if config.StoreInterval == unknownIntFieldValue {
 		config.StoreInterval = defaultStoreInterval
 	}
+
 	if config.FileStoragePath == unknownStringFieldValue {
 		config.FileStoragePath = defaultFileStoragePath
 	}
+
 	if !config.hasRestore {
 		config.Restore = defaultRestore
 	}
@@ -229,10 +260,12 @@ func setupDefaultServerValues(config *ServerConfig,
 func setupDefaultAgentValues(config *AgentConfig,
 	defaultAddress string,
 	defaultRepInterval time.Duration,
-	defaultPollInterval time.Duration) {
+	defaultPollInterval time.Duration,
+) {
 	if config.Address == "" {
 		config.Address = defaultAddress
 	}
+
 	if config.ReportInterval == 0 {
 		config.ReportInterval = int64(defaultRepInterval)
 	}
@@ -241,6 +274,14 @@ func setupDefaultAgentValues(config *AgentConfig,
 	}
 }
 
+// IsUseDatabase shows an ability to use a DB by ServerConfig.
+func (cfg ServerConfig) IsUseDatabase() bool {
+	return cfg.ConnectionDB != "" && cfg.ConnectionDB != unknownStringFieldValue
+}
+
 func (cfg ServerConfig) String() string {
-	return fmt.Sprintf("Address: %s \n StoreInterval: %d \n FileStoragePath: %s \n Restore: %t \n", cfg.Address, cfg.StoreInterval, cfg.FileStoragePath, cfg.Restore)
+	return fmt.Sprintf("Address: %s \n StoreInterval: %d \n"+
+		" FileStoragePath: %s \n"+
+		" ConnectionDB: %s \n"+
+		" Restore: %t \n", cfg.Address, cfg.StoreInterval, cfg.FileStoragePath, cfg.ConnectionDB, cfg.Restore)
 }

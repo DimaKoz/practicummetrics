@@ -2,9 +2,6 @@ package sender
 
 import (
 	"bytes"
-	"github.com/DimaKoz/practicummetrics/internal/common/config"
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"log"
 	"net"
@@ -12,6 +9,10 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParcelsSend(t *testing.T) {
@@ -45,62 +46,49 @@ func TestParcelsSend(t *testing.T) {
 			want: "{\"id\":\"qwerty\",\"type\":\"gauge\",\"value\":42.42}",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			mock := http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+	for _, testItem := range tests {
+		test := testItem
+		t.Run(test.name, func(t *testing.T) {
+			mock := http.HandlerFunc(func(responseWriter http.ResponseWriter, req *http.Request) {
 				// Test request parameters
 				defer req.Body.Close()
-				println(req.URL.Path)
 				body, err := io.ReadAll(req.Body)
 				assert.NoError(t, err, "want no error")
-				if err != nil {
-					return
-				}
 				got := string(body)
-				_, err = rw.Write([]byte(`OK`))
+				_, err = responseWriter.Write([]byte(`OK`))
 				assert.NoError(t, err, "got: %v, want no error", got)
-				if err != nil {
-					return
-				}
-				assert.Equal(t, tt.want, got, "got: %v, want: %v", got, tt.want)
-				// Send response to be tested
-
+				assert.Equal(t, test.want, got, "got: %v, want: %v", got, test.want)
 			})
 			// Start a local HTTP server
 			srv := httptest.NewUnstartedServer(mock)
 
 			// create a listener with the desired port.
-			l, err := net.Listen("tcp", tt.args.cfg.Address)
-			if err != nil {
-				assert.NoError(t, err)
-			}
+			l, err := net.Listen("tcp", test.args.cfg.Address)
+			assert.NoError(t, err)
+
 			_ = srv.Listener.Close()
 			srv.Listener = l
+			srv.Start() // Start the server.
 
-			// Start the server.
-			srv.Start()
-			// Close the server when test finishes
-			defer srv.Close()
+			defer srv.Close() // Close the server when test finishes
 
 			// Use Client & URL from our local test server
-			ParcelsSend(tt.args.cfg, []model.MetricUnit{tt.args.mu})
+			ParcelsSend(test.args.cfg, []model.MetricUnit{test.args.mu})
 		})
 	}
 }
 
 func readByte() {
-	err := io.EOF // force an error
-	if err != nil {
-		return
-	}
+	_ = io.EOF // force an error
 }
 
 func TestPrintSender(t *testing.T) {
 	want := `Post "http://localhost:8888/update/"`
 
 	var buf bytes.Buffer
+
 	log.SetOutput(&buf)
+
 	defer func() {
 		log.SetOutput(os.Stderr)
 	}()
@@ -139,9 +127,11 @@ func TestGetTargetURL(t *testing.T) {
 			want: "http://example.com/update/",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, getTargetURL(tt.args.address), "getTargetURL(%v)", tt.args.address)
+	for _, testItem := range tests {
+		test := testItem
+		t.Run(test.name, func(t *testing.T) {
+			got := getMetricsUpdateTargetURL(test.args.address, endpointParcelSend)
+			assert.Equalf(t, test.want, got, "getMetricsUpdateTargetURL(%v)", test.args.address)
 		})
 	}
 }

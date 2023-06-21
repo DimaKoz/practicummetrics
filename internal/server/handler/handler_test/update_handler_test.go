@@ -1,12 +1,14 @@
-package handler
+package handler_test
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/server/handler"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUpdateHandler(t *testing.T) {
@@ -39,27 +41,26 @@ func TestUpdateHandler(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, testItem := range tests {
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			e := echo.New()
 			request := httptest.NewRequest(http.MethodPost, test.request, nil)
-			// создаём новый Recorder
-			w := httptest.NewRecorder()
-			c := e.NewContext(request, w)
+			responseRecorder := httptest.NewRecorder() // создаём новый Recorder
+			ctx := e.NewContext(request, responseRecorder)
 			paramValues := strings.Split(test.request, "/")
-			c.SetPath("/update/:type/:name/:value")
-			c.SetParamNames([]string{"type", "name", "value"}...)
-			c.SetParamValues(paramValues[2:]...)
+			ctx.SetPath("/update/:type/:name/:value")
+			ctx.SetParamNames([]string{"type", "name", "value"}...)
+			ctx.SetParamValues(paramValues[2:]...)
 
-			assert.NoError(t, UpdateHandler(c), "expected no errors")
+			assert.NoError(t, handler.UpdateHandler(ctx), "expected no errors")
 
-			res := w.Result()
+			res := responseRecorder.Result()
 			// проверяем код ответа
 			got := res.StatusCode
 			assert.Equal(t, test.want.code, got, "StatusCode got: %v, want: %v", got, test.want.code)
 
 			_ = res.Body.Close()
-
 		})
 	}
 }

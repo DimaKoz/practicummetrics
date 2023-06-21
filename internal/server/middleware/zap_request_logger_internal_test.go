@@ -1,11 +1,12 @@
 package middleware
 
 import (
+	"testing"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"testing"
 )
 
 func TestLogValuesFunc(t *testing.T) {
@@ -13,13 +14,14 @@ func TestLogValuesFunc(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	defer func(logger *zap.Logger) {
 		_ = logger.Sync()
 	}(logger)
 	sugar := *logger.Sugar()
 	zapSugar = sugar
 	e := echo.New()
-	assert.NoError(t, logValuesFunc(e.AcquireContext(), middleware.RequestLoggerValues{}))
+	assert.NoError(t, logValuesFunc(e.AcquireContext(), middleware.RequestLoggerValues{})) //nolint:exhaustruct
 }
 
 func TestGetRequestLoggerConfig(t *testing.T) {
@@ -27,6 +29,7 @@ func TestGetRequestLoggerConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	defer func(logger *zap.Logger) {
 		_ = logger.Sync()
 	}(logger)
@@ -45,7 +48,7 @@ func TestGetRequestLoggerConfig(t *testing.T) {
 			args: args{
 				sugar: sugar,
 			},
-			want: middleware.RequestLoggerConfig{
+			want: middleware.RequestLoggerConfig{ //nolint:exhaustruct
 				LogURI:           true,
 				LogStatus:        true,
 				LogLatency:       true,
@@ -57,15 +60,15 @@ func TestGetRequestLoggerConfig(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := GetRequestLoggerConfig(tt.args.sugar)
-			assert.Equal(t, got.LogMethod, tt.want.LogMethod)
-			assert.Equal(t, got.LogURI, tt.want.LogURI)
-			assert.Equal(t, got.LogStatus, tt.want.LogStatus)
-			assert.Equal(t, got.LogResponseSize, tt.want.LogResponseSize)
-			assert.Equal(t, got.LogLatency, tt.want.LogLatency)
-
+	for _, testItem := range tests {
+		test := testItem
+		t.Run(test.name, func(t *testing.T) {
+			got := GetRequestLoggerConfig(test.args.sugar)
+			assert.Equal(t, got.LogMethod, test.want.LogMethod)
+			assert.Equal(t, got.LogURI, test.want.LogURI)
+			assert.Equal(t, got.LogStatus, test.want.LogStatus)
+			assert.Equal(t, got.LogResponseSize, test.want.LogResponseSize)
+			assert.Equal(t, got.LogLatency, test.want.LogLatency)
 		})
 	}
 }

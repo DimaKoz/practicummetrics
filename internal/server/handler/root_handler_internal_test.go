@@ -1,12 +1,13 @@
 package handler
 
 import (
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRootHandler(t *testing.T) {
@@ -32,21 +33,22 @@ func TestRootHandler(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, testItem := range tests {
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
+			dbHandler := NewBaseHandler(nil)
 			e := echo.New()
 			request := httptest.NewRequest(test.method, test.target, nil)
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
 			c := e.NewContext(request, w)
-			_ = RootHandler(c)
+			_ = dbHandler.RootHandler(c)
 
 			res := w.Result()
 			// проверяем код ответа
 			assert.Equal(t, test.want.code, res.StatusCode, "StatusCode got: %v, want: %v", res.StatusCode, test.want.code)
 
 			_ = res.Body.Close()
-
 		})
 	}
 }
@@ -72,9 +74,10 @@ func TestGetHtmlContent(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, getHTMLContent(tt.metrics), "getHtmlContent(%v)", tt.metrics)
+	for _, testItem := range tests {
+		test := testItem
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equalf(t, test.want, getHTMLContent(test.metrics), "getHtmlContent(%v)", test.metrics)
 		})
 	}
 }

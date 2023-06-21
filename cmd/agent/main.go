@@ -1,15 +1,16 @@
 package main
 
 import (
-	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
-	"github.com/DimaKoz/practicummetrics/internal/agent/sender"
-	"github.com/DimaKoz/practicummetrics/internal/common/config"
-	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
+	"github.com/DimaKoz/practicummetrics/internal/agent/sender"
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
+	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 )
 
 func main() {
@@ -37,12 +38,13 @@ func main() {
 	defer tickerReport.Stop()
 
 	done := make(chan bool)
+
 	go func() {
 		for {
 			select {
-
 			case <-sigs:
 				done <- true
+
 				return
 
 			case <-tickerGathering.C:
@@ -50,6 +52,7 @@ func main() {
 				if err != nil {
 					infoLog.Fatalf("cannot collect metrics: %s", err)
 				}
+
 				for _, s := range *metrics {
 					repository.AddMetric(s)
 				}
@@ -66,5 +69,4 @@ func main() {
 	<-done
 
 	infoLog.Println("exiting")
-
 }

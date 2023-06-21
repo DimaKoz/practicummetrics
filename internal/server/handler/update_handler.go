@@ -1,27 +1,39 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
-// UpdateHandler handles `/update/`
-func UpdateHandler(c echo.Context) error {
-
-	metricType := c.Param("type")
-	metricName := c.Param("name")
-	metricValue := c.Param("value")
-	mu, err := model.NewMetricUnit(metricType, metricName, metricValue)
+// UpdateHandler handles `/update/`.
+func UpdateHandler(ctx echo.Context) error {
+	metricType := ctx.Param("type")
+	metricName := ctx.Param("name")
+	metricValue := ctx.Param("value")
+	metricUnit, err := model.NewMetricUnit(metricType, metricName, metricValue)
 	if err != nil {
 		statusCode := http.StatusBadRequest
-		if err == model.ErrorUnknownType {
+		if errors.Is(err, model.ErrUnknownType) {
 			statusCode = http.StatusNotImplemented
 		}
-		return c.String(statusCode, fmt.Sprintf("cannot create metric: %s", err))
+		err = ctx.String(statusCode, fmt.Sprintf("cannot create metric: %s", err))
+		if err != nil {
+			err = fmt.Errorf("%w", err)
+		}
+
+		return err
 	}
-	repository.AddMetric(mu)
-	return c.NoContent(http.StatusOK)
+
+	repository.AddMetric(metricUnit)
+
+	if err = ctx.NoContent(http.StatusOK); err != nil {
+		err = fmt.Errorf("%w", err)
+	}
+
+	return err
 }

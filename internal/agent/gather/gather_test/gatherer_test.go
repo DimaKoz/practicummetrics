@@ -1,8 +1,10 @@
-package gather
+package gather_test_test
 
 import (
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 )
 
 func TestGetMetrics(t *testing.T) {
@@ -41,34 +43,39 @@ func TestGetMetrics(t *testing.T) {
 				"Sys",
 				"TotalAlloc",
 				"PollCount",
-				"RandomValue"},
+				"RandomValue",
+			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got, _ := GetMetrics(); got != nil && len(*got) != len(tt.wantKeys) {
-
-				t.Errorf("GetMetrics() = %v, want %v", got, tt.wantKeys)
-				checkMetricsName(t, tt.wantKeys, got)
+	for _, testItem := range tests {
+		test := testItem
+		t.Run(test.name, func(t *testing.T) {
+			if got, _ := gather.GetMetrics(); got != nil && len(*got) != len(test.wantKeys) {
+				t.Errorf("GetMetrics() = %v, want %v", got, test.wantKeys)
+				checkMetricsName(t, test.wantKeys, got)
 			} else {
-				checkMetricsName(t, tt.wantKeys, got)
+				checkMetricsName(t, test.wantKeys, got)
 			}
 		})
 	}
 }
 
 func checkMetricsName(t *testing.T, wantKeys []string, got *[]model.MetricUnit) {
-	for _, k := range wantKeys {
+	t.Helper()
+
+	for _, wantKey := range wantKeys {
 		isPresent := false
+
 		for _, kk := range *got {
-			if kk.Name == k {
+			if kk.Name == wantKey {
 				isPresent = true
+
 				break
 			}
 		}
+
 		if !isPresent {
-			t.Errorf("GetMetrics() -  we want %v but absentee", k)
+			t.Errorf("GetMetrics() -  we want %v but absentee", wantKey)
 		}
 	}
-
 }

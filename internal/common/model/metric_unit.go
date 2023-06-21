@@ -7,15 +7,15 @@ import (
 )
 
 const (
-	// MetricTypeGauge represents "gauge" MetricUnit.Type
+	// MetricTypeGauge represents "gauge" MetricUnit.Type.
 	MetricTypeGauge = "gauge"
-	// MetricTypeCounter represents "counter" MetricUnit.Type
+	// MetricTypeCounter represents "counter" MetricUnit.Type.
 	MetricTypeCounter = "counter"
 )
 
-var EmptyMetric = MetricUnit{}
+var EmptyMetric = MetricUnit{} //nolint:exhaustruct
 
-// MetricUnit represents a metric
+// MetricUnit represents a metric.
 type MetricUnit struct {
 	Type       string
 	Name       string
@@ -24,21 +24,23 @@ type MetricUnit struct {
 	ValueFloat float64
 }
 
-// ErrorUnknownType represents an error with an unknown type of the metric
-var ErrorUnknownType = errors.New("unknown metric type") //should use for StatusCode: http.StatusNotImplemented
+// ErrUnknownType represents an error with an unknown type of the metric.
+var ErrUnknownType = errors.New("unknown metric type") // should use for StatusCode: http.StatusNotImplemented
 
-// ErrorEmptyValue represents an error which related to empty MetricUnit.Name and/or MetricUnit.Value
-var ErrorEmptyValue = errors.New("to create a metric you must provide `name` and `value`") // StatusCode: http.StatusBadRequest
+// ErrEmptyValue represents an error which related to empty MetricUnit.Name and/or MetricUnit.Value.
+// fo StatusCode: http.StatusBadRequest.
+var ErrEmptyValue = errors.New("to create a metric you must provide `name` and `value`")
 
-// NewMetricUnit creates an instance of MetricUnit or returns an error
+// NewMetricUnit creates an instance of MetricUnit or returns an error.
 func NewMetricUnit(metricType string, metricName string, metricValue string) (MetricUnit, error) {
 	if metricType != MetricTypeGauge && metricType != MetricTypeCounter {
-		return EmptyMetric, ErrorUnknownType
+		return EmptyMetric, ErrUnknownType
 	}
+
 	if metricName == "" || metricValue == "" {
-		return EmptyMetric, ErrorEmptyValue
+		return EmptyMetric, ErrEmptyValue
 	}
-	var result = MetricUnit{}
+	result := MetricUnit{} //nolint:exhaustruct
 	result.Type = metricType
 	result.Name = metricName
 	result.Value = metricValue
@@ -47,7 +49,9 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (Me
 		if s, err := strconv.ParseFloat(metricValue, 64); err == nil {
 			result.ValueFloat = s
 		} else {
-			return EmptyMetric, fmt.Errorf("bad value: failed to parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
+			err = fmt.Errorf("bad value: failed to parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
+
+			return EmptyMetric, err
 		}
 	}
 
@@ -55,11 +59,13 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (Me
 		if s, err := strconv.ParseInt(metricValue, 10, 64); err == nil {
 			result.ValueInt = s
 		} else {
-			return EmptyMetric, fmt.Errorf("bad value: failed to parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
+			err = fmt.Errorf("bad value: failed to parse metricValue by: %w", err) // StatusCode: http.StatusBadRequest
+
+			return EmptyMetric, err
 		}
 	}
-	return result, nil
 
+	return result, nil
 }
 
 func (mu MetricUnit) Clone() MetricUnit {

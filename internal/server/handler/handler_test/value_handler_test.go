@@ -1,11 +1,13 @@
-package handler
+package handler_test
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/DimaKoz/practicummetrics/internal/server/handler"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestValueHandler(t *testing.T) {
@@ -24,11 +26,7 @@ func TestValueHandler(t *testing.T) {
 			name:   "test 404 - 0",
 			method: http.MethodGet,
 			target: "/status",
-			want: want{
-				code:        http.StatusNotFound,
-				response:    ``,
-				contentType: "",
-			},
+			want:   want{code: http.StatusNotFound, response: ``, contentType: ""},
 		},
 		{
 			name:   "test 404 - 1",
@@ -51,26 +49,23 @@ func TestValueHandler(t *testing.T) {
 			},
 		},
 	}
-	for i, test := range tests {
+	for index, testItem := range tests {
+		ind := index
+		test := testItem
 		t.Run(test.name, func(t *testing.T) {
 			e := echo.New()
 			request := httptest.NewRequest(test.method, test.target, nil)
-			// создаём новый Recorder
-			w := httptest.NewRecorder()
-			c := e.NewContext(request, w)
-			if i != len(tests)-1 {
-				c.SetParamNames([]string{"name"}...)
-				c.SetParamValues([]string{"testCounter132"}...)
-
+			responseRecorder := httptest.NewRecorder() // создаём новый Recorder
+			ctx := e.NewContext(request, responseRecorder)
+			if ind != len(tests)-1 {
+				ctx.SetParamNames([]string{"name"}...)
+				ctx.SetParamValues([]string{"testCounter132"}...)
 			}
-			_ = ValueHandler(c)
-
-			res := w.Result()
-			// проверяем код ответа
+			_ = handler.NewBaseHandler(nil).ValueHandler(ctx)
+			res := responseRecorder.Result()
 			assert.Equal(t, test.want.code, res.StatusCode, "StatusCode got: %v, want: %v", res.StatusCode, test.want.code)
 
 			_ = res.Body.Close()
-
 		})
 	}
 }

@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"compress/gzip"
+	"strings"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"strings"
 )
 
 var gzipSkipper = func(c echo.Context) bool {
@@ -13,6 +14,7 @@ var gzipSkipper = func(c echo.Context) bool {
 	if !hasNoGzip {
 		c.Response().Header().Set(echo.HeaderContentEncoding, "gzip")
 	}
+
 	return hasNoGzip
 }
 
