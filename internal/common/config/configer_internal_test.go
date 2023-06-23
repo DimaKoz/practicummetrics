@@ -193,7 +193,7 @@ func TestLoadServerConfig(t *testing.T) {
 	want := &ServerConfig{
 		Config: Config{
 			Address: defaultAddress,
-			HashKey: unknownStringFieldValue,
+			HashKey: defaultKey,
 		},
 		StoreInterval:   defaultStoreInterval,
 		ConnectionDB:    unknownStringFieldValue,

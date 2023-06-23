@@ -9,6 +9,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/DimaKoz/practicummetrics/internal/common"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/go-resty/resty/v2"
@@ -81,7 +82,7 @@ func appendHash(request *resty.Request, hashKey string, v interface{}) error {
 	h.Write(bJSON)
 	hmacString := hex.EncodeToString(h.Sum(nil))
 
-	request.SetHeader("HashSHA256", hmacString)
+	request.SetHeader(common.HashKeyHeaderName, hmacString)
 
 	return nil
 }

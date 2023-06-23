@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	middleware2 "github.com/DimaKoz/practicummetrics/internal/server/middleware"
 	"github.com/jackc/pgx/v5"
@@ -10,11 +11,12 @@ import (
 )
 
 // SetupMiddleware inits and some middlewares to Echo framework.
-func SetupMiddleware(echoFramework *echo.Echo, logger zap.SugaredLogger) {
+func SetupMiddleware(echoFramework *echo.Echo, cfg *config.ServerConfig, logger zap.SugaredLogger) {
 	// Logging middlewares
 	// RequestLoggerWithConfig and BodyDump
 	loggerConfig := middleware2.GetRequestLoggerConfig(logger)
 	echoFramework.Use(middleware.RequestLoggerWithConfig(loggerConfig))
+	echoFramework.Use(middleware2.AuthValidator(*cfg, logger))
 	echoFramework.Use(middleware.BodyDump(middleware2.GetBodyLoggerHandler(logger)))
 
 	// Set up a compression middleware

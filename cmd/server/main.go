@@ -99,7 +99,7 @@ func printCfgInfo(cfg *config.ServerConfig, sugar zap.SugaredLogger) {
 
 func startServer(cfg *config.ServerConfig, conn *pgx.Conn, sugar zap.SugaredLogger) {
 	e := echo.New()
-	server.SetupMiddleware(e, sugar)
+	server.SetupMiddleware(e, cfg, sugar)
 	server.SetupRouter(e, conn)
 
 	if err := e.Start(cfg.Address); err != nil {
