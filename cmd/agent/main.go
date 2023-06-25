@@ -49,21 +49,16 @@ func main() {
 				return
 
 			case <-tickerGathering.C:
-				go gather.GetMemoryMetrics(metricsCh, errCh)
-				go gather.GetMetrics(metricsCh, errCh)
+				gatherCase(metricsCh, errCh)
 
 			case metrics := <-metricsCh:
-				for _, s := range *metrics {
-					repository.AddMetric(s)
-				}
-				infoLog.Println("added metrics:", len(*metrics))
+				metricsCase(metrics, infoLog)
 
 			case err = <-errCh:
 				infoLog.Fatalf("cannot collect metrics: %s", err)
 
 			case <-tickerReport.C:
-				metrics := repository.GetAllMetrics()
-				sender.ParcelsSend(cfg, metrics)
+				reportCase(cfg)
 			}
 		}
 	}()
@@ -73,4 +68,21 @@ func main() {
 	<-done
 
 	infoLog.Println("exiting")
+}
+
+func metricsCase(metrics *[]model.MetricUnit, infoLog *log.Logger) {
+	for _, s := range *metrics {
+		repository.AddMetric(s)
+	}
+	infoLog.Println("added metrics:", len(*metrics))
+}
+
+func gatherCase(metricsCh chan *[]model.MetricUnit, errCh chan error) {
+	go gather.GetMemoryMetrics(metricsCh, errCh)
+	go gather.GetMetrics(metricsCh, errCh)
+}
+
+func reportCase(cfg *config.AgentConfig) {
+	metrics := repository.GetAllMetrics()
+	sender.ParcelsSend(cfg, metrics)
 }
