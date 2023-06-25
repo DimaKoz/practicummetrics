@@ -14,6 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// AuthValidator checks "HashSHA256" header and its value.
 func AuthValidator(cfg config.ServerConfig, sugar zap.SugaredLogger) echo.MiddlewareFunc {
 	badHash := echo.NewHTTPError(http.StatusBadRequest, "bad hash")
 
@@ -54,6 +55,7 @@ func AuthValidator(cfg config.ServerConfig, sugar zap.SugaredLogger) echo.Middle
 	}
 }
 
+// isBadHash returns true when 'incomeHash' is wrong.
 func isBadHash(sugar zap.SugaredLogger, cfgKey string, incomeHash string, reqBody []byte) bool {
 	key := []byte(cfgKey)
 	h := hmac.New(sha256.New, key)
