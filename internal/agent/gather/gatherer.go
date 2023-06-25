@@ -125,7 +125,7 @@ func GetMemoryMetrics(resultChan chan *[]model.MetricUnit, errChan chan error) {
 
 	// TotalMemory
 	name = "TotalMemory"
-	virMem, _ := mem.VirtualMemory()
+	virMem, err := mem.VirtualMemory()
 	if err != nil {
 		errChan <- fmt.Errorf(errFormatString, name, err)
 
