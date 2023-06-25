@@ -10,6 +10,7 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
 	"github.com/DimaKoz/practicummetrics/internal/agent/sender"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 )
 
@@ -26,9 +27,7 @@ func main() {
 	}
 
 	// from cfg:
-	infoLog.Println("cfg:")
-	infoLog.Println("address:", cfg.Address)
-	infoLog.Println("key:", cfg.HashKey)
+	infoLog.Println("cfg:\n", "address:", cfg.Address, "\nkey:", cfg.HashKey)
 	infoLog.Println("reportInterval:", cfg.ReportInterval)
 	infoLog.Println("pollInterval:", cfg.PollInterval)
 
@@ -37,7 +36,8 @@ func main() {
 
 	tickerReport := time.NewTicker(time.Duration(cfg.ReportInterval) * time.Second)
 	defer tickerReport.Stop()
-
+	metricsCh := make(chan *[]model.MetricUnit)
+	errCh := make(chan error)
 	done := make(chan bool)
 
 	go func() {
@@ -49,14 +49,17 @@ func main() {
 				return
 
 			case <-tickerGathering.C:
-				metrics, err := gather.GetMetrics()
-				if err != nil {
-					infoLog.Fatalf("cannot collect metrics: %s", err)
-				}
+				go gather.GetMemoryMetrics(metricsCh, errCh)
+				go gather.GetMetrics(metricsCh, errCh)
 
+			case metrics := <-metricsCh:
 				for _, s := range *metrics {
 					repository.AddMetric(s)
 				}
+				infoLog.Println("added metrics:", len(*metrics))
+
+			case err = <-errCh:
+				infoLog.Fatalf("cannot collect metrics: %s", err)
 
 			case <-tickerReport.C:
 				metrics := repository.GetAllMetrics()
