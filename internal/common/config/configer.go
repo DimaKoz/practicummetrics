@@ -35,6 +35,7 @@ type AgentConfig struct {
 	Config
 	ReportInterval int64 `env:"REPORT_INTERVAL"`
 	PollInterval   int64 `env:"POLL_INTERVAL"`
+	RateLimit      int64 `env:"RATE_LIMIT"`
 }
 
 // ServerConfig represents a config of the server.
@@ -169,7 +170,9 @@ func setUnknownStrValue(target *string, value string) {
 	}
 }
 
-func addAgentFlags(cfg *AgentConfig, address *string, hashKey *string, pollInterval *string, reportInterval *string) {
+func addAgentFlags(cfg *AgentConfig, address *string,
+	hashKey *string, pollInterval *string, reportInterval *string, limit *string,
+) {
 	if cfg.Address == "" {
 		flag2.StringVarP(address, "a", "a", "", "")
 	}
@@ -185,14 +188,18 @@ func addAgentFlags(cfg *AgentConfig, address *string, hashKey *string, pollInter
 	if cfg.ReportInterval == 0 {
 		flag2.StringVarP(reportInterval, "r", "r", "", "")
 	}
+
+	if cfg.RateLimit == 0 {
+		flag2.StringVarP(limit, "l", "l", "", "")
+	}
 }
 
 func processAgentFlags(cfg *AgentConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
 
-	var address, keyFlag, pFlag, rFlag string
+	var address, keyFlag, pFlag, rFlag, lFlag string
 
-	addAgentFlags(cfg, &address, &keyFlag, &pFlag, &rFlag)
+	addAgentFlags(cfg, &address, &keyFlag, &pFlag, &rFlag, &lFlag)
 	flag2.Parse()
 
 	if address != "" {
@@ -203,19 +210,23 @@ func processAgentFlags(cfg *AgentConfig) error {
 		cfg.HashKey = keyFlag
 	}
 
-	if cfg.PollInterval == 0 && pFlag != "" {
-		if s, err := strconv.ParseInt(pFlag, 10, 64); err == nil {
-			cfg.PollInterval = s
-		} else {
-			return fmt.Errorf("couldn't convert the poll interval to int, pFlag: %s, err: %w", pFlag, err)
-		}
+	if err := setAgentIntFlag(&cfg.PollInterval, pFlag, "poll interval"); err != nil {
+		return err
 	}
+	if err := setAgentIntFlag(&cfg.ReportInterval, rFlag, "request interval"); err != nil {
+		return err
+	}
+	err := setAgentIntFlag(&cfg.RateLimit, lFlag, "rate limit")
 
-	if cfg.ReportInterval == 0 && rFlag != "" {
-		if s, err := strconv.ParseInt(rFlag, 10, 64); err == nil {
-			cfg.ReportInterval = s
+	return err
+}
+
+func setAgentIntFlag(cfgInt *int64, flag string, errMesPart string) error {
+	if *cfgInt == 0 && flag != "" {
+		if s, err := strconv.ParseInt(flag, 10, 64); err == nil {
+			*cfgInt = s
 		} else {
-			return fmt.Errorf("couldn't convert the request interval to int, rFlag: %s, err: %w", rFlag, err)
+			return fmt.Errorf("couldn't convert the %s to int, flag: %s, err: %w", errMesPart, flag, err)
 		}
 	}
 

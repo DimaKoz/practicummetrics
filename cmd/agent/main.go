@@ -58,7 +58,7 @@ func main() {
 				infoLog.Fatalf("cannot collect metrics: %s", err)
 
 			case <-tickerReport.C:
-				reportCase(cfg)
+				reportCase(cfg, infoLog)
 			}
 		}
 	}()
@@ -82,7 +82,36 @@ func gatherCase(metricsCh chan *[]model.MetricUnit, errCh chan error) {
 	go gather.GetMetrics(metricsCh, errCh)
 }
 
-func reportCase(cfg *config.AgentConfig) {
+func worker(workerID int64, cfg *config.AgentConfig, infoLog *log.Logger, jobs <-chan []model.MetricUnit) {
+	for j := range jobs {
+		infoLog.Println("worker:", workerID, "started task:", j)
+		// a real job
+		sender.ParcelsSend(cfg, j)
+
+		infoLog.Println("worker:", workerID, "done task:", j)
+	}
+}
+
+func reportCase(cfg *config.AgentConfig, infoLog *log.Logger) {
 	metrics := repository.GetAllMetrics()
-	sender.ParcelsSend(cfg, metrics)
+	infoLog.Println("all jobs:", metrics)
+
+	workerNumber := cfg.RateLimit // Rate limit
+	if workerNumber == 0 {        // without workers
+		sender.ParcelsSend(cfg, metrics)
+
+		return
+	}
+	numJobs := len(metrics)
+	jobs := make(chan []model.MetricUnit, numJobs)
+
+	for w := int64(1); w <= workerNumber; w++ {
+		go worker(w, cfg, infoLog, jobs)
+	}
+	for j := 1; j <= numJobs; j++ {
+		number := j - 1
+		job := metrics[number:j]
+		jobs <- job
+	}
+	close(jobs)
 }
