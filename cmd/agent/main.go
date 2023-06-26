@@ -37,8 +37,11 @@ func main() {
 	tickerReport := time.NewTicker(time.Duration(cfg.ReportInterval) * time.Second)
 	defer tickerReport.Stop()
 	metricsCh := make(chan *[]model.MetricUnit)
+	defer close(metricsCh)
 	errCh := make(chan error)
+	defer close(errCh)
 	done := make(chan bool)
+	defer close(done)
 
 	go func() {
 		for {
