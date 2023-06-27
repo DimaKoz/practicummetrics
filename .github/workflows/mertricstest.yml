@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Check branch name
         run: |
-          if [[ ! $GITHUB_HEAD_REF =~ ^iter[0-9]+$ ]] && [[ $GITHUB_HEAD_REF -ne "main" ]]; then echo "Branch name must match pattern 'iter<number>'" && echo "$GITHUB_HEAD_REF" && exit 1; fi
+          if [[ ! $GITHUB_HEAD_REF =~ ^iter[0-9]+$ ]] && [[ $GITHUB_HEAD_REF != "main" ]]; then echo "Branch name must match pattern 'iter<number>'" && echo "Your branch is $GITHUB_HEAD_REF" && exit 1; else echo "Your branch is $GITHUB_HEAD_REF"; fi
 
   metricstest:
     runs-on: ubuntu-latest
