@@ -7,8 +7,11 @@ import (
 	"reflect"
 	"runtime"
 	"strconv"
+	"time"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/mem"
 )
 
 var metricsName = []string{
@@ -93,8 +96,69 @@ func collectOtherTypeMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error)
 	return &result, nil
 }
 
+// GetMemoryMetrics returns a list of the metrics.
+func GetMemoryMetrics(resultChan chan *[]model.MetricUnit, errChan chan error) {
+	const metricsCount = 3
+
+	result := make([]model.MetricUnit, 0, metricsCount)
+	var name string
+
+	// CPUutilization1
+
+	name = "CPUutilization1"
+
+	utilization, err := cpu.Percent(time.Duration(0), false)
+	if err != nil {
+		errChan <- fmt.Errorf(errFormatString, name, err)
+
+		return
+	}
+
+	utilizationStValue := strconv.FormatFloat(utilization[0], 'f', 2, 64)
+	if m, err := model.NewMetricUnit(model.MetricTypeGauge, name, utilizationStValue); err == nil {
+		result = append(result, m)
+	} else {
+		errChan <- fmt.Errorf(errFormatString, name, err)
+
+		return
+	}
+
+	// TotalMemory
+	name = "TotalMemory"
+	virMem, err := mem.VirtualMemory()
+	if err != nil {
+		errChan <- fmt.Errorf(errFormatString, name, err)
+
+		return
+	}
+
+	if m, err := model.NewMetricUnit(model.MetricTypeGauge,
+		name,
+		strconv.FormatUint(virMem.Total, 10)); err == nil {
+		result = append(result, m)
+	} else {
+		errChan <- fmt.Errorf(errFormatString, name, err)
+
+		return
+	}
+
+	// FreeMemory
+	name = "FreeMemory"
+	if m, err := model.NewMetricUnit(model.MetricTypeGauge,
+		name,
+		strconv.FormatUint(virMem.Total, 10)); err == nil {
+		result = append(result, m)
+	} else {
+		errChan <- fmt.Errorf(errFormatString, name, err)
+
+		return
+	}
+
+	resultChan <- &result
+}
+
 // GetMetrics returns a list of the metrics.
-func GetMetrics() (*[]model.MetricUnit, error) {
+func GetMetrics(resultChan chan *[]model.MetricUnit, errChan chan error) {
 	var (
 		rtm                 runtime.MemStats
 		result, metricUnits *[]model.MetricUnit
@@ -104,16 +168,19 @@ func GetMetrics() (*[]model.MetricUnit, error) {
 	runtime.ReadMemStats(&rtm)
 
 	if result, err = collectUintMetrics(&rtm); err != nil {
-		return nil, fmt.Errorf("cannot collectUintMetrics: %w", err)
+		errChan <- fmt.Errorf("cannot collectUintMetrics: %w", err)
+
+		return
 	}
 
 	if metricUnits, err = collectOtherTypeMetrics(&rtm); err != nil {
-		return metricUnits, fmt.Errorf("cannot collectOtherTypeMetrics: %w", err)
+		errChan <- fmt.Errorf("cannot collectOtherTypeMetrics: %w", err)
+
+		return
 	}
 
 	*result = append(*result, *metricUnits...)
-
-	return result, err
+	resultChan <- result
 }
 
 func getFieldValueUint64(e *runtime.MemStats, field string) string {

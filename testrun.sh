@@ -176,5 +176,18 @@ export STORE_INTERVAL=1
 metricstest-darwin-amd64 -test.v -test.run=^TestIteration13$ -database-dsn='postgres://localhost:5432/testdb?sslmode=disable' -file-storage-path=$TEMP_FILE -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log13.txt
 CLEAN_AFTER_TEST
 echo "Iter 13: $(tail -1 ./log13.txt)"
-exit
 
+echo "Iter 14..."
+psql --command="DROP TABLE metrics;" postgres://localhost:5432/testdb?sslmode=disable
+rm /tmp/metrics-db.json
+RANDOM_PORT=$(EPHEMERAL_PORT)
+echo RANDOM_PORT: "$RANDOM_PORT"
+export ADDRESS="localhost:${RANDOM_PORT}"
+export TEMP_FILE="./tempfile${RANDOM_PORT}"
+echo TEMP FILE: "$TEMP_FILE"
+export RESTORE=true
+export STORE_INTERVAL=1
+metricstest-darwin-amd64 -test.v -test.run=^TestIteration14$ -key="${TEMP_FILE}" -database-dsn='postgres://localhost:5432/testdb?sslmode=disable' -file-storage-path=$TEMP_FILE -server-port="$RANDOM_PORT" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log14.txt
+CLEAN_AFTER_TEST
+echo "Iter 14: $(tail -1 ./log14.txt)"
+exit

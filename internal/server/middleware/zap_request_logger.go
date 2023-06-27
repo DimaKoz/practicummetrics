@@ -23,6 +23,7 @@ var logValuesFunc = func(c echo.Context, loggerValues middleware.RequestLoggerVa
 	return nil
 }
 
+// GetRequestLoggerConfig returns middleware.RequestLoggerConfig.
 func GetRequestLoggerConfig(sugar zap.SugaredLogger) middleware.RequestLoggerConfig {
 	zapSugar = sugar
 	result := middleware.RequestLoggerConfig{ //nolint:exhaustruct
@@ -38,6 +39,7 @@ func GetRequestLoggerConfig(sugar zap.SugaredLogger) middleware.RequestLoggerCon
 	return result
 }
 
+// GetBodyLoggerHandler returns middleware.BodyDumpHandler.
 func GetBodyLoggerHandler(sugar zap.SugaredLogger) middleware.BodyDumpHandler {
 	return func(c echo.Context, reqBody, resBody []byte) {
 		sugar.Infow(

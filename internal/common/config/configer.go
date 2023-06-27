@@ -20,12 +20,14 @@ const (
 	unknownIntFieldValue    = -1
 	defaultFileStoragePath  = "/tmp/metrics-db.json"
 	unknownStringFieldValue = "unknownStringFieldValue"
+	defaultKey              = ""
 	defaultRestore          = true
 )
 
 // Config represents a config of the agent and/or the server.
 type Config struct {
 	Address string `env:"ADDRESS"`
+	HashKey string `env:"KEY"`
 }
 
 // AgentConfig represents a config of the agent.
@@ -33,6 +35,7 @@ type AgentConfig struct {
 	Config
 	ReportInterval int64 `env:"REPORT_INTERVAL"`
 	PollInterval   int64 `env:"POLL_INTERVAL"`
+	RateLimit      int64 `env:"RATE_LIMIT"`
 }
 
 // ServerConfig represents a config of the server.
@@ -48,7 +51,7 @@ type ServerConfig struct {
 // NewServerConfig creates an instance of ServerConfig.
 func NewServerConfig() *ServerConfig {
 	return &ServerConfig{
-		Config:          Config{Address: unknownStringFieldValue},
+		Config:          Config{Address: unknownStringFieldValue, HashKey: unknownStringFieldValue},
 		StoreInterval:   unknownIntFieldValue,
 		FileStoragePath: unknownStringFieldValue,
 		ConnectionDB:    unknownStringFieldValue,
@@ -74,6 +77,7 @@ func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
 		defaultAddress,
 		defaultStoreInterval,
 		defaultFileStoragePath,
+		defaultKey,
 		defaultRestore)
 
 	return nil
@@ -82,6 +86,7 @@ func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
 // LoadAgentConfig returns *AgentConfig.
 func LoadAgentConfig() (*AgentConfig, error) {
 	cfg := &AgentConfig{} //nolint:exhaustruct
+	cfg.HashKey = unknownStringFieldValue
 
 	if err := processEnvAgent(cfg); err != nil {
 		return nil, fmt.Errorf("agent config: cannot process ENV variables: %w", err)
@@ -96,9 +101,15 @@ func LoadAgentConfig() (*AgentConfig, error) {
 	return cfg, nil
 }
 
-func addServerFlags(cfg *ServerConfig, address *string, rFlag *string, iFlag *string, fFlag *string, dFlag *string) {
+func addServerFlags(cfg *ServerConfig,
+	address *string, rFlag *string, iFlag *string, fFlag *string, dFlag *string, keyFlag *string,
+) {
 	if cfg.Address == unknownStringFieldValue {
 		flag2.StringVarP(address, "a", "a", unknownStringFieldValue, "")
+	}
+
+	if cfg.HashKey == unknownStringFieldValue {
+		flag2.StringVarP(keyFlag, "k", "k", unknownStringFieldValue, "")
 	}
 
 	if !cfg.hasRestore {
@@ -120,26 +131,18 @@ func addServerFlags(cfg *ServerConfig, address *string, rFlag *string, iFlag *st
 
 func processServerFlags(cfg *ServerConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
-	address := unknownStringFieldValue
-	rFlag := unknownStringFieldValue
-	fFlag := unknownStringFieldValue
-	dFlag := unknownStringFieldValue
+	dFlag, keyFlag := unknownStringFieldValue, unknownStringFieldValue
+	address, rFlag, fFlag := unknownStringFieldValue, unknownStringFieldValue, unknownStringFieldValue
+
 	var iFlag string
-	addServerFlags(cfg, &address, &rFlag, &iFlag, &fFlag, &dFlag)
+	addServerFlags(cfg, &address, &rFlag, &iFlag, &fFlag, &dFlag, &keyFlag)
 
 	flag2.Parse()
 
-	if address != unknownStringFieldValue {
-		cfg.Address = address
-	}
-
-	if fFlag != unknownStringFieldValue {
-		cfg.FileStoragePath = fFlag
-	}
-
-	if dFlag != unknownStringFieldValue {
-		cfg.ConnectionDB = dFlag
-	}
+	setUnknownStrValue(&cfg.Address, address)
+	setUnknownStrValue(&cfg.HashKey, keyFlag)
+	setUnknownStrValue(&cfg.FileStoragePath, fFlag)
+	setUnknownStrValue(&cfg.ConnectionDB, dFlag)
 
 	if !cfg.hasRestore && rFlag != unknownStringFieldValue {
 		if s, err := strconv.ParseBool(rFlag); err == nil {
@@ -161,9 +164,21 @@ func processServerFlags(cfg *ServerConfig) error {
 	return nil
 }
 
-func addAgentFlags(cfg *AgentConfig, address *string, pollInterval *string, reportInterval *string) {
+func setUnknownStrValue(target *string, value string) {
+	if value != unknownStringFieldValue {
+		*target = value
+	}
+}
+
+func addAgentFlags(cfg *AgentConfig, address *string,
+	hashKey *string, pollInterval *string, reportInterval *string, limit *string,
+) {
 	if cfg.Address == "" {
 		flag2.StringVarP(address, "a", "a", "", "")
+	}
+
+	if cfg.HashKey == unknownStringFieldValue {
+		flag2.StringVarP(hashKey, "k", "k", "", "")
 	}
 
 	if cfg.PollInterval == 0 {
@@ -173,33 +188,45 @@ func addAgentFlags(cfg *AgentConfig, address *string, pollInterval *string, repo
 	if cfg.ReportInterval == 0 {
 		flag2.StringVarP(reportInterval, "r", "r", "", "")
 	}
+
+	if cfg.RateLimit == 0 {
+		flag2.StringVarP(limit, "l", "l", "", "")
+	}
 }
 
 func processAgentFlags(cfg *AgentConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
 
-	var address, pFlag, rFlag string
+	var address, keyFlag, pFlag, rFlag, lFlag string
 
-	addAgentFlags(cfg, &address, &pFlag, &rFlag)
+	addAgentFlags(cfg, &address, &keyFlag, &pFlag, &rFlag, &lFlag)
 	flag2.Parse()
 
 	if address != "" {
 		cfg.Address = address
 	}
 
-	if cfg.PollInterval == 0 && pFlag != "" {
-		if s, err := strconv.ParseInt(pFlag, 10, 64); err == nil {
-			cfg.PollInterval = s
-		} else {
-			return fmt.Errorf("couldn't convert the poll interval to int, pFlag: %s, err: %w", pFlag, err)
-		}
+	if keyFlag != "" {
+		cfg.HashKey = keyFlag
 	}
 
-	if cfg.ReportInterval == 0 && rFlag != "" {
-		if s, err := strconv.ParseInt(rFlag, 10, 64); err == nil {
-			cfg.ReportInterval = s
+	if err := setAgentIntFlag(&cfg.PollInterval, pFlag, "poll interval"); err != nil {
+		return err
+	}
+	if err := setAgentIntFlag(&cfg.ReportInterval, rFlag, "request interval"); err != nil {
+		return err
+	}
+	err := setAgentIntFlag(&cfg.RateLimit, lFlag, "rate limit")
+
+	return err
+}
+
+func setAgentIntFlag(cfgInt *int64, flag string, errMesPart string) error {
+	if *cfgInt == 0 && flag != "" {
+		if s, err := strconv.ParseInt(flag, 10, 64); err == nil {
+			*cfgInt = s
 		} else {
-			return fmt.Errorf("couldn't convert the request interval to int, rFlag: %s, err: %w", rFlag, err)
+			return fmt.Errorf("couldn't convert the %s to int, flag: %s, err: %w", errMesPart, flag, err)
 		}
 	}
 
@@ -238,10 +265,15 @@ func setupDefaultServerValues(config *ServerConfig,
 	defaultAddress string,
 	defaultStoreInterval int64,
 	defaultFileStoragePath string,
+	defaultKey string,
 	defaultRestore bool,
 ) {
 	if config.Address == unknownStringFieldValue {
 		config.Address = defaultAddress
+	}
+
+	if config.HashKey == unknownStringFieldValue {
+		config.HashKey = defaultKey
 	}
 
 	if config.StoreInterval == unknownIntFieldValue {
@@ -262,6 +294,10 @@ func setupDefaultAgentValues(config *AgentConfig,
 	defaultRepInterval time.Duration,
 	defaultPollInterval time.Duration,
 ) {
+	if config.HashKey == unknownStringFieldValue {
+		config.HashKey = ""
+	}
+
 	if config.Address == "" {
 		config.Address = defaultAddress
 	}
@@ -283,5 +319,7 @@ func (cfg ServerConfig) String() string {
 	return fmt.Sprintf("Address: %s \n StoreInterval: %d \n"+
 		" FileStoragePath: %s \n"+
 		" ConnectionDB: %s \n"+
-		" Restore: %t \n", cfg.Address, cfg.StoreInterval, cfg.FileStoragePath, cfg.ConnectionDB, cfg.Restore)
+		" Key: %s \n"+
+		" Restore: %t \n",
+		cfg.Address, cfg.StoreInterval, cfg.FileStoragePath, cfg.ConnectionDB, cfg.HashKey, cfg.Restore)
 }

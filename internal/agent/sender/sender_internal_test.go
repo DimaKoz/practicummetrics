@@ -30,9 +30,9 @@ func TestParcelsSend(t *testing.T) {
 			args: args{
 				cfg: &config.AgentConfig{
 					Config: config.Config{
-						Address: "localhost:8181",
+						Address: "localhost:8181", HashKey: "",
 					},
-					PollInterval:   int64(2),
+					RateLimit: 0, PollInterval: int64(2),
 					ReportInterval: int64(10),
 				},
 				mu: model.MetricUnit{
@@ -94,8 +94,9 @@ func TestPrintSender(t *testing.T) {
 	}()
 	ParcelsSend(&config.AgentConfig{
 		Config: config.Config{
-			Address: "localhost:8888",
+			Address: "localhost:8888", HashKey: "",
 		},
+		RateLimit:      0,
 		PollInterval:   int64(2),
 		ReportInterval: int64(10),
 	}, []model.MetricUnit{{

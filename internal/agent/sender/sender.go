@@ -1,9 +1,15 @@
 package sender
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 
+	"github.com/DimaKoz/practicummetrics/internal/common"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/go-resty/resty/v2"
@@ -11,37 +17,74 @@ import (
 
 // ParcelsSend sends metrics.
 func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
-	client := resty.New()
-	var targetURL string
 	if len(metrics) < minimumBatchNumber { // sending one by one
-		emptyMetrics := model.NewEmptyMetrics()
-		targetURL = getMetricsUpdateTargetURL(cfg.Address, endpointParcelSend)
-		for _, unit := range metrics {
-			request := client.R()
-			emptyMetrics.UpdateByMetricUnit(unit)
-			request.SetBody(emptyMetrics)
-			addHeadersToRequest(request)
-			if _, err := request.Post(targetURL); err != nil {
-				logSendingErr(err)
-
-				break
-			}
-		}
+		sendingSingle(resty.New(), cfg, metrics)
 	} else { // do batch request
-		targetURL = getMetricsUpdateTargetURL(cfg.Address, endpointParcelsSend)
-		request := client.R()
-		addHeadersToRequest(request)
-		metrcsSending := make([]model.Metrics, 0, len(metrics))
-		for _, unit := range metrics {
-			emptyMetrics := model.NewEmptyMetrics()
-			emptyMetrics.UpdateByMetricUnit(unit)
-			metrcsSending = append(metrcsSending, *emptyMetrics)
-		}
-		request.SetBody(metrcsSending)
-		if _, err := request.Post(targetURL); err != nil {
+		sendingBatch(cfg, metrics)
+	}
+}
+
+func sendingBatch(cfg *config.AgentConfig, metrics []model.MetricUnit) {
+	targetURL := getMetricsUpdateTargetURL(cfg.Address, endpointParcelsSend)
+	request := resty.New().R()
+	addHeadersToRequest(request)
+	metrcsSending := make([]model.Metrics, 0, len(metrics))
+	for _, unit := range metrics {
+		emptyMetrics := model.NewEmptyMetrics()
+		emptyMetrics.UpdateByMetricUnit(unit)
+		metrcsSending = append(metrcsSending, *emptyMetrics)
+	}
+	if cfg.HashKey != "" {
+		if err := appendHash(request, cfg.HashKey, metrcsSending); err != nil {
 			logSendingErr(err)
+
+			return
 		}
 	}
+
+	request.SetBody(metrcsSending)
+	if _, err := request.Post(targetURL); err != nil {
+		logSendingErr(err)
+	}
+}
+
+func sendingSingle(rClient *resty.Client, cfg *config.AgentConfig, metrics []model.MetricUnit) {
+	emptyMetrics := model.NewEmptyMetrics()
+	targetURL := getMetricsUpdateTargetURL(cfg.Address, endpointParcelSend)
+	for _, unit := range metrics {
+		request := rClient.R()
+		emptyMetrics.UpdateByMetricUnit(unit)
+		request.SetBody(emptyMetrics)
+		if cfg.HashKey != "" {
+			if err := appendHash(request, cfg.HashKey, emptyMetrics); err != nil {
+				logSendingErr(err)
+
+				return
+			}
+		}
+		addHeadersToRequest(request)
+		if _, err := request.Post(targetURL); err != nil {
+			logSendingErr(err)
+
+			break
+		}
+	}
+}
+
+func appendHash(request *resty.Request, hashKey string, v interface{}) error {
+	bJSON, err := json.Marshal(v)
+	if err != nil {
+		return fmt.Errorf("agent: can't get json: %w", err)
+	}
+
+	key := []byte(hashKey)
+	h := hmac.New(sha256.New, key)
+	h.Write(bJSON)
+	hmacString := hex.EncodeToString(h.Sum(nil))
+
+	request.SetHeader(common.HashKeyHeaderName, hmacString)
+
+	return nil
 }
 
 func logSendingErr(err error) {
