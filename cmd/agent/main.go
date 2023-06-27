@@ -57,7 +57,7 @@ func main() {
 				gatherCase(metricsCh, errCh)
 
 			case metrics := <-metricsCh:
-				metricsCase(metrics, infoLog)
+				go metricsCase(metrics, infoLog)
 
 			case err = <-errCh:
 				infoLog.Fatalf("cannot collect metrics: %s", err)
