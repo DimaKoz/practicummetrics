@@ -90,7 +90,7 @@ func gatherCase(metricsCh chan *[]model.MetricUnit, errCh chan error) {
 func worker(workerID int64, cfg *config.AgentConfig, infoLog *log.Logger, jobs <-chan []model.MetricUnit) {
 	for j := range jobs {
 		infoLog.Println("worker:", workerID, "started task:", j)
-		// a real job
+		// a real job.
 		sender.ParcelsSend(cfg, j)
 
 		infoLog.Println("worker:", workerID, "done task:", j)
