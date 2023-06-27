@@ -14,6 +14,8 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 )
 
+const buffersNumber = 5
+
 func main() {
 	infoLog := log.Default()
 	infoLog.SetPrefix("agent: INFO: ")
@@ -36,7 +38,7 @@ func main() {
 
 	tickerReport := time.NewTicker(time.Duration(cfg.ReportInterval) * time.Second)
 	defer tickerReport.Stop()
-	metricsCh := make(chan *[]model.MetricUnit, 5)
+	metricsCh := make(chan *[]model.MetricUnit, buffersNumber)
 	defer close(metricsCh)
 	errCh := make(chan error)
 	defer close(errCh)
