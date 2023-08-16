@@ -49,7 +49,7 @@ func collectUintMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error) {
 	result := make([]model.MetricUnit, 0, len(metricsName))
 
 	for _, name := range metricsName {
-		value := getFieldValueUint64(rtm, name)
+		value := getFieldValue(rtm, name)
 		if m, err := model.NewMetricUnit(model.MetricTypeGauge, name, value); err == nil {
 			result = append(result, m)
 		} else {
@@ -188,4 +188,64 @@ func getFieldValueUint64(e *runtime.MemStats, field string) string {
 	f := reflect.Indirect(r).FieldByName(field)
 
 	return strconv.FormatUint(f.Uint(), 10)
+}
+
+//nolint:cyclop
+func getFieldValue(mStat *runtime.MemStats, field string) string { //nolint:funlen
+	switch field {
+	case "NumForcedGC":
+		return strconv.FormatUint(uint64(mStat.NumForcedGC), 10)
+	case "NumGC":
+		return strconv.FormatUint(uint64(mStat.NumGC), 10)
+	case "Alloc":
+		return strconv.FormatUint(mStat.Alloc, 10)
+	case "BuckHashSys":
+		return strconv.FormatUint(mStat.BuckHashSys, 10)
+	case "Frees":
+		return strconv.FormatUint(mStat.Frees, 10)
+	case "GCSys":
+		return strconv.FormatUint(mStat.GCSys, 10)
+	case "HeapAlloc":
+		return strconv.FormatUint(mStat.HeapAlloc, 10)
+	case "HeapIdle":
+		return strconv.FormatUint(mStat.HeapIdle, 10)
+	case "HeapInuse":
+		return strconv.FormatUint(mStat.HeapInuse, 10)
+	case "HeapObjects":
+		return strconv.FormatUint(mStat.HeapObjects, 10)
+	case "HeapReleased":
+		return strconv.FormatUint(mStat.HeapReleased, 10)
+	case "HeapSys":
+		return strconv.FormatUint(mStat.HeapSys, 10)
+	case "LastGC":
+		return strconv.FormatUint(mStat.LastGC, 10)
+	case "Lookups":
+		return strconv.FormatUint(mStat.Lookups, 10)
+	case "MCacheInuse":
+		return strconv.FormatUint(mStat.MCacheInuse, 10)
+	case "MCacheSys":
+		return strconv.FormatUint(mStat.MCacheSys, 10)
+	case "MSpanInuse":
+		return strconv.FormatUint(mStat.MSpanInuse, 10)
+	case "MSpanSys":
+		return strconv.FormatUint(mStat.MSpanSys, 10)
+	case "Mallocs":
+		return strconv.FormatUint(mStat.Mallocs, 10)
+	case "NextGC":
+		return strconv.FormatUint(mStat.NextGC, 10)
+	case "OtherSys":
+		return strconv.FormatUint(mStat.OtherSys, 10)
+	case "PauseTotalNs":
+		return strconv.FormatUint(mStat.PauseTotalNs, 10)
+	case "StackInuse":
+		return strconv.FormatUint(mStat.StackInuse, 10)
+	case "StackSys":
+		return strconv.FormatUint(mStat.StackSys, 10)
+	case "Sys":
+		return strconv.FormatUint(mStat.Sys, 10)
+	case "TotalAlloc":
+		return strconv.FormatUint(mStat.TotalAlloc, 10)
+	}
+
+	return ""
 }
