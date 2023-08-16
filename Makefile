@@ -66,3 +66,8 @@ gofmt:
 	gofmt -s -w .
 
 fix: gofmt gci fmt
+
+cover:
+	rm -f ./cover.html cover.out coverage.txt
+	go test -race -coverprofile cover.out  ./... ./internal/... -coverpkg=./...
+	go tool cover -html=cover.out -o cover.html
