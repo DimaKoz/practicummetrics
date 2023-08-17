@@ -49,7 +49,7 @@ func collectUintMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error) {
 	result := make([]model.MetricUnit, 0, len(metricsName))
 
 	for _, name := range metricsName {
-		value := getFieldValue(rtm, name)
+		value := getFieldValueUint64(rtm, name)
 		if m, err := model.NewMetricUnit(model.MetricTypeGauge, name, value); err == nil {
 			result = append(result, m)
 		} else {
@@ -58,6 +58,53 @@ func collectUintMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error) {
 	}
 
 	return &result, nil
+}
+
+func collectUintMetricsVariant(rtm *runtime.MemStats, result *[]model.MetricUnit) error {
+	for _, name := range metricsName {
+		value := getFieldValue(rtm, name)
+		if m, err := model.NewMetricUnit(model.MetricTypeGauge, name, value); err == nil {
+			*result = append(*result, m)
+		} else {
+			return fmt.Errorf(errFormatString, name, err)
+		}
+	}
+
+	return nil
+}
+
+func collectOtherTypeMetricsVariant(rtm *runtime.MemStats, result *[]model.MetricUnit) error {
+	// GCCPUFraction
+	fraction := strconv.FormatFloat(rtm.GCCPUFraction, 'f', -1, 64)
+	if m, err := model.NewMetricUnit(model.MetricTypeGauge, "GCCPUFraction", fraction); err == nil {
+		*result = append(*result, m)
+	} else {
+		return fmt.Errorf(errFormatString, "GCCPUFraction", err)
+	}
+
+	// RandomValue
+	var randInterval int64 = 100
+	var randomValue string
+	if n, err := rand.Int(rand.Reader, big.NewInt(randInterval)); err == nil {
+		randomValue = n.String()
+	} else {
+		return fmt.Errorf(errFormatString, "RandomValue", err)
+	}
+
+	if m, err := model.NewMetricUnit(model.MetricTypeGauge, "RandomValue", randomValue); err == nil {
+		*result = append(*result, m)
+	} else {
+		return fmt.Errorf(errFormatString, "RandomValue", err)
+	}
+
+	// PollCount
+	if m, err := model.NewMetricUnit(model.MetricTypeCounter, "PollCount", "1"); err == nil {
+		*result = append(*result, m)
+	} else {
+		return fmt.Errorf(errFormatString, "PollCount", err)
+	}
+
+	return nil
 }
 
 func collectOtherTypeMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error) {
@@ -150,6 +197,32 @@ func GetMemoryMetrics(resultChan chan *[]model.MetricUnit, errChan chan error) {
 		result = append(result, m)
 	} else {
 		errChan <- fmt.Errorf(errFormatString, name, err)
+
+		return
+	}
+
+	resultChan <- &result
+}
+
+// GetMetricsVariant sends a list of the metrics to resultChan.
+func GetMetricsVariant(resultChan chan *[]model.MetricUnit, errChan chan error) {
+	const metricsCount = 3
+	var (
+		rtm    runtime.MemStats
+		result = make([]model.MetricUnit, 0, metricsCount+len(metricsName))
+		err    error
+	)
+
+	runtime.ReadMemStats(&rtm)
+
+	if err = collectUintMetricsVariant(&rtm, &result); err != nil {
+		errChan <- fmt.Errorf("cannot collectUintMetrics: %w", err)
+
+		return
+	}
+
+	if err = collectOtherTypeMetricsVariant(&rtm, &result); err != nil {
+		errChan <- fmt.Errorf("cannot collectOtherTypeMetrics: %w", err)
 
 		return
 	}
