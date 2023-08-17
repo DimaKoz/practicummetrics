@@ -88,6 +88,8 @@ func TestGetMetrics(t *testing.T) {
 					break ForLoop
 				}
 			}
+			close(metricsCh)
+			close(errCh)
 		})
 	}
 }
@@ -110,6 +112,19 @@ func checkMetricsName(testing assert.TestingT, wantKeys []string, got *[]model.M
 	}
 }
 
+/*
+
+goos: darwin
+goarch: amd64
+pkg: github.com/DimaKoz/practicummetrics/internal/agent/gather/gather_test
+cpu: Intel(R) Core(TM) i7-7920HQ CPU @ 3.10GHz
+BenchmarkGetMetrics
+BenchmarkGetMetrics-8          	   26454	     43101 ns/op	   12646 B/op	      69 allocs/op
+BenchmarkGetMetricsVariant
+BenchmarkGetMetricsVariant-8   	   42862	     27827 ns/op	    2625 B/op	      37 allocs/op
+
+*/
+
 func BenchmarkGetMetrics(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		metricsCh := make(chan *[]model.MetricUnit)
@@ -124,9 +139,7 @@ func BenchmarkGetMetrics(b *testing.B) {
 
 				break ForLoop
 			case got := <-metricsCh:
-				if got == nil {
-					b.Fatalf("got == ni")
-				}
+				assert.NotNil(b, got)
 				if got != nil && len(*got) != len(testMetricsNameWantKeys) {
 					assert.Equal(b, len(testMetricsNameWantKeys), len(*got))
 					b.Errorf("GetMetrics() = %v, want %v", got, testMetricsNameWantKeys)
@@ -157,9 +170,7 @@ func BenchmarkGetMetricsVariant(b *testing.B) {
 
 				break ForLoop
 			case got := <-metricsCh:
-				if got == nil {
-					b.Fatalf("got == ni")
-				}
+				assert.NotNil(b, got)
 				if got != nil && len(*got) != len(testMetricsNameWantKeys) {
 					assert.Equal(b, len(testMetricsNameWantKeys), len(*got))
 					b.Errorf("GetMetricsVariant() = %v, want %v", got, testMetricsNameWantKeys)
