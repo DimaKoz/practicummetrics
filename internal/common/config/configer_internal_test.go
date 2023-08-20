@@ -49,6 +49,7 @@ var (
 	}
 )
 
+//nolint:exhaustruct
 var testsCasesAgentInitConfig = []struct {
 	name    string
 	args    argTestConfig
