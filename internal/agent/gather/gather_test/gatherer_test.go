@@ -225,7 +225,6 @@ func BenchmarkGetMemoryMetrics(b *testing.B) {
 	}
 }
 
-// BenchmarkGetMemoryMetricsVariant-8   	   73190	     17679 ns/op	    1056 B/op	      16 allocs/op
 func BenchmarkGetMemoryMetricsVariant(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		metricsCh := make(chan *[]model.MetricUnit)
