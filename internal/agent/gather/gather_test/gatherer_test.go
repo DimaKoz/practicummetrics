@@ -6,55 +6,87 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var testMetricsNameWantKeys = []string{
-	"Alloc",
-	"BuckHashSys",
-	"Frees",
-	"GCCPUFraction",
-	"GCSys",
-	"HeapAlloc",
-	"HeapIdle",
-	"HeapInuse",
-	"HeapObjects",
-	"HeapReleased",
-	"HeapSys",
-	"LastGC",
-	"Lookups",
-	"MCacheInuse",
-	"MCacheSys",
-	"MSpanInuse",
-	"MSpanSys",
-	"Mallocs",
-	"NextGC",
-	"NumForcedGC",
-	"NumGC",
-	"OtherSys",
-	"PauseTotalNs",
-	"StackInuse",
-	"StackSys",
-	"Sys",
-	"TotalAlloc",
-	"PollCount",
-	"RandomValue",
+	gather.MetricNameAlloc,
+	gather.MetricNameBuckHashSys,
+	gather.MetricNameFrees,
+	gather.MetricNameGCCPUFraction,
+	gather.MetricNameGCSys,
+	gather.MetricNameHeapAlloc,
+	gather.MetricNameHeapIdle,
+	gather.MetricNameHeapInuse,
+	gather.MetricNameHeapObjects,
+	gather.MetricNameHeapReleased,
+	gather.MetricNameHeapSys,
+	gather.MetricNameLastGC,
+	gather.MetricNameLookups,
+	gather.MetricNameMCacheInuse,
+	gather.MetricNameMCacheSys,
+	gather.MetricNameMSpanInuse,
+	gather.MetricNameMSpanSys,
+	gather.MetricNameMallocs,
+	gather.MetricNameNextGC,
+	gather.MetricNameNumForcedGC,
+	gather.MetricNameNumGC,
+	gather.MetricNameOtherSys,
+	gather.MetricNamePauseTotalNs,
+	gather.MetricNameStackInuse,
+	gather.MetricNameStackSys,
+	gather.MetricNameSys,
+	gather.MetricNameTotalAlloc,
+	gather.MetricNamePollCount,
+	gather.MetricNameRandomValue,
+}
+
+var testMemoryMetricsNameWantKeys = []string{
+	gather.MetricNameCPUutiliz1,
+	gather.MetricNameTotalMemory,
+	gather.MetricNameFreeMemory,
+}
+
+const (
+	getMetrics              = 1
+	getMetricsVariant       = 2
+	getMemoryMetrics        = 3
+	getMemoryMetricsVariant = 4
+)
+
+func startMetricsByState(t *testing.T, useState int, resultChan chan *[]model.MetricUnit, errChan chan error) {
+	t.Helper()
+	switch {
+	case useState == getMetrics:
+		go gather.GetMetrics(resultChan, errChan)
+	case useState == getMetricsVariant:
+		go gather.GetMetricsVariant(resultChan, errChan)
+	case useState == getMemoryMetrics:
+		go gather.GetMemoryMetrics(resultChan, errChan)
+	case useState == getMemoryMetricsVariant:
+		go gather.GetMemoryMetricsVariant(resultChan, errChan)
+	default:
+		require.Fail(t, "Unknown test.use")
+	}
 }
 
 func TestGetMetrics(t *testing.T) {
 	tests := []struct {
-		name      string
-		wantKeys  []string
-		isVariant bool
+		name     string
+		wantKeys []string
+		use      int
 	}{
 		{
-			name:      "test keys",
-			wantKeys:  testMetricsNameWantKeys,
-			isVariant: false,
+			name: "test keys", wantKeys: testMetricsNameWantKeys, use: getMetrics,
 		},
 		{
-			name:      "test keys variant",
-			wantKeys:  testMetricsNameWantKeys,
-			isVariant: true,
+			name: "test keys variant", wantKeys: testMetricsNameWantKeys, use: getMetricsVariant,
+		},
+		{
+			name: "test memory keys", wantKeys: testMemoryMetricsNameWantKeys, use: getMemoryMetrics,
+		},
+		{
+			name: "test memory keys variant", wantKeys: testMemoryMetricsNameWantKeys, use: getMemoryMetricsVariant,
 		},
 	}
 	for _, testItem := range tests {
@@ -62,11 +94,7 @@ func TestGetMetrics(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			metricsCh := make(chan *[]model.MetricUnit)
 			errCh := make(chan error)
-			if test.isVariant {
-				go gather.GetMetricsVariant(metricsCh, errCh)
-			} else {
-				go gather.GetMetrics(metricsCh, errCh)
-			}
+			startMetricsByState(t, test.use, metricsCh, errCh)
 
 		ForLoop:
 			for {
@@ -79,7 +107,7 @@ func TestGetMetrics(t *testing.T) {
 					assert.NotNil(t, got)
 					if got != nil && len(*got) != len(test.wantKeys) {
 						assert.Equal(t, len(test.wantKeys), len(*got))
-						t.Errorf("GetMetrics() = %v, want %v", got, test.wantKeys)
+						t.Errorf("metrics = %v, want %v", got, test.wantKeys)
 						checkMetricsName(t, test.wantKeys, got)
 					} else {
 						checkMetricsName(t, test.wantKeys, got)
@@ -107,7 +135,7 @@ func checkMetricsName(testing assert.TestingT, wantKeys []string, got *[]model.M
 		}
 
 		if !isPresent {
-			assert.Fail(testing, "GetMetrics() -  we want %v but absentee", wantKey)
+			assert.Fail(testing, "GetMetrics() - no expected metric", "we want %s but absentee", wantKey)
 		}
 	}
 }
@@ -140,13 +168,6 @@ func BenchmarkGetMetrics(b *testing.B) {
 				break ForLoop
 			case got := <-metricsCh:
 				assert.NotNil(b, got)
-				if got != nil && len(*got) != len(testMetricsNameWantKeys) {
-					assert.Equal(b, len(testMetricsNameWantKeys), len(*got))
-					b.Errorf("GetMetrics() = %v, want %v", got, testMetricsNameWantKeys)
-					checkMetricsName(b, testMetricsNameWantKeys, got)
-				} else {
-					checkMetricsName(b, testMetricsNameWantKeys, got)
-				}
 
 				break ForLoop
 			}
@@ -171,13 +192,55 @@ func BenchmarkGetMetricsVariant(b *testing.B) {
 				break ForLoop
 			case got := <-metricsCh:
 				assert.NotNil(b, got)
-				if got != nil && len(*got) != len(testMetricsNameWantKeys) {
-					assert.Equal(b, len(testMetricsNameWantKeys), len(*got))
-					b.Errorf("GetMetricsVariant() = %v, want %v", got, testMetricsNameWantKeys)
-					checkMetricsName(b, testMetricsNameWantKeys, got)
-				} else {
-					checkMetricsName(b, testMetricsNameWantKeys, got)
-				}
+
+				break ForLoop
+			}
+		}
+		close(metricsCh)
+		close(errCh)
+	}
+}
+
+func BenchmarkGetMemoryMetrics(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		metricsCh := make(chan *[]model.MetricUnit)
+		errCh := make(chan error)
+		go gather.GetMemoryMetrics(metricsCh, errCh)
+
+	ForLoop:
+		for {
+			select {
+			case err := <-errCh:
+				b.Error(err)
+
+				break ForLoop
+			case got := <-metricsCh:
+				assert.NotNil(b, got)
+
+				break ForLoop
+			}
+		}
+		close(metricsCh)
+		close(errCh)
+	}
+}
+
+// BenchmarkGetMemoryMetricsVariant-8   	   73190	     17679 ns/op	    1056 B/op	      16 allocs/op
+func BenchmarkGetMemoryMetricsVariant(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		metricsCh := make(chan *[]model.MetricUnit)
+		errCh := make(chan error)
+		go gather.GetMemoryMetricsVariant(metricsCh, errCh)
+
+	ForLoop:
+		for {
+			select {
+			case err := <-errCh:
+				b.Error(err)
+
+				break ForLoop
+			case got := <-metricsCh:
+				assert.NotNil(b, got)
 
 				break ForLoop
 			}
