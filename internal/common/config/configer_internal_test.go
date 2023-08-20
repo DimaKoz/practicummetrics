@@ -212,3 +212,39 @@ func TestLoadServerConfig(t *testing.T) {
 	assert.NoError(t, err, "error must be nil")
 	assert.Equal(t, want, got, "Configs - got: %v, want: %v", got, want)
 }
+
+func TestServerConfigIsUseDatabase(t *testing.T) {
+	tests := []struct {
+		name string
+		cfg  ServerConfig
+		want bool
+	}{
+		{
+			name: "use db == true",
+			want: true,
+			cfg: ServerConfig{ //nolint:exhaustruct
+				ConnectionDB: "1234",
+			},
+		},
+		{
+			name: "use db == false, ConnectionDB is empty",
+			want: false,
+			cfg: ServerConfig{ //nolint:exhaustruct
+				ConnectionDB: "",
+			},
+		},
+		{
+			name: "use db == false, ConnectionDB is 'unknownStringFieldValue'",
+			want: false,
+			cfg: ServerConfig{ //nolint:exhaustruct
+				ConnectionDB: "unknownStringFieldValue",
+			},
+		},
+	}
+	for _, tt := range tests {
+		test := tt
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.want, test.cfg.IsUseDatabase())
+		})
+	}
+}
