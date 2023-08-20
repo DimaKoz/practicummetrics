@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"sync"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"go.uber.org/zap"
 )
 
 var (
@@ -102,7 +102,7 @@ func Load() error {
 		memStorage.storage[v.Name] = v
 	}
 
-	log.Printf("repository: loaded: %d \n", len(metricUnits))
+	zap.S().Infof("repository: loaded: %d \n", len(metricUnits))
 
 	return nil
 }
@@ -126,7 +126,7 @@ func Save() error {
 		return fmt.Errorf("can't write '%s' file with error: %w", filePathStorage, err)
 	}
 
-	log.Printf("repository: saved: %d \n", len(metrics))
+	zap.S().Infof("repository: saved: %d \n", len(metrics))
 
 	return nil
 }
