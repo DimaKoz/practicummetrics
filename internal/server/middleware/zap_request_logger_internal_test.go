@@ -10,16 +10,13 @@ import (
 )
 
 func TestLogValuesFunc(t *testing.T) {
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zap.Must(zap.NewDevelopment())
 
-	defer func(logger *zap.Logger) {
-		_ = logger.Sync()
+	defer func(loggerZap *zap.Logger) {
+		_ = loggerZap.Sync()
 	}(logger)
-	sugar := *logger.Sugar()
-	zapSugar = sugar
+
+	zap.ReplaceGlobals(logger)
 	e := echo.New()
 	assert.NoError(t, logValuesFunc(e.AcquireContext(), middleware.RequestLoggerValues{})) //nolint:exhaustruct
 }
@@ -63,7 +60,7 @@ func TestGetRequestLoggerConfig(t *testing.T) {
 	for _, testItem := range tests {
 		test := testItem
 		t.Run(test.name, func(t *testing.T) {
-			got := GetRequestLoggerConfig(test.args.sugar)
+			got := GetRequestLoggerConfig()
 			assert.Equal(t, got.LogMethod, test.want.LogMethod)
 			assert.Equal(t, got.LogURI, test.want.LogURI)
 			assert.Equal(t, got.LogStatus, test.want.LogStatus)

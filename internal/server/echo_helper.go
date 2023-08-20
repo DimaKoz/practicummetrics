@@ -7,17 +7,16 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"go.uber.org/zap"
 )
 
 // SetupMiddleware inits and some middlewares to Echo framework.
-func SetupMiddleware(echoFramework *echo.Echo, cfg *config.ServerConfig, logger zap.SugaredLogger) {
+func SetupMiddleware(echoFramework *echo.Echo, cfg *config.ServerConfig) {
 	// Logging middlewares
 	// RequestLoggerWithConfig and BodyDump
-	loggerConfig := middleware2.GetRequestLoggerConfig(logger)
+	loggerConfig := middleware2.GetRequestLoggerConfig()
 	echoFramework.Use(middleware.RequestLoggerWithConfig(loggerConfig))
-	echoFramework.Use(middleware2.AuthValidator(*cfg, logger))
-	echoFramework.Use(middleware.BodyDump(middleware2.GetBodyLoggerHandler(logger)))
+	echoFramework.Use(middleware2.AuthValidator(*cfg))
+	echoFramework.Use(middleware.BodyDump(middleware2.GetBodyLoggerHandler()))
 
 	// Set up a compression middleware
 	echoFramework.Use(middleware2.GetGzipMiddlewareConfig())
@@ -34,4 +33,6 @@ func SetupRouter(echoFramework *echo.Echo, conn *pgx.Conn) {
 	echoFramework.GET("/", dbHandler.RootHandler)
 
 	echoFramework.GET("/ping", dbHandler.PingHandler)
+
+	// pprof.Register(echoFramework)
 }

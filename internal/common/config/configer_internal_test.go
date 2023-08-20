@@ -248,3 +248,22 @@ func TestServerConfigIsUseDatabase(t *testing.T) {
 		})
 	}
 }
+
+func TestServerConfigString(t *testing.T) {
+	cfg := ServerConfig{
+		Config: Config{
+			Address: "1",
+			HashKey: "2",
+		},
+		StoreInterval:   3,
+		FileStoragePath: "4",
+		ConnectionDB:    "5",
+		hasRestore:      true,
+		Restore:         true,
+	}
+	want := "Address: 1 \n StoreInterval: 3 \n FileStoragePath: 4 \n ConnectionDB: 5 \n Key: 2 \n Restore: true \n"
+
+	assert.Equal(t, want, cfg.String())
+	assert.Equal(t, want, cfg.StringVariantBuffer())
+	assert.Equal(t, want, cfg.StringVariantCopy())
+}

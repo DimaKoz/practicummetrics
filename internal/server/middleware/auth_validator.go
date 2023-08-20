@@ -15,7 +15,7 @@ import (
 )
 
 // AuthValidator checks "HashSHA256" header and its value.
-func AuthValidator(cfg config.ServerConfig, sugar zap.SugaredLogger) echo.MiddlewareFunc {
+func AuthValidator(cfg config.ServerConfig) echo.MiddlewareFunc {
 	badHash := echo.NewHTTPError(http.StatusBadRequest, "bad hash")
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -31,7 +31,7 @@ func AuthValidator(cfg config.ServerConfig, sugar zap.SugaredLogger) echo.Middle
 			// Hash key
 			headerHash := echoCtx.Request().Header.Get(common.HashKeyHeaderName)
 			if headerHash == "" {
-				sugar.Info("ups:", "missed HashSHA256")
+				zap.S().Info("ups:", "missed HashSHA256")
 
 				return badHash
 			}
@@ -42,7 +42,7 @@ func AuthValidator(cfg config.ServerConfig, sugar zap.SugaredLogger) echo.Middle
 			}
 			echoCtx.Request().Body = io.NopCloser(bytes.NewBuffer(reqBody)) // Reset
 
-			if isBadHash(sugar, cfg.HashKey, headerHash, reqBody) {
+			if isBadHash(cfg.HashKey, headerHash, reqBody) {
 				return badHash
 			}
 
@@ -56,12 +56,12 @@ func AuthValidator(cfg config.ServerConfig, sugar zap.SugaredLogger) echo.Middle
 }
 
 // isBadHash returns true when 'incomeHash' is wrong.
-func isBadHash(sugar zap.SugaredLogger, cfgKey string, incomeHash string, reqBody []byte) bool {
+func isBadHash(cfgKey string, incomeHash string, reqBody []byte) bool {
 	key := []byte(cfgKey)
 	h := hmac.New(sha256.New, key)
 	h.Write(reqBody)
 	hmacString := hex.EncodeToString(h.Sum(nil))
-	sugar.Infow(
+	zap.S().Infow(
 		"HashSHA256:", " server:", hmacString,
 		" agent:", incomeHash,
 	)

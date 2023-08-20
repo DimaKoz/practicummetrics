@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -322,4 +323,54 @@ func (cfg ServerConfig) String() string {
 		" Key: %s \n"+
 		" Restore: %t \n",
 		cfg.Address, cfg.StoreInterval, cfg.FileStoragePath, cfg.ConnectionDB, cfg.HashKey, cfg.Restore)
+}
+
+func (cfg ServerConfig) StringVariantBuffer() string {
+	const minimumLen = 86
+	storeI := strconv.FormatInt(cfg.StoreInterval, 10)
+	restore := strconv.FormatBool(cfg.Restore)
+	grow := minimumLen +
+		len(storeI) + len(restore) + len(cfg.Address) + len(cfg.FileStoragePath) + len(cfg.ConnectionDB) + len(cfg.HashKey)
+	var buf bytes.Buffer
+	buf.Grow(grow)
+	buf.WriteString("Address: ")
+	buf.WriteString(cfg.Address)
+	buf.WriteString(" \n StoreInterval: ")
+	buf.WriteString(storeI)
+	buf.WriteString(" \n FileStoragePath: ")
+	buf.WriteString(cfg.FileStoragePath)
+	buf.WriteString(" \n ConnectionDB: ")
+	buf.WriteString(cfg.ConnectionDB)
+	buf.WriteString(" \n Key: ")
+	buf.WriteString(cfg.HashKey)
+	buf.WriteString(" \n Restore: ")
+	buf.WriteString(restore)
+	buf.WriteString(" \n")
+
+	return buf.String()
+}
+
+func (cfg ServerConfig) StringVariantCopy() string {
+	const minimumLen = 86
+	storeI := strconv.FormatInt(cfg.StoreInterval, 10)
+	restore := strconv.FormatBool(cfg.Restore)
+	grow := minimumLen +
+		len(storeI) + len(restore) + len(cfg.Address) + len(cfg.FileStoragePath) + len(cfg.ConnectionDB) + len(cfg.HashKey)
+	result := make([]byte, grow)
+	bLen := 0
+	bLen += copy(result[bLen:], "Address: ")
+	bLen += copy(result[bLen:], cfg.Address)
+	bLen += copy(result[bLen:], " \n StoreInterval: ")
+	bLen += copy(result[bLen:], storeI)
+	bLen += copy(result[bLen:], " \n FileStoragePath: ")
+	bLen += copy(result[bLen:], cfg.FileStoragePath)
+	bLen += copy(result[bLen:], " \n ConnectionDB: ")
+	bLen += copy(result[bLen:], cfg.ConnectionDB)
+	bLen += copy(result[bLen:], " \n Key: ")
+	bLen += copy(result[bLen:], cfg.HashKey)
+	bLen += copy(result[bLen:], " \n Restore: ")
+	bLen += copy(result[bLen:], restore)
+	_ = copy(result[bLen:], " \n")
+
+	return string(result)
 }

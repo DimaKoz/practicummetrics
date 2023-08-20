@@ -25,7 +25,7 @@ type PgxIface interface {
 var errNoInfoConnectionDB = errors.New("no DB connection info")
 
 // ConnectDB opens a connection to the database.
-func ConnectDB(cfg *config.ServerConfig, sugar zap.SugaredLogger) (*pgx.Conn, error) {
+func ConnectDB(cfg *config.ServerConfig) (*pgx.Conn, error) {
 	if cfg == nil || cfg.ConnectionDB == "" {
 		return nil, errNoInfoConnectionDB
 	}
@@ -38,8 +38,8 @@ func ConnectDB(cfg *config.ServerConfig, sugar zap.SugaredLogger) (*pgx.Conn, er
 	if err = createTables(&db, timeout); err != nil {
 		return nil, err
 	}
-	sugar.Info("successfully connected to db", conn)
-	sugar.Info("db:", conn)
+	zap.S().Info("successfully connected to db", conn)
+	zap.S().Info("db:", conn)
 	cfg.Restore = false
 
 	return conn, nil
