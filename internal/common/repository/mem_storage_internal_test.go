@@ -156,8 +156,12 @@ func TestLoadSaveEmptyFileStorageErr(t *testing.T) {
 
 	err := Load()
 	assert.Error(t, err)
+	err = LoadVariant()
+	assert.Error(t, err)
 
 	err = Save()
+	assert.Error(t, err)
+	err = SaveVariant()
 	assert.Error(t, err)
 }
 
@@ -209,6 +213,41 @@ func TestLoadSave(t *testing.T) {
 	err = Load()
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, want, GetAllMetrics(), "GetAllMetrics()")
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+	err = LoadVariant()
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, want, GetAllMetrics(), "GetAllMetrics()")
+}
+
+func TestLoadSaveVariant(t *testing.T) {
+	orig := filePathStorage
+	filePathStorage = filepath.Join(t.TempDir(), "test"+fmt.Sprintf("%d", time.Now().Unix())+".json")
+	origMemSt := memStorage.storage
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+	t.Cleanup(
+		func() {
+			memStorage.storage = origMemSt
+			filePathStorage = orig
+		})
+	SetupFilePathStorage(filePathStorage)
+	want := []model.MetricUnit{
+		{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueInt: 42, ValueFloat: 0},
+		{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueInt: 43, ValueFloat: 0},
+	}
+	for _, v := range want {
+		AddMetric(v)
+	}
+	err := SaveVariant()
+	assert.NoError(t, err)
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+
+	mu, err := GetMetricByName("wanted")
+	assert.Error(t, err)
+	assert.Equal(t, model.EmptyMetric, mu)
+
+	err = LoadVariant()
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, want, GetAllMetrics(), "GetAllMetrics()")
 }
 
 func TestLoadErrorFile(t *testing.T) {
@@ -222,6 +261,8 @@ func TestLoadErrorFile(t *testing.T) {
 	SetupFilePathStorage(filePathStorage)
 
 	err := Load()
+	assert.Error(t, err)
+	err = LoadVariant()
 	assert.Error(t, err)
 }
 
@@ -239,4 +280,93 @@ func TestLoadErrorParse(t *testing.T) {
 
 	err = Load()
 	assert.Error(t, err)
+}
+
+/*
+
+BenchmarkLoad
+BenchmarkLoad/Load()
+BenchmarkLoad/Load()-8         	   54238	     21059 ns/op	    1512 B/op	      21 allocs/op
+BenchmarkLoad/LoadVariant()
+BenchmarkLoad/LoadVariant()-8  	   83830	     14361 ns/op	    1384 B/op	      12 allocs/op
+BenchmarkSave
+BenchmarkSave/Save()
+BenchmarkSave/Save()-8         	    4788	    220934 ns/op	     248 B/op	       5 allocs/op
+BenchmarkSave/SaveVariant()
+BenchmarkSave/SaveVariant()-8  	    4921	    239360 ns/op	     243 B/op	       5 allocs/op
+
+*/
+
+func BenchmarkLoad(b *testing.B) {
+	orig := filePathStorage
+	filePathStorage = filepath.Join(b.TempDir(), "abc"+fmt.Sprintf("%d", time.Now().Unix())+".json")
+	origMemSt := memStorage.storage
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+	b.Cleanup(
+		func() {
+			memStorage.storage = origMemSt
+			filePathStorage = orig
+		})
+	SetupFilePathStorage(filePathStorage)
+	want := []model.MetricUnit{
+		{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueInt: 42, ValueFloat: 0},
+		{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueInt: 43, ValueFloat: 0},
+	}
+	for _, v := range want {
+		AddMetric(v)
+	}
+	err := Save()
+	require.NoError(b, err)
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+	b.ResetTimer()
+	b.Run("Load()", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_ = Load()
+		}
+	})
+	b.StopTimer()
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+	b.StartTimer()
+	b.Run("LoadVariant()", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_ = LoadVariant()
+		}
+	})
+}
+
+func BenchmarkSave(b *testing.B) {
+	orig := filePathStorage
+	filePathStorage = filepath.Join(b.TempDir(), "bench"+fmt.Sprintf("%d", time.Now().Unix())+".json")
+	origMemSt := memStorage.storage
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+	b.Cleanup(
+		func() {
+			memStorage.storage = origMemSt
+			filePathStorage = orig
+		})
+	SetupFilePathStorage(filePathStorage)
+	want := []model.MetricUnit{
+		{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueInt: 42, ValueFloat: 0},
+		{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueInt: 43, ValueFloat: 0},
+		{Type: model.MetricTypeCounter, Name: "not_wanted1", Value: "44", ValueInt: 44, ValueFloat: 0},
+	}
+	for _, v := range want {
+		AddMetric(v)
+	}
+
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+	b.ResetTimer()
+	b.Run("Save()", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_ = Save()
+		}
+	})
+	b.StopTimer()
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+	b.StartTimer()
+	b.Run("SaveVariant()", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_ = SaveVariant()
+		}
+	})
 }

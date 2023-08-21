@@ -59,7 +59,7 @@ func (h *BaseHandler) UpdatesHandlerJSON(ctx echo.Context) error {
 func saveUpdates() {
 	if syncSaveUpdateHandlerJSON {
 		go func() {
-			err := repository.Save()
+			err := repository.SaveVariant()
 			if err != nil {
 				log.Fatal(err)
 			}

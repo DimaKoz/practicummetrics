@@ -62,7 +62,7 @@ func main() {
 			go func() {
 				tickerChannel := ticker.C
 				for range tickerChannel {
-					if err = repository.Save(); err != nil {
+					if err = repository.SaveVariant(); err != nil {
 						zap.S().Fatalf("server: cannot save metrics: %s", err)
 					}
 				}

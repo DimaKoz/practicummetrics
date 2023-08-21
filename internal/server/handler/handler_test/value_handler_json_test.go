@@ -51,7 +51,7 @@ func TestValueHandlerJSON(t *testing.T) {
 			tmpDir := t.TempDir()
 			fileStorage := filepath.Join(tmpDir, "rep_values.txt")
 			repository.SetupFilePathStorage(fileStorage)
-			assert.NoError(t, repository.Save())
+			assert.NoError(t, repository.SaveVariant())
 			mu, err := model.NewMetricUnit("gauge", "GetSet187", "42")
 			assert.NoError(t, err)
 			repository.AddMetric(mu)

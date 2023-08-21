@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	goccyj "github.com/goccy/go-json"
 	"go.uber.org/zap"
 )
 
@@ -107,6 +109,53 @@ func Load() error {
 	return nil
 }
 
+func LoadVariant() error {
+	var metricUnits []model.MetricUnit
+
+	if filePathStorage == "" {
+		return errEmptyPath
+	}
+	file, err := os.Open(filePathStorage)
+	if err != nil {
+		return fmt.Errorf("can't read '%s' file with error: %w", filePathStorage, err)
+	}
+	defer file.Close()
+	const bufferSize = 128
+	r := bufio.NewReaderSize(file, bufferSize)
+	dec := goccyj.NewDecoder(r)
+
+	// read open bracket
+	_, err = dec.Token()
+	if err != nil {
+		return fmt.Errorf("failed to parse json with error: %w", err)
+	}
+	// while the array contains values
+
+	for dec.More() {
+		var mUnit model.MetricUnit
+
+		err = dec.Decode(&mUnit)
+		if err != nil {
+			return fmt.Errorf("failed to parse json with error: %w", err)
+		}
+
+		metricUnits = append(metricUnits, mUnit)
+	}
+
+	// read closing bracket
+	//  t, err = dec.Token()
+
+	memStorageSync.Lock()
+	defer memStorageSync.Unlock()
+	for _, v := range metricUnits {
+		memStorage.storage[v.Name] = v
+	}
+
+	zap.S().Infof("repository: loaded: %d \n", len(metricUnits))
+
+	return nil
+}
+
 func Save() error {
 	if filePathStorage == "" {
 		return errEmptyPath
@@ -119,6 +168,30 @@ func Save() error {
 		err          error
 	)
 	if saviningJSON, err = json.Marshal(metrics); err != nil {
+		return fmt.Errorf("can't marshal json with error: %w", err)
+	}
+	var perm os.FileMode = 0o600
+	if err = os.WriteFile(filePathStorage, saviningJSON, perm); err != nil {
+		return fmt.Errorf("can't write '%s' file with error: %w", filePathStorage, err)
+	}
+
+	zap.S().Infof("repository: saved: %d \n", len(metrics))
+
+	return nil
+}
+
+func SaveVariant() error {
+	if filePathStorage == "" {
+		return errEmptyPath
+	}
+
+	metrics := GetAllMetrics()
+
+	var (
+		saviningJSON []byte
+		err          error
+	)
+	if saviningJSON, err = goccyj.Marshal(metrics); err != nil {
 		return fmt.Errorf("can't marshal json with error: %w", err)
 	}
 	var perm os.FileMode = 0o600
