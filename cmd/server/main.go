@@ -95,11 +95,13 @@ func printCfgInfo(cfg *config.ServerConfig) {
 }
 
 func startServer(cfg *config.ServerConfig, conn *pgx.Conn) {
-	e := echo.New()
-	server.SetupMiddleware(e, cfg)
-	server.SetupRouter(e, conn)
+	echos := echo.New()
+	echos.JSONSerializer = server.FastJSONSerializer{}
 
-	if err := e.Start(cfg.Address); err != nil {
+	server.SetupMiddleware(echos, cfg)
+	server.SetupRouter(echos, conn)
+
+	if err := echos.Start(cfg.Address); err != nil {
 		zap.S().Fatalf("couldn't start the server by %s", err)
 	}
 }
