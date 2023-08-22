@@ -1,5 +1,6 @@
 package server
 
+// import "github.com/labstack/echo-contrib/pprof".
 import (
 	"fmt"
 	"net/http"

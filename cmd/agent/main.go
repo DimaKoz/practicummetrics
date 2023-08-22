@@ -17,6 +17,10 @@ import (
 const buffersNumber = 5
 
 func main() {
+	/*	go func() {
+			log.Println(http.ListenAndServe("localhost:8888", nil))
+		}()
+		time.Sleep(time.Duration(10) * time.Second)*/
 	infoLog := log.Default()
 	infoLog.SetPrefix("agent: INFO: ")
 
