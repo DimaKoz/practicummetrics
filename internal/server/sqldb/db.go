@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"go.uber.org/zap"
-
-	"github.com/DimaKoz/practicummetrics/internal/common/config"
 )
 
 type PgxIface interface {

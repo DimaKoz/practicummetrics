@@ -5,10 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
-
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
+	"github.com/labstack/echo/v4"
 )
 
 var syncSaveUpdateHandlerJSON = false

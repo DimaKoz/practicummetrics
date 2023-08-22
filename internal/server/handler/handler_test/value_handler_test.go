@@ -5,10 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 )
 
 func TestValueHandler(t *testing.T) {

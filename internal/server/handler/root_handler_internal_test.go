@@ -5,10 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 )
 
 func TestRootHandler(t *testing.T) {

@@ -9,12 +9,11 @@ import (
 	"log"
 	"strings"
 
-	"github.com/go-resty/resty/v2"
-	goccyj "github.com/goccy/go-json"
-
 	"github.com/DimaKoz/practicummetrics/internal/common"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/go-resty/resty/v2"
+	goccyj "github.com/goccy/go-json"
 )
 
 // ParcelsSend sends metrics.

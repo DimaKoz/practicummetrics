@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
+	"github.com/DimaKoz/practicummetrics/internal/server/handler"
+	middleware2 "github.com/DimaKoz/practicummetrics/internal/server/middleware"
 	goccyj "github.com/goccy/go-json"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-
-	"github.com/DimaKoz/practicummetrics/internal/common/config"
-	"github.com/DimaKoz/practicummetrics/internal/server/handler"
-	middleware2 "github.com/DimaKoz/practicummetrics/internal/server/middleware"
 )
 
 // SetupMiddleware inits and some middlewares to Echo framework.

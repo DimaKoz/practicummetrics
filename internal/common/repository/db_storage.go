@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/jackc/pgx/v5"
-
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/jackc/pgx/v5"
 )
 
 // AddMetricTxToDB adds model.MetricUnit to a db

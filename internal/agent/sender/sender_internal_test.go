@@ -10,10 +10,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParcelsSend(t *testing.T) {

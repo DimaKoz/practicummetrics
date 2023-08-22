@@ -9,10 +9,9 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	goccyj "github.com/goccy/go-json"
 	"go.uber.org/zap"
-
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 )
 
 var (
