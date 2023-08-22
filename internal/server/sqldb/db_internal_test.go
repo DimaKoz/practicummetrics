@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/pashagolub/pgxmock/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
+
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
 )
 
 func testDBConnectGetZapSugaredLogger(t *testing.T) {

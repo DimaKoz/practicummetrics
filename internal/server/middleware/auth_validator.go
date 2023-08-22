@@ -8,10 +8,11 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/DimaKoz/practicummetrics/internal/common"
-	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+
+	"github.com/DimaKoz/practicummetrics/internal/common"
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
 )
 
 // AuthValidator checks "HashSHA256" header and its value.

@@ -7,10 +7,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
-	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
+
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 )
 
 // UpdatesHandlerJSON handles `/updates/` with json.

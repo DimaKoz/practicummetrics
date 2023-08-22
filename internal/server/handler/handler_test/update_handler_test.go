@@ -6,9 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 )
 
 func TestUpdateHandler(t *testing.T) {

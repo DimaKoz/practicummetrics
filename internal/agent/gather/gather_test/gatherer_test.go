@@ -3,10 +3,11 @@ package gather_test_test
 import (
 	"testing"
 
-	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 )
 
 var testMetricsNameWantKeys = []string{

@@ -3,10 +3,11 @@ package sender
 import (
 	"testing"
 
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/go-resty/resty/v2"
 	goccyj "github.com/goccy/go-json"
 	"github.com/stretchr/testify/require"
+
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 )
 
 /*

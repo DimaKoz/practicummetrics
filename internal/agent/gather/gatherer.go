@@ -9,9 +9,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
+
+	"github.com/DimaKoz/practicummetrics/internal/common/model"
 )
 
 const (
