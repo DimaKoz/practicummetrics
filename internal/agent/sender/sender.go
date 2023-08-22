@@ -13,6 +13,7 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/go-resty/resty/v2"
+	goccyj "github.com/goccy/go-json"
 )
 
 // ParcelsSend sends metrics.
@@ -34,16 +35,18 @@ func sendingBatch(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 		emptyMetrics.UpdateByMetricUnit(unit)
 		metrcsSending = append(metrcsSending, *emptyMetrics)
 	}
-	if cfg.HashKey != "" {
-		if err := appendHash(request, cfg.HashKey, metrcsSending); err != nil {
-			logSendingErr(err)
+	body, err := goccyj.Marshal(metrcsSending)
+	if err != nil {
+		logSendingErr(err)
 
-			return
-		}
+		return
+	}
+	if cfg.HashKey != "" {
+		appendHashOtherMarshaling(request, cfg.HashKey, body)
 	}
 
-	request.SetBody(metrcsSending)
-	if _, err := request.Post(targetURL); err != nil {
+	request.SetBody(body)
+	if _, err = request.Post(targetURL); err != nil {
 		logSendingErr(err)
 	}
 }
@@ -54,21 +57,34 @@ func sendingSingle(rClient *resty.Client, cfg *config.AgentConfig, metrics []mod
 	for _, unit := range metrics {
 		request := rClient.R()
 		emptyMetrics.UpdateByMetricUnit(unit)
-		request.SetBody(emptyMetrics)
-		if cfg.HashKey != "" {
-			if err := appendHash(request, cfg.HashKey, emptyMetrics); err != nil {
-				logSendingErr(err)
 
-				return
-			}
+		body, err := goccyj.Marshal(emptyMetrics)
+		if err != nil {
+			logSendingErr(err)
+
+			return
+		}
+
+		request.SetBody(body)
+		if cfg.HashKey != "" {
+			appendHashOtherMarshaling(request, cfg.HashKey, body)
 		}
 		addHeadersToRequest(request)
-		if _, err := request.Post(targetURL); err != nil {
+		if _, err = request.Post(targetURL); err != nil {
 			logSendingErr(err)
 
 			break
 		}
 	}
+}
+
+func appendHashOtherMarshaling(request *resty.Request, hashKey string, body []byte) {
+	key := []byte(hashKey)
+	h := hmac.New(sha256.New, key)
+	h.Write(body)
+	hmacString := hex.EncodeToString(h.Sum(nil))
+
+	request.SetHeader(common.HashKeyHeaderName, hmacString)
 }
 
 func appendHash(request *resty.Request, hashKey string, v interface{}) error {
