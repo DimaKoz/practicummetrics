@@ -1,5 +1,7 @@
 # ![Golang](https://img.shields.io/badge/-Golang%20❤️-05122A?style=flat&logo=go&logoColor=white)&nbsp; [![codecov](https://codecov.io/gh/DimaKoz/practicummetrics/graph/badge.svg?token=HHLX153VND)](https://codecov.io/gh/DimaKoz/practicummetrics)
 
+Бенчмарки и их результаты можно увидеть [тут](https://github.com/DimaKoz/practicummetrics/blob/iter16/benchmarks.md)
+
 # go-musthave-metrics-tpl
 
 Шаблон репозитория для трека «Сервер сбора метрик и алертинга».
