@@ -51,3 +51,13 @@ BenchmarkGetFieldValue
 BenchmarkGetFieldValue-8         	 1000000	      1005 ns/op	     200 B/op	      23 allocs/op
 </pre>
 
+<pre>
+goos: darwin
+goarch: amd64
+pkg: github.com/DimaKoz/practicummetrics/internal/agent/sender
+cpu: Intel(R) Core(TM) i7-7920HQ CPU @ 3.10GHz
+BenchmarkAppendHash
+BenchmarkAppendHash-8        	  608454	      2139 ns/op	     728 B/op	      12 allocs/op
+BenchmarkAppendHashGoccy
+BenchmarkAppendHashGoccy-8   	  709033	      1666 ns/op	     680 B/op	      11 allocs/op
+</pre>
