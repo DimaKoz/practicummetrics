@@ -1,7 +1,6 @@
 package server
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -59,14 +58,12 @@ func (d FastJSONSerializer) Serialize(c echo.Context, data interface{}, indent s
 // Deserialize reads a JSON from a request body and converts it into an interface.
 func (d FastJSONSerializer) Deserialize(c echo.Context, data interface{}) error {
 	err := goccyj.NewDecoder(c.Request().Body).Decode(data)
-	var ute *goccyj.UnmarshalTypeError
-	var syne *goccyj.SyntaxError
-	if ok := errors.Is(err, ute); ok {
+	if ute, ok := err.(*goccyj.UnmarshalTypeError); ok { //nolint:errorlint
 		mess := fmt.Sprintf("Unmarshal type error: expected=%v, got=%v, field=%v, offset=%v",
 			ute.Type, ute.Value, ute.Field, ute.Offset)
 
 		return echo.NewHTTPError(http.StatusBadRequest, mess).SetInternal(err)
-	} else if ok := errors.Is(err, syne); ok {
+	} else if syne, ok := err.(*goccyj.SyntaxError); ok { //nolint:errorlint
 		mess := fmt.Sprintf("Syntax error: offset=%v, error=%v", syne.Offset, syne.Error())
 
 		return echo.NewHTTPError(http.StatusBadRequest, mess).SetInternal(err)
