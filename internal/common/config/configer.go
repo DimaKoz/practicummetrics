@@ -12,6 +12,7 @@ import (
 	flag2 "github.com/spf13/pflag"
 )
 
+// Constants for configs.
 const (
 	defaultPollInterval   = time.Duration(2)
 	defaultReportInterval = time.Duration(10)
@@ -102,6 +103,7 @@ func LoadAgentConfig() (*AgentConfig, error) {
 	return cfg, nil
 }
 
+// addServerFlags adds server flags to process them.
 func addServerFlags(cfg *ServerConfig,
 	address *string, rFlag *string, iFlag *string, fFlag *string, dFlag *string, keyFlag *string,
 ) {
@@ -130,6 +132,8 @@ func addServerFlags(cfg *ServerConfig,
 	}
 }
 
+// processServerFlags gets parameters from command line and fill ServerConfig
+// or returns error if something wrong.
 func processServerFlags(cfg *ServerConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
 	dFlag, keyFlag := unknownStringFieldValue, unknownStringFieldValue
@@ -165,12 +169,14 @@ func processServerFlags(cfg *ServerConfig) error {
 	return nil
 }
 
+// setUnknownStrValue sets a value to a target.
 func setUnknownStrValue(target *string, value string) {
 	if value != unknownStringFieldValue {
 		*target = value
 	}
 }
 
+// addAgentFlags adds agent flags to process them.
 func addAgentFlags(cfg *AgentConfig, address *string,
 	hashKey *string, pollInterval *string, reportInterval *string, limit *string,
 ) {
@@ -195,6 +201,8 @@ func addAgentFlags(cfg *AgentConfig, address *string,
 	}
 }
 
+// processAgentFlags gets parameters from command line and fill AgentConfig
+// or returns error if something wrong.
 func processAgentFlags(cfg *AgentConfig) error {
 	flag2.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
 
@@ -222,6 +230,7 @@ func processAgentFlags(cfg *AgentConfig) error {
 	return err
 }
 
+// setAgentIntFlag sets flag value to int64 field of AgentConfig.
 func setAgentIntFlag(cfgInt *int64, flag string, errMesPart string) error {
 	if *cfgInt == 0 && flag != "" {
 		if s, err := strconv.ParseInt(flag, 10, 64); err == nil {
@@ -234,6 +243,7 @@ func setAgentIntFlag(cfgInt *int64, flag string, errMesPart string) error {
 	return nil
 }
 
+// ProcessEnvServer fills ServerConfig.
 func ProcessEnvServer(config *ServerConfig) error {
 	log.Println(os.Environ())
 
@@ -253,6 +263,7 @@ func ProcessEnvServer(config *ServerConfig) error {
 	return nil
 }
 
+// processEnvAgent an implementation of a function to parse AgentConfig.
 var processEnvAgent = func(config *AgentConfig) error {
 	err := env.Parse(config)
 	if err != nil {
@@ -262,6 +273,7 @@ var processEnvAgent = func(config *AgentConfig) error {
 	return nil
 }
 
+// setupDefaultServerValues sets default values to ServerConfig.
 func setupDefaultServerValues(config *ServerConfig,
 	defaultAddress string,
 	defaultStoreInterval int64,
@@ -290,6 +302,7 @@ func setupDefaultServerValues(config *ServerConfig,
 	}
 }
 
+// setupDefaultAgentValues sets default values to AgentConfig.
 func setupDefaultAgentValues(config *AgentConfig,
 	defaultAddress string,
 	defaultRepInterval time.Duration,
@@ -316,6 +329,7 @@ func (cfg ServerConfig) IsUseDatabase() bool {
 	return cfg.ConnectionDB != "" && cfg.ConnectionDB != unknownStringFieldValue
 }
 
+// String is Stringer implementation of ServerConfig.
 func (cfg ServerConfig) String() string {
 	return fmt.Sprintf("Address: %s \n StoreInterval: %d \n"+
 		" FileStoragePath: %s \n"+
@@ -325,6 +339,7 @@ func (cfg ServerConfig) String() string {
 		cfg.Address, cfg.StoreInterval, cfg.FileStoragePath, cfg.ConnectionDB, cfg.HashKey, cfg.Restore)
 }
 
+// StringVariantBuffer a variant of string representation of ServerConfig.
 func (cfg ServerConfig) StringVariantBuffer() string {
 	const minimumLen = 86
 	storeI := strconv.FormatInt(cfg.StoreInterval, 10)
@@ -350,6 +365,7 @@ func (cfg ServerConfig) StringVariantBuffer() string {
 	return buf.String()
 }
 
+// StringVariantCopy a variant of string representation of ServerConfig.
 func (cfg ServerConfig) StringVariantCopy() string {
 	const minimumLen = 86
 	storeI := strconv.FormatInt(cfg.StoreInterval, 10)

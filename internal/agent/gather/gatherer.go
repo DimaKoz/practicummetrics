@@ -14,6 +14,7 @@ import (
 	"github.com/shirou/gopsutil/v3/mem"
 )
 
+// Constants to store metrics names.
 const (
 	MetricNameNumForcedGC   = "NumForcedGC"
 	MetricNameNumGC         = "NumGC"
@@ -49,6 +50,7 @@ const (
 	MetricNameFreeMemory    = "FreeMemory"
 )
 
+// metricsName contains a collection of metrics.
 var metricsName = []string{
 	MetricNameNumForcedGC, // uint32
 	MetricNameNumGC,       // uint32
@@ -78,8 +80,10 @@ var metricsName = []string{
 	MetricNameTotalAlloc,
 }
 
+// errFormatString a template of an error.
 const errFormatString = "error while collecting metrics with: \n can't get '%s' metric by %w "
 
+// collectUintMetrics collects model.MetricUnit from runtime.MemStats.
 func collectUintMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error) {
 	result := make([]model.MetricUnit, 0, len(metricsName))
 
@@ -95,6 +99,7 @@ func collectUintMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error) {
 	return &result, nil
 }
 
+// collectUintMetricsVariant collects model.MetricUnit from runtime.MemStats.
 func collectUintMetricsVariant(rtm *runtime.MemStats, result *[]model.MetricUnit) error {
 	for _, name := range metricsName {
 		value := getFieldValueVariant(rtm, name)
@@ -108,6 +113,7 @@ func collectUintMetricsVariant(rtm *runtime.MemStats, result *[]model.MetricUnit
 	return nil
 }
 
+// collectOtherTypeMetricsVariant collects model.MetricUnit from runtime.MemStats.
 func collectOtherTypeMetricsVariant(rtm *runtime.MemStats, result *[]model.MetricUnit) error {
 	// GCCPUFraction
 	fraction := fmt.Sprintf("%v", rtm.GCCPUFraction)
@@ -142,6 +148,7 @@ func collectOtherTypeMetricsVariant(rtm *runtime.MemStats, result *[]model.Metri
 	return nil
 }
 
+// collectOtherTypeMetrics collects model.MetricUnit from runtime.MemStats.
 func collectOtherTypeMetrics(rtm *runtime.MemStats) (*[]model.MetricUnit, error) {
 	result := make([]model.MetricUnit, 0)
 
@@ -345,6 +352,7 @@ func GetMetrics(resultChan chan *[]model.MetricUnit, errChan chan error) {
 	resultChan <- result
 }
 
+// getFieldValueUint64 gets field value from runtime.MemStats.
 func getFieldValueUint64(e *runtime.MemStats, field string) string {
 	r := reflect.ValueOf(e)
 	f := reflect.Indirect(r).FieldByName(field)
@@ -352,8 +360,8 @@ func getFieldValueUint64(e *runtime.MemStats, field string) string {
 	return strconv.FormatUint(f.Uint(), 10)
 }
 
-//nolint:cyclop
-func getFieldValueVariant(mStat *runtime.MemStats, field string) string { //nolint:funlen
+// getFieldValueVariant gets field value from runtime.MemStats.
+func getFieldValueVariant(mStat *runtime.MemStats, field string) string { //nolint:funlen,cyclop
 	switch field {
 	case "NumForcedGC":
 		return strconv.FormatUint(uint64(mStat.NumForcedGC), 10)

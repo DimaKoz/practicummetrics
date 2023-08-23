@@ -13,12 +13,14 @@ type Metrics struct {
 	Value *float64 `json:"value,omitempty"` // значение метрики в случае передачи gauge
 }
 
+// NewEmptyMetrics creates a new Metrics.
 func NewEmptyMetrics() *Metrics {
 	result := &Metrics{ID: "", MType: "", Delta: nil, Value: nil}
 
 	return result
 }
 
+// UpdateByMetricUnit fill Metrics by MetricUnit.
 func (m *Metrics) UpdateByMetricUnit(metricUnit MetricUnit) {
 	m.ID = metricUnit.Name
 	m.MType = metricUnit.Type
@@ -32,11 +34,13 @@ func (m *Metrics) UpdateByMetricUnit(metricUnit MetricUnit) {
 	}
 }
 
+// Errors from GetPreparedValue().
 var (
 	errProblemDelta = errors.New("couldn't convert Metrics.Delta to a string, it must not be nil")
 	errProblemValue = errors.New("couldn't convert Metrics.Value to a string, it must not be nil")
 )
 
+// GetPreparedValue returns a string value or error.
 func (m *Metrics) GetPreparedValue() (string, error) {
 	var metricValue string
 

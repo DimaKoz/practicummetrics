@@ -13,6 +13,7 @@ const (
 	MetricTypeCounter = "counter"
 )
 
+// EmptyMetric is an empty struct of MetricUnit.
 var EmptyMetric = MetricUnit{} //nolint:exhaustruct
 
 // MetricUnit represents a metric.
@@ -68,6 +69,7 @@ func NewMetricUnit(metricType string, metricName string, metricValue string) (Me
 	return result, nil
 }
 
+// Clone creates a copy of instance of MetricUnit and returns it.
 func (mu MetricUnit) Clone() MetricUnit {
 	return MetricUnit{
 		Type:       mu.Type,
@@ -78,6 +80,7 @@ func (mu MetricUnit) Clone() MetricUnit {
 	}
 }
 
+// GetPath gets a part of path by MetricUnit and returns it.
 func (mu MetricUnit) GetPath() string {
 	return fmt.Sprintf("%s/%s/%s", mu.Type, mu.Name, mu.Value)
 }

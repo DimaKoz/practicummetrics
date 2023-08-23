@@ -21,12 +21,15 @@ var (
 	}
 )
 
+// MemStorage represents storage.
 type MemStorage struct {
 	storage map[string]model.MetricUnit
 }
 
+// errRepo an error oof repository.
 var errRepo = errors.New("couldn't find a metric")
 
+// repositoryError wraps error with msg and returns wrapped error.
 func repositoryError(err error, msg string) error {
 	return fmt.Errorf("%w: %s", err, msg)
 }
@@ -75,14 +78,17 @@ func GetAllMetrics() []model.MetricUnit {
 	return result
 }
 
+// filePathStorage stores a path of a file.
 var filePathStorage string
 
+// SetupFilePathStorage sets a path of a file.
 func SetupFilePathStorage(pFilePathStorage string) {
 	filePathStorage = pFilePathStorage
 }
 
 var errEmptyPath = errors.New("filePathStorage is empty")
 
+// Load loads data from a file or returns errEmptyPath error.
 func Load() error {
 	var metricUnits []model.MetricUnit
 
@@ -109,6 +115,7 @@ func Load() error {
 	return nil
 }
 
+// LoadVariant loads data from a file or returns errEmptyPath error.
 func LoadVariant() error {
 	var metricUnits []model.MetricUnit
 
@@ -156,6 +163,7 @@ func LoadVariant() error {
 	return nil
 }
 
+// Save saves data to a file or returns errEmptyPath error.
 func Save() error {
 	if filePathStorage == "" {
 		return errEmptyPath
@@ -180,6 +188,7 @@ func Save() error {
 	return nil
 }
 
+// SaveVariant saves data to a file or returns errEmptyPath error.
 func SaveVariant() error {
 	if filePathStorage == "" {
 		return errEmptyPath

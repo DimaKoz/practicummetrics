@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// syncSaveUpdateHandlerJSON stores the state of synchronization to save data to a file.
 var syncSaveUpdateHandlerJSON = false
 
 // SetSyncSaveUpdateHandlerJSON enables synchronization to save data to a file.
@@ -54,6 +55,7 @@ func (h *BaseHandler) UpdateHandlerJSON(ctx echo.Context) error {
 	return err
 }
 
+// save stores values of repository to a file.
 func save() {
 	if syncSaveUpdateHandlerJSON {
 		go func() {
@@ -65,6 +67,7 @@ func save() {
 	}
 }
 
+// wrapUpdHandlerErr wraps errors and sends a string response with status code.
 func wrapUpdHandlerErr(ctx echo.Context, statusCode int, msg string, errIn error) error {
 	err := ctx.String(statusCode, fmt.Sprintf(msg, errIn))
 	if err != nil {

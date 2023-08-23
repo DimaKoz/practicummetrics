@@ -25,6 +25,7 @@ func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 	}
 }
 
+// sendingBatch sends a batch request.
 func sendingBatch(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 	targetURL := getMetricsUpdateTargetURL(cfg.Address, endpointParcelsSend)
 	request := resty.New().R()
@@ -51,6 +52,7 @@ func sendingBatch(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 	}
 }
 
+// sendingSingle sends a single request.
 func sendingSingle(rClient *resty.Client, cfg *config.AgentConfig, metrics []model.MetricUnit) {
 	emptyMetrics := model.NewEmptyMetrics()
 	targetURL := getMetricsUpdateTargetURL(cfg.Address, endpointParcelSend)
@@ -78,6 +80,7 @@ func sendingSingle(rClient *resty.Client, cfg *config.AgentConfig, metrics []mod
 	}
 }
 
+// appendHashOtherMarshaling appends a hash to common.HashKeyHeaderName header of resty.Request.
 func appendHashOtherMarshaling(request *resty.Request, hashKey string, body []byte) {
 	key := []byte(hashKey)
 	h := hmac.New(sha256.New, key)
@@ -87,6 +90,7 @@ func appendHashOtherMarshaling(request *resty.Request, hashKey string, body []by
 	request.SetHeader(common.HashKeyHeaderName, hmacString)
 }
 
+// appendHash appends a hash to common.HashKeyHeaderName header of resty.Request.
 func appendHash(request *resty.Request, hashKey string, v interface{}) error {
 	bJSON, err := json.Marshal(v)
 	if err != nil {
@@ -103,11 +107,13 @@ func appendHash(request *resty.Request, hashKey string, v interface{}) error {
 	return nil
 }
 
+// logSendingErr prints an error.
 func logSendingErr(err error) {
 	log.Printf("could not create the request: %s \n", err)
 	log.Println("waiting for the next tick")
 }
 
+// addHeadersToRequest "Content-Type" and "Accept-Encoding" headers to resty.Request.
 func addHeadersToRequest(request *resty.Request) {
 	request.SetHeader("Content-Type", "application/json")
 	request.SetHeader("Accept-Encoding", "gzip")
@@ -120,6 +126,7 @@ const (
 	minimumBatchNumber  = 2
 )
 
+// getMetricsUpdateTargetURL prepares an URL from address and endpoint.
 func getMetricsUpdateTargetURL(address string, endpoint string) string {
 	buffLen := len(protocolParcelsSend) + len(endpoint) + len(address)
 	strBld := strings.Builder{}
