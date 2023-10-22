@@ -30,3 +30,5 @@ vendor/
 
 # Other local trash
 cover.html
+cover.out
+profile.cov
