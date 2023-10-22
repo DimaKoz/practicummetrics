@@ -1,6 +1,7 @@
 
 testAll: clean vet server agent test1 test2 test3 test4 test5 test6 test7 test8
 
+.PHONY: vet
 vet:
 	go vet -vettool=$(which statictest-darwin-amd64) ./...
 
@@ -38,11 +39,13 @@ test8:
 	../go/bin/metricstest-darwin-amd64 -test.v -test.run=^TestIteration8$$ -server-port="8080" -agent-binary-path=./cmd/agent/agent -binary-path=./cmd/server/server -source-path=. > log8.txt
 
 
+.PHONY: clean
 clean:
 	rm -f ./cmd/agent/agent ./cmd/server/server
 	rm -f ./log*.txt
 	rm -f ./tempfile*
 
+.PHONY: lnt
 lnt:
 	# excluded 'paralleltest' by the reason - not now
 	# excluded 'wsl' by the reason - 'wsl' and 'gofumpt' fights between each other
@@ -52,22 +55,29 @@ lnt:
 	# golangci-lint run -v --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable wsl
 	golangci-lint run -v
 
+.PHONY: fmt
 fmt:
 	# to install it:
 	# go install mvdan.cc/gofumpt@latest
 	gofumpt -l -w .
 
+.PHONY: gci
 gci:
 	# to install it:
 	# go install github.com/daixiang0/gci@latest
 	gci write --skip-generated -s default .
 
+.PHONY: gofmt
 gofmt:
 	gofmt -s -w .
 
+.PHONY: fix
 fix: gofmt gci fmt
 
+.PHONY: cover
 cover:
 	rm -f ./cover.html cover.out coverage.txt
 	go test -race -coverprofile cover.out  ./... ./internal/... -coverpkg=./...
 	go tool cover -html=cover.out -o cover.html
+	#https://blog.seriesci.com/how-to-measure-code-coverage-in-go/
+	go tool cover -func cover.out | grep total:
