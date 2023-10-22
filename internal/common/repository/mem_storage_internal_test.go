@@ -15,6 +15,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const extJSON = ".json"
+
 func TestAddMetricMemStorage(t *testing.T) {
 	type args struct {
 		mu model.MetricUnit
@@ -186,7 +188,7 @@ func TestLoadSave(t *testing.T) {
 	zap.ReplaceGlobals(logger)
 
 	orig := filePathStorage
-	filePathStorage = filepath.Join(t.TempDir(), "abc"+fmt.Sprintf("%d", time.Now().Unix())+".json")
+	filePathStorage = filepath.Join(t.TempDir(), "abed"+fmt.Sprintf("%d", time.Now().Unix())+extJSON)
 	origMemSt := memStorage.storage
 	memStorage.storage = make(map[string]model.MetricUnit, 0)
 	t.Cleanup(
@@ -221,7 +223,7 @@ func TestLoadSave(t *testing.T) {
 
 func TestLoadSaveVariant(t *testing.T) {
 	orig := filePathStorage
-	filePathStorage = filepath.Join(t.TempDir(), "test"+fmt.Sprintf("%d", time.Now().Unix())+".json")
+	filePathStorage = filepath.Join(t.TempDir(), "test"+fmt.Sprintf("%d", time.Now().Unix())+extJSON)
 	origMemSt := memStorage.storage
 	memStorage.storage = make(map[string]model.MetricUnit, 0)
 	t.Cleanup(
@@ -252,7 +254,7 @@ func TestLoadSaveVariant(t *testing.T) {
 
 func TestLoadErrorFile(t *testing.T) {
 	orig := filePathStorage
-	filePathStorage = filepath.Join(t.TempDir(), "abc"+fmt.Sprintf("%d", time.Now().Unix())+".json")
+	filePathStorage = filepath.Join(t.TempDir(), "abc"+fmt.Sprintf("%d", time.Now().Unix())+extJSON)
 
 	t.Cleanup(
 		func() {
@@ -268,7 +270,7 @@ func TestLoadErrorFile(t *testing.T) {
 
 func TestLoadErrorParse(t *testing.T) {
 	orig := filePathStorage
-	filePathStorage = filepath.Join(t.TempDir(), "test"+fmt.Sprintf("%d", time.Now().Unix())+".json")
+	filePathStorage = filepath.Join(t.TempDir(), "test"+fmt.Sprintf("%d", time.Now().Unix())+extJSON)
 	var perm os.FileMode = 0o600
 	err := os.WriteFile(filePathStorage, []byte{'{'}, perm)
 	require.NoError(t, err)
@@ -299,7 +301,7 @@ BenchmarkSave/SaveVariant()-8  	    4921	    239360 ns/op	     243 B/op	       5
 
 func BenchmarkLoad(b *testing.B) {
 	orig := filePathStorage
-	filePathStorage = filepath.Join(b.TempDir(), "abc"+fmt.Sprintf("%d", time.Now().Unix())+".json")
+	filePathStorage = filepath.Join(b.TempDir(), "abc"+fmt.Sprintf("%d", time.Now().Unix())+extJSON)
 	origMemSt := memStorage.storage
 	memStorage.storage = make(map[string]model.MetricUnit, 0)
 	b.Cleanup(
@@ -336,7 +338,7 @@ func BenchmarkLoad(b *testing.B) {
 
 func BenchmarkSave(b *testing.B) {
 	orig := filePathStorage
-	filePathStorage = filepath.Join(b.TempDir(), "bench"+fmt.Sprintf("%d", time.Now().Unix())+".json")
+	filePathStorage = filepath.Join(b.TempDir(), "bench"+fmt.Sprintf("%d", time.Now().Unix())+extJSON)
 	origMemSt := memStorage.storage
 	memStorage.storage = make(map[string]model.MetricUnit, 0)
 	b.Cleanup(
