@@ -44,6 +44,7 @@ clean:
 	rm -f ./cmd/agent/agent ./cmd/server/server
 	rm -f ./log*.txt
 	rm -f ./tempfile*
+	rm -f ./cover.html cover.out coverage.txt
 
 .PHONY: lnt
 lnt:
@@ -65,6 +66,8 @@ fmt:
 gci:
 	# to install it:
 	# go install github.com/daixiang0/gci@latest
+	# after that add a place of binaries to $PATH
+	# export PATH=$PATH:/your path/go/bin
 	gci write --skip-generated -s default .
 
 .PHONY: gofmt
