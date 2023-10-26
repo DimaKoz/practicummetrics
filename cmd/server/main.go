@@ -21,7 +21,10 @@ func main() {
 	// urlExample := "postgres://localhost:5432/testdb?sslmode=disable"
 	// _ = os.Setenv("DATABASE_DSN", urlExample)
 
-	logger := zap.Must(zap.NewDevelopment())
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
 
 	defer func(loggerZap *zap.Logger) {
 		_ = loggerZap.Sync()
@@ -31,7 +34,6 @@ func main() {
 
 	cfg := config.NewServerConfig()
 
-	var err error
 	if err = config.LoadServerConfig(cfg, config.ProcessEnvServer); err != nil {
 		zap.S().Fatalf("couldn't create a config %s", err)
 	}
