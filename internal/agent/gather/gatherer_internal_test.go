@@ -16,20 +16,8 @@ BenchmarkGetFieldValueUint64-8   	  203800	      5629 ns/op	     408 B/op	      
 BenchmarkGetFieldValue
 BenchmarkGetFieldValue-8         	 1000000	      1005 ns/op	     200 B/op	      23 allocs/op
 
+BenchmarkGetFieldValueUint64 - see 'deadcode_grave' branch
 */
-
-func BenchmarkGetFieldValueUint64(b *testing.B) {
-	var rtm runtime.MemStats
-	runtime.ReadMemStats(&rtm)
-	rtmPtr := &rtm
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		for _, name := range metricsName {
-			getFieldValueUint64(rtmPtr, name)
-		}
-	}
-}
 
 func BenchmarkGetFieldValue(b *testing.B) {
 	var rtm runtime.MemStats

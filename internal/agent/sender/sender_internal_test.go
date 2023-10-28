@@ -141,19 +141,6 @@ func TestGetTargetURL(t *testing.T) {
 	}
 }
 
-func TestAppendHash(t *testing.T) {
-	metUnit, _ := model.NewMetricUnit(model.MetricTypeGauge, "RandomValue", "4321")
-	emptyMetrics := model.NewEmptyMetrics()
-	emptyMetrics.UpdateByMetricUnit(metUnit)
-	request := resty.New().R()
-	want := "dbbf6accbe592dd8b30faf871f689bc70d0e7760c0063232394f78683eac98cd" //nolint:nolintlint,gosec
-
-	err := appendHash(request, "hash", emptyMetrics)
-	assert.NoError(t, err)
-	got := request.Header.Get(common.HashKeyHeaderName)
-	assert.Equal(t, want, got)
-}
-
 func TestAppendHashOtherMarshaling(t *testing.T) {
 	metUnit, _ := model.NewMetricUnit(model.MetricTypeGauge, "RandomValue", "4321")
 	emptyMetrics := model.NewEmptyMetrics()

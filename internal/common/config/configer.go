@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -331,38 +330,7 @@ func (cfg ServerConfig) IsUseDatabase() bool {
 
 // String is Stringer implementation of ServerConfig.
 func (cfg ServerConfig) String() string {
-	return fmt.Sprintf("Address: %s \n StoreInterval: %d \n"+
-		" FileStoragePath: %s \n"+
-		" ConnectionDB: %s \n"+
-		" Key: %s \n"+
-		" Restore: %t \n",
-		cfg.Address, cfg.StoreInterval, cfg.FileStoragePath, cfg.ConnectionDB, cfg.HashKey, cfg.Restore)
-}
-
-// StringVariantBuffer a variant of string representation of ServerConfig.
-func (cfg ServerConfig) StringVariantBuffer() string {
-	const minimumLen = 86
-	storeI := strconv.FormatInt(cfg.StoreInterval, 10)
-	restore := strconv.FormatBool(cfg.Restore)
-	grow := minimumLen +
-		len(storeI) + len(restore) + len(cfg.Address) + len(cfg.FileStoragePath) + len(cfg.ConnectionDB) + len(cfg.HashKey)
-	var buf bytes.Buffer
-	buf.Grow(grow)
-	buf.WriteString("Address: ")
-	buf.WriteString(cfg.Address)
-	buf.WriteString(" \n StoreInterval: ")
-	buf.WriteString(storeI)
-	buf.WriteString(" \n FileStoragePath: ")
-	buf.WriteString(cfg.FileStoragePath)
-	buf.WriteString(" \n ConnectionDB: ")
-	buf.WriteString(cfg.ConnectionDB)
-	buf.WriteString(" \n Key: ")
-	buf.WriteString(cfg.HashKey)
-	buf.WriteString(" \n Restore: ")
-	buf.WriteString(restore)
-	buf.WriteString(" \n")
-
-	return buf.String()
+	return cfg.StringVariantCopy()
 }
 
 // StringVariantCopy a variant of string representation of ServerConfig.

@@ -83,8 +83,8 @@ func metricsCase(metrics *[]model.MetricUnit, infoLog *log.Logger) {
 }
 
 func gatherCase(metricsCh chan *[]model.MetricUnit, errCh chan error) {
-	go gather.GetMemoryMetrics(metricsCh, errCh)
-	go gather.GetMetrics(metricsCh, errCh)
+	go gather.GetMemoryMetricsVariant(metricsCh, errCh)
+	go gather.GetMetricsVariant(metricsCh, errCh)
 }
 
 func worker(workerID int64, cfg *config.AgentConfig, infoLog *log.Logger, jobs <-chan []model.MetricUnit) {

@@ -58,11 +58,11 @@ func startMetricsByState(t *testing.T, useState int, resultChan chan *[]model.Me
 	t.Helper()
 	switch {
 	case useState == getMetrics:
-		go gather.GetMetrics(resultChan, errChan)
+		require.Fail(t, "see 'deadcode_grave' branch")
 	case useState == getMetricsVariant:
 		go gather.GetMetricsVariant(resultChan, errChan)
 	case useState == getMemoryMetrics:
-		go gather.GetMemoryMetrics(resultChan, errChan)
+		require.Fail(t, "see 'deadcode_grave' branch")
 	case useState == getMemoryMetricsVariant:
 		go gather.GetMemoryMetricsVariant(resultChan, errChan)
 	default:
@@ -77,13 +77,7 @@ func TestGetMetrics(t *testing.T) {
 		use      int
 	}{
 		{
-			name: "test keys", wantKeys: testMetricsNameWantKeys, use: getMetrics,
-		},
-		{
 			name: "test keys variant", wantKeys: testMetricsNameWantKeys, use: getMetricsVariant,
-		},
-		{
-			name: "test memory keys", wantKeys: testMemoryMetricsNameWantKeys, use: getMemoryMetrics,
 		},
 		{
 			name: "test memory keys variant", wantKeys: testMemoryMetricsNameWantKeys, use: getMemoryMetricsVariant,
@@ -151,61 +145,25 @@ BenchmarkGetMetrics-8          	   26454	     43101 ns/op	   12646 B/op	      69
 BenchmarkGetMetricsVariant
 BenchmarkGetMetricsVariant-8   	   42862	     27827 ns/op	    2625 B/op	      37 allocs/op
 
+BenchmarkGetMetrics - see 'deadcode_grave' branch
+
+goos: linux
+goarch: amd64
+pkg: github.com/DimaKoz/practicummetrics/internal/agent/gather/gather_test
+cpu: 11th Gen Intel(R) Core(TM) i5-11400 @ 2.60GHz
+BenchmarkGetMemoryMetrics
+BenchmarkGetMemoryMetrics-12    	   		37712	     30591 ns/op	   15576 B/op	     194 allocs/op
+BenchmarkGetMemoryMetricsVariant
+BenchmarkGetMemoryMetricsVariant-12    	   	39288	     30051 ns/op	   15559 B/op	     192 allocs/op
+
+BenchmarkGetMemoryMetrics - see 'deadcode_grave' branch
 */
-
-func BenchmarkGetMetrics(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		metricsCh := make(chan *[]model.MetricUnit)
-		errCh := make(chan error)
-		go gather.GetMetrics(metricsCh, errCh)
-
-	ForLoop:
-		for {
-			select {
-			case err := <-errCh:
-				b.Error(err)
-
-				break ForLoop
-			case got := <-metricsCh:
-				assert.NotNil(b, got)
-
-				break ForLoop
-			}
-		}
-		close(metricsCh)
-		close(errCh)
-	}
-}
 
 func BenchmarkGetMetricsVariant(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		metricsCh := make(chan *[]model.MetricUnit)
 		errCh := make(chan error)
 		go gather.GetMetricsVariant(metricsCh, errCh)
-
-	ForLoop:
-		for {
-			select {
-			case err := <-errCh:
-				b.Error(err)
-
-				break ForLoop
-			case got := <-metricsCh:
-				assert.NotNil(b, got)
-
-				break ForLoop
-			}
-		}
-		close(metricsCh)
-		close(errCh)
-	}
-}
-
-func BenchmarkGetMemoryMetrics(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		metricsCh := make(chan *[]model.MetricUnit)
-		errCh := make(chan error)
-		go gather.GetMemoryMetrics(metricsCh, errCh)
 
 	ForLoop:
 		for {

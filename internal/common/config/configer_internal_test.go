@@ -264,6 +264,4 @@ func TestServerConfigString(t *testing.T) {
 	want := "Address: 1 \n StoreInterval: 3 \n FileStoragePath: 4 \n ConnectionDB: 5 \n Key: 2 \n Restore: true \n"
 
 	assert.Equal(t, want, cfg.String())
-	assert.Equal(t, want, cfg.StringVariantBuffer())
-	assert.Equal(t, want, cfg.StringVariantCopy())
 }

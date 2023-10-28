@@ -4,8 +4,6 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
-	"fmt"
 	"log"
 	"strings"
 
@@ -88,23 +86,6 @@ func appendHashOtherMarshaling(request *resty.Request, hashKey string, body []by
 	hmacString := hex.EncodeToString(h.Sum(nil))
 
 	request.SetHeader(common.HashKeyHeaderName, hmacString)
-}
-
-// appendHash appends a hash to common.HashKeyHeaderName header of resty.Request.
-func appendHash(request *resty.Request, hashKey string, v interface{}) error {
-	bJSON, err := json.Marshal(v)
-	if err != nil {
-		return fmt.Errorf("agent: can't get json: %w", err)
-	}
-
-	key := []byte(hashKey)
-	h := hmac.New(sha256.New, key)
-	h.Write(bJSON)
-	hmacString := hex.EncodeToString(h.Sum(nil))
-
-	request.SetHeader(common.HashKeyHeaderName, hmacString)
-
-	return nil
 }
 
 // logSendingErr prints an error.
