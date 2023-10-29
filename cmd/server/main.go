@@ -83,7 +83,7 @@ func loadIfNeed(cfg *config.ServerConfig) {
 	}
 	needLoad := cfg.Restore && cfg.FileStoragePath != ""
 	if needLoad {
-		if err := repository.Load(); err != nil {
+		if err := repository.LoadVariant(); err != nil {
 			zap.S().Fatalf("couldn't restore metrics by %s", err)
 		}
 	}

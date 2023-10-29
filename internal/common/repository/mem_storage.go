@@ -88,32 +88,7 @@ func SetupFilePathStorage(pFilePathStorage string) {
 
 var errEmptyPath = errors.New("filePathStorage is empty")
 
-// Load loads data from a file or returns errEmptyPath error.
-func Load() error {
-	var metricUnits []model.MetricUnit
-
-	if filePathStorage == "" {
-		return errEmptyPath
-	}
-	data, err := os.ReadFile(filePathStorage)
-	if err != nil {
-		return fmt.Errorf("can't read '%s' file with error: %w", filePathStorage, err)
-	}
-
-	if err = json.Unmarshal(data, &metricUnits); err != nil {
-		return fmt.Errorf("failed to parse json with error: %w", err)
-	}
-
-	memStorageSync.Lock()
-	defer memStorageSync.Unlock()
-	for _, v := range metricUnits {
-		memStorage.storage[v.Name] = v
-	}
-
-	zap.S().Infof("repository: loaded: %d \n", len(metricUnits))
-
-	return nil
-}
+var errNoSavedData = errors.New("failed to parse json with error: no data")
 
 // LoadVariant loads data from a file or returns errEmptyPath error.
 func LoadVariant() error {
@@ -137,8 +112,9 @@ func LoadVariant() error {
 		return fmt.Errorf("failed to parse json with error: %w", err)
 	}
 	// while the array contains values
-
+	isEmpty := true
 	for dec.More() {
+		isEmpty = false
 		var mUnit model.MetricUnit
 
 		err = dec.Decode(&mUnit)
@@ -148,7 +124,9 @@ func LoadVariant() error {
 
 		metricUnits = append(metricUnits, mUnit)
 	}
-
+	if isEmpty {
+		return errNoSavedData
+	}
 	// read closing bracket
 	//  t, err = dec.Token()
 

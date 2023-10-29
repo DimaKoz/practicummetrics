@@ -55,7 +55,7 @@ func TestValueHandlerJSON(t *testing.T) {
 			mu, err := model.NewMetricUnit("gauge", "GetSet187", "42")
 			assert.NoError(t, err)
 			repository.AddMetric(mu)
-			t.Cleanup(func() { _ = repository.Load() })
+			t.Cleanup(func() { _ = repository.LoadVariant() })
 			echoFramework := echo.New()
 			request, respRecorder := setupEchoHandlerJSONTest(test.reqJSON, test.request)
 			ctx := echoFramework.NewContext(request, respRecorder)
