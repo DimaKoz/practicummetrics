@@ -47,7 +47,6 @@ BenchmarkUtilizationConvertValue/FormatFloat()-12     	 8379586	       142.1 ns/
 */
 
 func BenchmarkUtilizationConvertValue(b *testing.B) {
-
 	utilization := 6.444818871322972
 	b.ResetTimer()
 	b.Run("Sprintf()", func(b *testing.B) {
