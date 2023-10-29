@@ -2,7 +2,6 @@ package repository
 
 import (
 	"bufio"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -137,31 +136,6 @@ func LoadVariant() error {
 	}
 
 	zap.S().Infof("repository: loaded: %d \n", len(metricUnits))
-
-	return nil
-}
-
-// Save saves data to a file or returns errEmptyPath error.
-func Save() error {
-	if filePathStorage == "" {
-		return errEmptyPath
-	}
-
-	metrics := GetAllMetrics()
-
-	var (
-		saviningJSON []byte
-		err          error
-	)
-	if saviningJSON, err = json.Marshal(metrics); err != nil {
-		return fmt.Errorf("can't marshal json with error: %w", err)
-	}
-	var perm os.FileMode = 0o600
-	if err = os.WriteFile(filePathStorage, saviningJSON, perm); err != nil {
-		return fmt.Errorf("can't write '%s' file with error: %w", filePathStorage, err)
-	}
-
-	zap.S().Infof("repository: saved: %d \n", len(metrics))
 
 	return nil
 }

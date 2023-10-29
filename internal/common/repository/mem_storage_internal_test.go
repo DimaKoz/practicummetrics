@@ -159,8 +159,6 @@ func TestLoadSaveEmptyFileStorageErr(t *testing.T) {
 	err := LoadVariant()
 	assert.Error(t, err)
 
-	err = Save()
-	assert.Error(t, err)
 	err = SaveVariant()
 	assert.Error(t, err)
 }
@@ -202,7 +200,7 @@ func TestLoadSave(t *testing.T) {
 	for _, v := range want {
 		AddMetric(v)
 	}
-	err := Save()
+	err := SaveVariant()
 	assert.NoError(t, err)
 	memStorage.storage = make(map[string]model.MetricUnit, 0)
 
@@ -291,6 +289,7 @@ BenchmarkSave/SaveVariant()
 BenchmarkSave/SaveVariant()-8  	    4921	    239360 ns/op	     243 B/op	       5 allocs/op
 
 BenchmarkLoad/Load() - see 'deadcode_grave' branch
+BenchmarkSave/Save() - see 'deadcode_grave' branch
 */
 
 func BenchmarkSave(b *testing.B) {
@@ -315,13 +314,7 @@ func BenchmarkSave(b *testing.B) {
 
 	memStorage.storage = make(map[string]model.MetricUnit, 0)
 	b.ResetTimer()
-	b.Run("Save()", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			_ = Save()
-		}
-	})
 	b.StopTimer()
-	memStorage.storage = make(map[string]model.MetricUnit, 0)
 	b.StartTimer()
 	b.Run("SaveVariant()", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
