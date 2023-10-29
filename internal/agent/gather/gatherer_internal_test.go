@@ -1,8 +1,13 @@
 package gather
 
 import (
+	"fmt"
 	"runtime"
+	"strconv"
 	"testing"
+	"time"
+
+	"github.com/shirou/gopsutil/v3/cpu"
 )
 
 /*
@@ -30,4 +35,36 @@ func BenchmarkGetFieldValue(b *testing.B) {
 			getFieldValueVariant(rtmPtr, name)
 		}
 	}
+}
+
+/*
+   goos: linux
+   goarch: amd64
+   pkg: github.com/DimaKoz/practicummetrics/internal/agent/gather
+   cpu: 11th Gen Intel(R) Core(TM) i5-11400 @ 2.60GHz
+   	BenchmarkUtilizationConvertValue
+   	BenchmarkUtilizationConvertValue/Sprintf()
+   	BenchmarkUtilizationConvertValue/Sprintf()-12         	27276051	        43.88 ns/op	       0 B/op	       0 allocs/op
+   	BenchmarkUtilizationConvertValue/FormatFloat()
+   	BenchmarkUtilizationConvertValue/FormatFloat()-12     	22138552	        52.54 ns/op	      28 B/op	       2 allocs/op
+*/
+
+func BenchmarkUtilizationConvertValue(b *testing.B) {
+	utilization, err := cpu.Percent(time.Duration(0), false)
+	if err != nil {
+		b.Error("err is not nil")
+	}
+	b.ResetTimer()
+	b.Run("Sprintf()", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			a := fmt.Sprintf("%v", utilization[0])
+			_ = a
+		}
+	})
+	b.Run("FormatFloat()", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			a := strconv.FormatFloat(utilization[0], 'f', 2, 64)
+			_ = a
+		}
+	})
 }

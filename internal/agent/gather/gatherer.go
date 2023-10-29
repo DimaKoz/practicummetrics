@@ -145,8 +145,12 @@ func GetMemoryMetricsVariant(resultChan chan *[]model.MetricUnit, errChan chan e
 
 		return
 	}
+	// utilization[0]
+	// 6.444818871322972
 
-	utilizationStValue := fmt.Sprintf("%v", utilization[0]) // strconv.FormatFloat(utilization[0], 'f', 2, 64)
+	// fmt.Sprintf is better than strconv.FormatFloat(utilization[0], 'f', 2, 64)
+	// see BenchmarkUtilizationConvertValue
+	utilizationStValue := fmt.Sprintf("%v", utilization[0])
 	if mUnit, err := model.NewMetricUnit(model.MetricTypeGauge, MetricNameCPUutiliz1, utilizationStValue); err == nil {
 		result[0] = mUnit
 	} else {
