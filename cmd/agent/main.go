@@ -38,7 +38,7 @@ func main() {
 
 	tickerReport := time.NewTicker(time.Duration(cfg.ReportInterval) * time.Second)
 	defer tickerReport.Stop()
-	metricsCh := make(chan *[]model.MetricUnit, buffersNumber)
+	metricsCh := make(chan []model.MetricUnit, buffersNumber)
 	defer close(metricsCh)
 	errCh := make(chan error)
 	defer close(errCh)
@@ -75,14 +75,14 @@ func main() {
 	infoLog.Println("exiting")
 }
 
-func metricsCase(metrics *[]model.MetricUnit, infoLog *log.Logger) {
-	for _, s := range *metrics {
+func metricsCase(metrics []model.MetricUnit, infoLog *log.Logger) {
+	for _, s := range metrics {
 		repository.AddMetric(s)
 	}
-	infoLog.Println("added metrics:", len(*metrics))
+	infoLog.Println("added metrics:", len(metrics))
 }
 
-func gatherCase(metricsCh chan *[]model.MetricUnit, errCh chan error) {
+func gatherCase(metricsCh chan<- []model.MetricUnit, errCh chan error) {
 	go gather.GetMemoryMetricsVariant(metricsCh, errCh)
 	go gather.GetMetricsVariant(metricsCh, errCh)
 }

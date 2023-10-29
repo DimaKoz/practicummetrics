@@ -132,7 +132,7 @@ func collectOtherTypeMetricsVariant(rtm *runtime.MemStats, result *[]model.Metri
 }
 
 // GetMemoryMetricsVariant returns a list of the metrics.
-func GetMemoryMetricsVariant(resultChan chan *[]model.MetricUnit, errChan chan error) {
+func GetMemoryMetricsVariant(resultChan chan<- []model.MetricUnit, errChan chan error) {
 	const metricsCount = 3
 
 	result := make([]model.MetricUnit, metricsCount)
@@ -185,11 +185,11 @@ func GetMemoryMetricsVariant(resultChan chan *[]model.MetricUnit, errChan chan e
 		return
 	}
 
-	resultChan <- &result
+	resultChan <- result
 }
 
 // GetMetricsVariant sends a list of the metrics to resultChan.
-func GetMetricsVariant(resultChan chan *[]model.MetricUnit, errChan chan error) {
+func GetMetricsVariant(resultChan chan<- []model.MetricUnit, errChan chan error) {
 	const metricsCount = 3
 	var (
 		rtm    runtime.MemStats
@@ -211,7 +211,7 @@ func GetMetricsVariant(resultChan chan *[]model.MetricUnit, errChan chan error) 
 		return
 	}
 
-	resultChan <- &result
+	resultChan <- result
 }
 
 // getFieldValueVariant gets field value from runtime.MemStats.

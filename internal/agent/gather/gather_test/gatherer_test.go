@@ -54,7 +54,7 @@ const (
 	getMemoryMetricsVariant = 4
 )
 
-func startMetricsByState(t *testing.T, useState int, resultChan chan *[]model.MetricUnit, errChan chan error) {
+func startMetricsByState(t *testing.T, useState int, resultChan chan []model.MetricUnit, errChan chan error) {
 	t.Helper()
 	switch {
 	case useState == getMetrics:
@@ -86,7 +86,7 @@ func TestGetMetrics(t *testing.T) {
 	for _, testItem := range tests {
 		test := testItem
 		t.Run(test.name, func(t *testing.T) {
-			metricsCh := make(chan *[]model.MetricUnit)
+			metricsCh := make(chan []model.MetricUnit)
 			errCh := make(chan error)
 			startMetricsByState(t, test.use, metricsCh, errCh)
 
@@ -99,8 +99,8 @@ func TestGetMetrics(t *testing.T) {
 					break ForLoop
 				case got := <-metricsCh:
 					assert.NotNil(t, got)
-					if got != nil && len(*got) != len(test.wantKeys) {
-						assert.Equal(t, len(test.wantKeys), len(*got))
+					if got != nil && len(got) != len(test.wantKeys) {
+						assert.Equal(t, len(test.wantKeys), len(got))
 						t.Errorf("metrics = %v, want %v", got, test.wantKeys)
 						checkMetricsName(t, test.wantKeys, got)
 					} else {
@@ -116,11 +116,11 @@ func TestGetMetrics(t *testing.T) {
 	}
 }
 
-func checkMetricsName(testing assert.TestingT, wantKeys []string, got *[]model.MetricUnit) {
+func checkMetricsName(testing assert.TestingT, wantKeys []string, got []model.MetricUnit) {
 	for _, wantKey := range wantKeys {
 		isPresent := false
 
-		for _, kk := range *got {
+		for _, kk := range got {
 			if kk.Name == wantKey {
 				isPresent = true
 
@@ -161,7 +161,7 @@ BenchmarkGetMemoryMetrics - see 'deadcode_grave' branch
 
 func BenchmarkGetMetricsVariant(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		metricsCh := make(chan *[]model.MetricUnit)
+		metricsCh := make(chan []model.MetricUnit)
 		errCh := make(chan error)
 		go gather.GetMetricsVariant(metricsCh, errCh)
 
@@ -185,7 +185,7 @@ func BenchmarkGetMetricsVariant(b *testing.B) {
 
 func BenchmarkGetMemoryMetricsVariant(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		metricsCh := make(chan *[]model.MetricUnit)
+		metricsCh := make(chan []model.MetricUnit)
 		errCh := make(chan error)
 		go gather.GetMemoryMetricsVariant(metricsCh, errCh)
 
