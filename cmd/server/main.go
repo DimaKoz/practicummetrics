@@ -26,35 +26,34 @@ func main() {
 		panic(err)
 	}
 
-	defer func(logger *zap.Logger) {
-		if err = logger.Sync(); err != nil {
-			panic(err)
-		}
+	defer func(loggerZap *zap.Logger) {
+		_ = loggerZap.Sync()
 	}(logger)
 
-	sugar := *logger.Sugar()
+	zap.ReplaceGlobals(logger)
+
 	cfg := config.NewServerConfig()
 
 	if err = config.LoadServerConfig(cfg, config.ProcessEnvServer); err != nil {
-		sugar.Fatalf("couldn't create a config %s", err)
+		zap.S().Fatalf("couldn't create a config %s", err)
 	}
 
-	printCfgInfo(cfg, sugar)
+	printCfgInfo(cfg)
 
 	var conn *pgx.Conn
-	if conn, err = sqldb.ConnectDB(cfg, sugar); err == nil {
+	if conn, err = sqldb.ConnectDB(cfg); err == nil {
 		defer conn.Close(context.Background())
 	} else {
-		sugar.Warnf("failed to get a db connection by %s", err.Error())
+		zap.S().Warnf("failed to get a db connection by %s", err.Error())
 	}
 
 	if _, err = os.Stat(cfg.FileStoragePath); os.IsNotExist(err) {
 		cfg.Restore = false
-		sugar.Info("%v file does not exist\n", cfg.FileStoragePath)
+		zap.S().Info("%v file does not exist\n", cfg.FileStoragePath)
 	}
 
 	repository.SetupFilePathStorage(cfg.FileStoragePath)
-	loadIfNeed(cfg, sugar)
+	loadIfNeed(cfg)
 
 	if cfg.FileStoragePath != "" {
 		if cfg.StoreInterval != 0 {
@@ -65,8 +64,8 @@ func main() {
 			go func() {
 				tickerChannel := ticker.C
 				for range tickerChannel {
-					if err = repository.Save(); err != nil {
-						sugar.Fatalf("server: cannot save metrics: %s", err)
+					if err = repository.SaveVariant(); err != nil {
+						zap.S().Fatalf("server: cannot save metrics: %s", err)
 					}
 				}
 			}()
@@ -75,34 +74,36 @@ func main() {
 		}
 	}
 
-	startServer(cfg, conn, sugar)
+	startServer(cfg, conn)
 }
 
-func loadIfNeed(cfg *config.ServerConfig, sugar zap.SugaredLogger) {
+func loadIfNeed(cfg *config.ServerConfig) {
 	if cfg.IsUseDatabase() {
 		return
 	}
 	needLoad := cfg.Restore && cfg.FileStoragePath != ""
 	if needLoad {
-		if err := repository.Load(); err != nil {
-			sugar.Fatalf("couldn't restore metrics by %s", err)
+		if err := repository.LoadVariant(); err != nil {
+			zap.S().Fatalf("couldn't restore metrics by %s", err)
 		}
 	}
 }
 
-func printCfgInfo(cfg *config.ServerConfig, sugar zap.SugaredLogger) {
-	sugar.Info(
-		"cfg: \n", cfg.String(),
+func printCfgInfo(cfg *config.ServerConfig) {
+	zap.S().Info(
+		"cfg: \n", cfg.StringVariantCopy(),
 	)
-	sugar.Infow("Starting server")
+	zap.S().Infow("Starting server")
 }
 
-func startServer(cfg *config.ServerConfig, conn *pgx.Conn, sugar zap.SugaredLogger) {
-	e := echo.New()
-	server.SetupMiddleware(e, cfg, sugar)
-	server.SetupRouter(e, conn)
+func startServer(cfg *config.ServerConfig, conn *pgx.Conn) {
+	echos := echo.New()
+	echos.JSONSerializer = server.FastJSONSerializer{}
 
-	if err := e.Start(cfg.Address); err != nil {
-		sugar.Fatalf("couldn't start the server by %s", err)
+	server.SetupMiddleware(echos, cfg)
+	server.SetupRouter(echos, conn)
+
+	if err := echos.Start(cfg.Address); err != nil {
+		zap.S().Fatalf("couldn't start the server by %s", err)
 	}
 }

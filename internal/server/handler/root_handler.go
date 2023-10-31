@@ -31,6 +31,7 @@ func (h *BaseHandler) RootHandler(ctx echo.Context) error {
 	return nil
 }
 
+// getHTMLContent returns a string with HTML tags.
 func getHTMLContent(metrics []model.MetricUnit) string {
 	strBld := strings.Builder{}
 	strBld.WriteString("<h1>Metrics:</h1><div>")

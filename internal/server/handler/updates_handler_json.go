@@ -56,10 +56,11 @@ func (h *BaseHandler) UpdatesHandlerJSON(ctx echo.Context) error {
 	return nil
 }
 
+// saveUpdates stores values of repository to a file.
 func saveUpdates() {
 	if syncSaveUpdateHandlerJSON {
 		go func() {
-			err := repository.Save()
+			err := repository.SaveVariant()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -67,6 +68,7 @@ func saveUpdates() {
 	}
 }
 
+// getUpdatesStatusCode returns HTTP status codes as registered with IANA.
 func getUpdatesStatusCode(err error) int {
 	statusCode := http.StatusBadRequest
 	if errors.Is(err, model.ErrUnknownType) {
@@ -76,6 +78,7 @@ func getUpdatesStatusCode(err error) int {
 	return statusCode
 }
 
+// getUpdatesStatusCode wraps errors and sends a string response with status code.
 func wrapUpdsHandlerErr(ctx echo.Context, statusCode int, msg string, errIn error) error {
 	err := ctx.String(statusCode, fmt.Sprintf(msg, errIn))
 	if err != nil {
@@ -85,6 +88,7 @@ func wrapUpdsHandlerErr(ctx echo.Context, statusCode int, msg string, errIn erro
 	return err
 }
 
+// processMetricUnits saves metricUnits to DB.
 func processMetricUnits(ctx echo.Context, conn *pgx.Conn, metricUnits []model.MetricUnit) error {
 	transaction, err := conn.Begin(context.TODO())
 	if err != nil {

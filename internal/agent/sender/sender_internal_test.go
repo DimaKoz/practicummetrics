@@ -10,9 +10,13 @@ import (
 	"os"
 	"testing"
 
+	"github.com/DimaKoz/practicummetrics/internal/common"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/go-resty/resty/v2"
+	goccyj "github.com/goccy/go-json"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParcelsSend(t *testing.T) {
@@ -135,4 +139,19 @@ func TestGetTargetURL(t *testing.T) {
 			assert.Equalf(t, test.want, got, "getMetricsUpdateTargetURL(%v)", test.args.address)
 		})
 	}
+}
+
+func TestAppendHashOtherMarshaling(t *testing.T) {
+	metUnit, _ := model.NewMetricUnit(model.MetricTypeGauge, "RandomValue", "4321")
+	emptyMetrics := model.NewEmptyMetrics()
+	emptyMetrics.UpdateByMetricUnit(metUnit)
+	request := resty.New().R()
+	body, err := goccyj.Marshal(emptyMetrics)
+	require.NoError(t, err)
+
+	want := "dbbf6accbe592dd8b30faf871f689bc70d0e7760c0063232394f78683eac98cd" //nolint:nolintlint,gosec
+
+	appendHashOtherMarshaling(request, "hash", body)
+	got := request.Header.Get(common.HashKeyHeaderName)
+	assert.Equal(t, want, got)
 }

@@ -13,34 +13,30 @@ import (
 	"go.uber.org/zap"
 )
 
-func testDBConnectGetZapSugaredLogger(t *testing.T) zap.SugaredLogger {
+func testDBConnectGetZapSugaredLogger(t *testing.T) {
 	t.Helper()
 
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		require.NoError(t, err)
-	}
-	t.Cleanup(func() {
-		_ = logger.Sync()
-	})
-	sugar := *logger.Sugar()
+	loggerZap := zap.Must(zap.NewDevelopment())
 
-	return sugar
+	t.Cleanup(func() {
+		_ = loggerZap.Sync()
+	})
+	zap.ReplaceGlobals(loggerZap)
 }
 
 func TestConnectDBErrNoConnection1(t *testing.T) {
-	sugar := testDBConnectGetZapSugaredLogger(t)
+	testDBConnectGetZapSugaredLogger(t)
 
-	conn, err := ConnectDB(config.NewServerConfig(), sugar)
+	conn, err := ConnectDB(config.NewServerConfig())
 	assert.Nil(t, conn)
 	assert.Error(t, err)
 	assert.ErrorContains(t, err, "invalid dsn")
 }
 
 func TestConnectDBErrNoConnection(t *testing.T) {
-	sugar := testDBConnectGetZapSugaredLogger(t)
+	testDBConnectGetZapSugaredLogger(t)
 
-	conn, err := ConnectDB(nil, sugar)
+	conn, err := ConnectDB(nil)
 	assert.Nil(t, conn)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, errNoInfoConnectionDB)
