@@ -8,6 +8,7 @@
 # Logs and other junk
 log*.txt
 temp*
+cover.html
 
 # Test binary, built with `go test -c`
 *.test
