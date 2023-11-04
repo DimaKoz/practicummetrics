@@ -2,13 +2,20 @@ package repository
 
 import (
 	"errors"
+	"fmt"
+	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
+
+const extJSON = ".json"
 
 func TestAddMetricMemStorage(t *testing.T) {
 	type args struct {
@@ -149,10 +156,10 @@ func TestLoadSaveEmptyFileStorageErr(t *testing.T) {
 			filePathStorage = orig
 		})
 
-	err := Load()
+	err := LoadVariant()
 	assert.Error(t, err)
 
-	err = Save()
+	err = SaveVariant()
 	assert.Error(t, err)
 }
 
@@ -164,4 +171,154 @@ func TestSetupFilePathStorage(t *testing.T) {
 
 	SetupFilePathStorage(want)
 	assert.Equal(t, want, filePathStorage)
+}
+
+func TestLoadSave(t *testing.T) {
+	zap.L()
+	logger := zap.Must(zap.NewDevelopment())
+
+	defer func(loggerZap *zap.Logger) {
+		_ = loggerZap.Sync()
+	}(logger)
+
+	zap.ReplaceGlobals(logger)
+
+	orig := filePathStorage
+	filePathStorage = filepath.Join(t.TempDir(), "abed"+fmt.Sprintf("%d", time.Now().Unix())+extJSON)
+	origMemSt := memStorage.storage
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+	t.Cleanup(
+		func() {
+			memStorage.storage = origMemSt
+			filePathStorage = orig
+		})
+	SetupFilePathStorage(filePathStorage)
+	want := []model.MetricUnit{
+		{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueInt: 42, ValueFloat: 0},
+		{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueInt: 43, ValueFloat: 0},
+	}
+	for _, v := range want {
+		AddMetric(v)
+	}
+	err := SaveVariant()
+	assert.NoError(t, err)
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+
+	mu, err := GetMetricByName("wanted")
+	assert.Error(t, err)
+	assert.Equal(t, model.EmptyMetric, mu)
+
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+	err = LoadVariant()
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, want, GetAllMetrics(), "GetAllMetrics()")
+}
+
+func TestLoadSaveVariant(t *testing.T) {
+	orig := filePathStorage
+	filePathStorage = filepath.Join(t.TempDir(), "test"+fmt.Sprintf("%d", time.Now().Unix())+extJSON)
+	origMemSt := memStorage.storage
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+	t.Cleanup(
+		func() {
+			memStorage.storage = origMemSt
+			filePathStorage = orig
+		})
+	SetupFilePathStorage(filePathStorage)
+	want := []model.MetricUnit{
+		{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueInt: 42, ValueFloat: 0},
+		{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueInt: 43, ValueFloat: 0},
+	}
+	for _, v := range want {
+		AddMetric(v)
+	}
+	err := SaveVariant()
+	assert.NoError(t, err)
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+
+	mu, err := GetMetricByName("wanted")
+	assert.Error(t, err)
+	assert.Equal(t, model.EmptyMetric, mu)
+
+	err = LoadVariant()
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, want, GetAllMetrics(), "GetAllMetrics()")
+}
+
+func TestLoadVariantErrorFile(t *testing.T) {
+	orig := filePathStorage
+	filePathStorage = filepath.Join(t.TempDir(), "abc"+fmt.Sprintf("%d", time.Now().Unix())+extJSON)
+
+	t.Cleanup(
+		func() {
+			filePathStorage = orig
+		})
+	SetupFilePathStorage(filePathStorage)
+
+	err := LoadVariant()
+	assert.Error(t, err)
+}
+
+func TestLoadVariantErrorParse(t *testing.T) {
+	orig := filePathStorage
+	filePathStorage = filepath.Join(t.TempDir(), "test"+fmt.Sprintf("%d", time.Now().Unix())+extJSON)
+	var perm os.FileMode = 0o600
+	err := os.WriteFile(filePathStorage, []byte{'{'}, perm)
+	require.NoError(t, err)
+	t.Cleanup(
+		func() {
+			filePathStorage = orig
+		})
+	SetupFilePathStorage(filePathStorage)
+
+	err = LoadVariant()
+	assert.Error(t, err)
+}
+
+/*
+
+BenchmarkLoad
+BenchmarkLoad/Load()
+BenchmarkLoad/Load()-8         	   54238	     21059 ns/op	    1512 B/op	      21 allocs/op
+BenchmarkLoad/LoadVariant()
+BenchmarkLoad/LoadVariant()-8  	   83830	     14361 ns/op	    1384 B/op	      12 allocs/op
+BenchmarkSave
+BenchmarkSave/Save()
+BenchmarkSave/Save()-8         	    4788	    220934 ns/op	     248 B/op	       5 allocs/op
+BenchmarkSave/SaveVariant()
+BenchmarkSave/SaveVariant()-8  	    4921	    239360 ns/op	     243 B/op	       5 allocs/op
+
+BenchmarkLoad/Load() - see 'deadcode_grave' branch
+BenchmarkSave/Save() - see 'deadcode_grave' branch
+*/
+
+func BenchmarkSave(b *testing.B) {
+	orig := filePathStorage
+	filePathStorage = filepath.Join(b.TempDir(), "bench"+fmt.Sprintf("%d", time.Now().Unix())+extJSON)
+	origMemSt := memStorage.storage
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+	b.Cleanup(
+		func() {
+			memStorage.storage = origMemSt
+			filePathStorage = orig
+		})
+	SetupFilePathStorage(filePathStorage)
+	want := []model.MetricUnit{
+		{Type: model.MetricTypeCounter, Name: "wanted", Value: "42", ValueInt: 42, ValueFloat: 0},
+		{Type: model.MetricTypeCounter, Name: "not_wanted", Value: "43", ValueInt: 43, ValueFloat: 0},
+		{Type: model.MetricTypeCounter, Name: "not_wanted1", Value: "44", ValueInt: 44, ValueFloat: 0},
+	}
+	for _, v := range want {
+		AddMetric(v)
+	}
+
+	memStorage.storage = make(map[string]model.MetricUnit, 0)
+	b.ResetTimer()
+	b.StopTimer()
+	b.StartTimer()
+	b.Run("SaveVariant()", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_ = SaveVariant()
+		}
+	})
 }

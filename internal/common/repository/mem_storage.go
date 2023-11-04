@@ -1,15 +1,16 @@
 package repository
 
 import (
-	"encoding/json"
+	"bufio"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"sync"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	goccyj "github.com/goccy/go-json"
+	"go.uber.org/zap"
 )
 
 var (
@@ -19,12 +20,15 @@ var (
 	}
 )
 
+// MemStorage represents storage.
 type MemStorage struct {
 	storage map[string]model.MetricUnit
 }
 
+// errRepo an error oof repository.
 var errRepo = errors.New("couldn't find a metric")
 
+// repositoryError wraps error with msg and returns wrapped error.
 func repositoryError(err error, msg string) error {
 	return fmt.Errorf("%w: %s", err, msg)
 }
@@ -73,28 +77,57 @@ func GetAllMetrics() []model.MetricUnit {
 	return result
 }
 
+// filePathStorage stores a path of a file.
 var filePathStorage string
 
+// SetupFilePathStorage sets a path of a file.
 func SetupFilePathStorage(pFilePathStorage string) {
 	filePathStorage = pFilePathStorage
 }
 
 var errEmptyPath = errors.New("filePathStorage is empty")
 
-func Load() error {
+var errNoSavedData = errors.New("failed to parse json with error: no data")
+
+// LoadVariant loads data from a file or returns errEmptyPath error.
+func LoadVariant() error {
 	var metricUnits []model.MetricUnit
 
 	if filePathStorage == "" {
 		return errEmptyPath
 	}
-	data, err := os.ReadFile(filePathStorage)
+	file, err := os.Open(filePathStorage)
 	if err != nil {
 		return fmt.Errorf("can't read '%s' file with error: %w", filePathStorage, err)
 	}
+	defer file.Close()
+	const bufferSize = 128
+	r := bufio.NewReaderSize(file, bufferSize)
+	dec := goccyj.NewDecoder(r)
 
-	if err = json.Unmarshal(data, &metricUnits); err != nil {
+	// read open bracket
+	_, err = dec.Token()
+	if err != nil {
 		return fmt.Errorf("failed to parse json with error: %w", err)
 	}
+	// while the array contains values
+	isEmpty := true
+	for dec.More() {
+		isEmpty = false
+		var mUnit model.MetricUnit
+
+		err = dec.Decode(&mUnit)
+		if err != nil {
+			return fmt.Errorf("failed to parse json with error: %w", err)
+		}
+
+		metricUnits = append(metricUnits, mUnit)
+	}
+	if isEmpty {
+		return errNoSavedData
+	}
+	// read closing bracket
+	//  t, err = dec.Token()
 
 	memStorageSync.Lock()
 	defer memStorageSync.Unlock()
@@ -102,12 +135,13 @@ func Load() error {
 		memStorage.storage[v.Name] = v
 	}
 
-	log.Printf("repository: loaded: %d \n", len(metricUnits))
+	zap.S().Infof("repository: loaded: %d \n", len(metricUnits))
 
 	return nil
 }
 
-func Save() error {
+// SaveVariant saves data to a file or returns errEmptyPath error.
+func SaveVariant() error {
 	if filePathStorage == "" {
 		return errEmptyPath
 	}
@@ -118,7 +152,7 @@ func Save() error {
 		saviningJSON []byte
 		err          error
 	)
-	if saviningJSON, err = json.Marshal(metrics); err != nil {
+	if saviningJSON, err = goccyj.Marshal(metrics); err != nil {
 		return fmt.Errorf("can't marshal json with error: %w", err)
 	}
 	var perm os.FileMode = 0o600
@@ -126,7 +160,7 @@ func Save() error {
 		return fmt.Errorf("can't write '%s' file with error: %w", filePathStorage, err)
 	}
 
-	log.Printf("repository: saved: %d \n", len(metrics))
+	zap.S().Infof("repository: saved: %d \n", len(metrics))
 
 	return nil
 }

@@ -61,6 +61,7 @@ func TestNewGzipConfig(t *testing.T) {
 	}
 }
 
+//nolint:exhaustruct
 func TestGetGzipMiddlewareConfig(t *testing.T) {
 	tests := []struct {
 		name string

@@ -49,6 +49,7 @@ var (
 	}
 )
 
+//nolint:exhaustruct
 var testsCasesAgentInitConfig = []struct {
 	name    string
 	args    argTestConfig
@@ -210,4 +211,57 @@ func TestLoadServerConfig(t *testing.T) {
 	err := LoadServerConfig(got, ProcessEnvServer)
 	assert.NoError(t, err, "error must be nil")
 	assert.Equal(t, want, got, "Configs - got: %v, want: %v", got, want)
+}
+
+func TestServerConfigIsUseDatabase(t *testing.T) {
+	tests := []struct {
+		name string
+		cfg  ServerConfig
+		want bool
+	}{
+		{
+			name: "use db == true",
+			want: true,
+			cfg: ServerConfig{ //nolint:exhaustruct
+				ConnectionDB: "1234",
+			},
+		},
+		{
+			name: "use db == false, ConnectionDB is empty",
+			want: false,
+			cfg: ServerConfig{ //nolint:exhaustruct
+				ConnectionDB: "",
+			},
+		},
+		{
+			name: "use db == false, ConnectionDB is 'unknownStringFieldValue'",
+			want: false,
+			cfg: ServerConfig{ //nolint:exhaustruct
+				ConnectionDB: "unknownStringFieldValue",
+			},
+		},
+	}
+	for _, tt := range tests {
+		test := tt
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.want, test.cfg.IsUseDatabase())
+		})
+	}
+}
+
+func TestServerConfigString(t *testing.T) {
+	cfg := ServerConfig{
+		Config: Config{
+			Address: "1",
+			HashKey: "2",
+		},
+		StoreInterval:   3,
+		FileStoragePath: "4",
+		ConnectionDB:    "5",
+		hasRestore:      true,
+		Restore:         true,
+	}
+	want := "Address: 1 \n StoreInterval: 3 \n FileStoragePath: 4 \n ConnectionDB: 5 \n Key: 2 \n Restore: true \n"
+
+	assert.Equal(t, want, cfg.String())
 }

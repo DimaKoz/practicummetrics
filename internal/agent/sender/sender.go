@@ -4,8 +4,6 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
-	"fmt"
 	"log"
 	"strings"
 
@@ -13,6 +11,7 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/go-resty/resty/v2"
+	goccyj "github.com/goccy/go-json"
 )
 
 // ParcelsSend sends metrics.
@@ -24,6 +23,7 @@ func ParcelsSend(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 	}
 }
 
+// sendingBatch sends a batch request.
 func sendingBatch(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 	targetURL := getMetricsUpdateTargetURL(cfg.Address, endpointParcelsSend)
 	request := resty.New().R()
@@ -34,36 +34,43 @@ func sendingBatch(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 		emptyMetrics.UpdateByMetricUnit(unit)
 		metrcsSending = append(metrcsSending, *emptyMetrics)
 	}
-	if cfg.HashKey != "" {
-		if err := appendHash(request, cfg.HashKey, metrcsSending); err != nil {
-			logSendingErr(err)
+	body, err := goccyj.Marshal(metrcsSending)
+	if err != nil {
+		logSendingErr(err)
 
-			return
-		}
+		return
+	}
+	if cfg.HashKey != "" {
+		appendHashOtherMarshaling(request, cfg.HashKey, body)
 	}
 
-	request.SetBody(metrcsSending)
-	if _, err := request.Post(targetURL); err != nil {
+	request.SetBody(body)
+	if _, err = request.Post(targetURL); err != nil {
 		logSendingErr(err)
 	}
 }
 
+// sendingSingle sends a single request.
 func sendingSingle(rClient *resty.Client, cfg *config.AgentConfig, metrics []model.MetricUnit) {
 	emptyMetrics := model.NewEmptyMetrics()
 	targetURL := getMetricsUpdateTargetURL(cfg.Address, endpointParcelSend)
 	for _, unit := range metrics {
 		request := rClient.R()
 		emptyMetrics.UpdateByMetricUnit(unit)
-		request.SetBody(emptyMetrics)
-		if cfg.HashKey != "" {
-			if err := appendHash(request, cfg.HashKey, emptyMetrics); err != nil {
-				logSendingErr(err)
 
-				return
-			}
+		body, err := goccyj.Marshal(emptyMetrics)
+		if err != nil {
+			logSendingErr(err)
+
+			return
+		}
+
+		request.SetBody(body)
+		if cfg.HashKey != "" {
+			appendHashOtherMarshaling(request, cfg.HashKey, body)
 		}
 		addHeadersToRequest(request)
-		if _, err := request.Post(targetURL); err != nil {
+		if _, err = request.Post(targetURL); err != nil {
 			logSendingErr(err)
 
 			break
@@ -71,27 +78,23 @@ func sendingSingle(rClient *resty.Client, cfg *config.AgentConfig, metrics []mod
 	}
 }
 
-func appendHash(request *resty.Request, hashKey string, v interface{}) error {
-	bJSON, err := json.Marshal(v)
-	if err != nil {
-		return fmt.Errorf("agent: can't get json: %w", err)
-	}
-
+// appendHashOtherMarshaling appends a hash to common.HashKeyHeaderName header of resty.Request.
+func appendHashOtherMarshaling(request *resty.Request, hashKey string, body []byte) {
 	key := []byte(hashKey)
 	h := hmac.New(sha256.New, key)
-	h.Write(bJSON)
+	h.Write(body)
 	hmacString := hex.EncodeToString(h.Sum(nil))
 
 	request.SetHeader(common.HashKeyHeaderName, hmacString)
-
-	return nil
 }
 
+// logSendingErr prints an error.
 func logSendingErr(err error) {
 	log.Printf("could not create the request: %s \n", err)
 	log.Println("waiting for the next tick")
 }
 
+// addHeadersToRequest "Content-Type" and "Accept-Encoding" headers to resty.Request.
 func addHeadersToRequest(request *resty.Request) {
 	request.SetHeader("Content-Type", "application/json")
 	request.SetHeader("Accept-Encoding", "gzip")
@@ -104,6 +107,7 @@ const (
 	minimumBatchNumber  = 2
 )
 
+// getMetricsUpdateTargetURL prepares an URL from address and endpoint.
 func getMetricsUpdateTargetURL(address string, endpoint string) string {
 	buffLen := len(protocolParcelsSend) + len(endpoint) + len(address)
 	strBld := strings.Builder{}
