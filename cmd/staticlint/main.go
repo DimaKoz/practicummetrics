@@ -47,6 +47,8 @@ import (
 	"golang.org/x/tools/go/analysis/passes/unusedresult"
 	"golang.org/x/tools/go/analysis/passes/unusedwrite"
 	"golang.org/x/tools/go/analysis/passes/usesgenerics"
+	"honnef.co/go/tools/staticcheck"
+	"honnef.co/go/tools/stylecheck"
 )
 
 func main() {
@@ -103,6 +105,16 @@ func linterStart() {
 		unusedwrite.Analyzer,
 		usesgenerics.Analyzer,
 	)
+
+	// staticcheck.io
+	for _, v := range staticcheck.Analyzers {
+		analyzers = append(analyzers, v.Analyzer)
+	}
+	for _, v := range stylecheck.Analyzers {
+		if v.Analyzer.Name == "ST1012" {
+			analyzers = append(analyzers, v.Analyzer)
+		}
+	}
 
 	multichecker.Main(
 		analyzers...,
