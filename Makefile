@@ -5,6 +5,10 @@ testAll: clean vet server agent test1 test2 test3 test4 test5 test6 test7 test8
 vet:
 	go vet -vettool=$(which statictest-darwin-amd64) ./...
 
+mltchk:
+	@echo "building multichecker"
+	go build -o ./cmd/staticlint/multichecker ./cmd/staticlint/*.go
+
 
 server:
 	@echo "building server"
