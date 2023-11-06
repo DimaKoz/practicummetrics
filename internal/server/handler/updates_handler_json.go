@@ -96,7 +96,7 @@ func processMetricUnits(ctx echo.Context, conn *pgx.Conn, metricUnits []model.Me
 	}
 
 	for _, unit := range metricUnits {
-		if _, err := repository.AddMetricTxToDB(&transaction, unit); err != nil {
+		if _, err = repository.AddMetricTxToDB(&transaction, unit); err != nil {
 			_ = transaction.Rollback(context.TODO())
 
 			return wrapUpdsHandlerErr(ctx, http.StatusInternalServerError, "UpdatesHandlerJSON: cannot create metric: %s", err)
