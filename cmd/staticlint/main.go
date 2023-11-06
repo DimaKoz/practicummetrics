@@ -47,6 +47,7 @@ import (
 	"golang.org/x/tools/go/analysis/passes/unusedresult"
 	"golang.org/x/tools/go/analysis/passes/unusedwrite"
 	"golang.org/x/tools/go/analysis/passes/usesgenerics"
+	"honnef.co/go/tools/simple"
 	"honnef.co/go/tools/staticcheck"
 	"honnef.co/go/tools/stylecheck"
 )
@@ -112,6 +113,11 @@ func linterStart() {
 	}
 	for _, v := range stylecheck.Analyzers {
 		if v.Analyzer.Name == "ST1012" {
+			analyzers = append(analyzers, v.Analyzer)
+		}
+	}
+	for _, v := range simple.Analyzers {
+		if v.Analyzer.Name == "S1004" {
 			analyzers = append(analyzers, v.Analyzer)
 		}
 	}
