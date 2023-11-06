@@ -13,6 +13,10 @@ import (
 )
 
 func main() {
+	linterStart()
+}
+
+func linterStart() {
 	multichecker.Main(
 		appends.Analyzer,
 		asmdecl.Analyzer,
