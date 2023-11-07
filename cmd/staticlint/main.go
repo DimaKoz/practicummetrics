@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/sashamelentyev/usestdlibvars/pkg/analyzer"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/multichecker"
 	"golang.org/x/tools/go/analysis/passes/appends"
@@ -121,6 +122,9 @@ func linterStart() {
 			analyzers = append(analyzers, v.Analyzer)
 		}
 	}
+
+	// github.com/sashamelentyev/usestdlibvars/pkg/analyzer
+	analyzers = append(analyzers, analyzer.New())
 
 	multichecker.Main(
 		analyzers...,
