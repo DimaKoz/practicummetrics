@@ -2,6 +2,9 @@ module github.com/DimaKoz/practicummetrics/cmd/staticlint
 
 go 1.19
 
+require github.com/DimaKoz/practicummetrics/pkg/mainexit v0.0.0
+replace github.com/DimaKoz/practicummetrics/pkg/mainexit => ../../pkg/mainexit
+
 require (
 	github.com/fatih/errwrap v1.5.0
 	github.com/sashamelentyev/usestdlibvars v1.24.0
