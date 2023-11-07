@@ -20,6 +20,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
+	github.com/DimaKoz/practicummetrics/pkg/mainexit v0.0.0-20231107125616-d6ac598cdb2f // indirect
 	github.com/alexkohler/nargs v0.0.0-20200419150446-2df8ecd3c73a // indirect
 	github.com/alexkohler/prealloc v1.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

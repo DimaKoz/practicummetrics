@@ -10,7 +10,6 @@ require (
 	github.com/sashamelentyev/usestdlibvars v1.24.0
 	golang.org/x/tools v0.14.0
 	honnef.co/go/tools v0.4.6
-	//github.com/DimaKoz/practicummetrics/pkg/mainexit iter19
 )
 
 require (
