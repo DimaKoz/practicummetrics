@@ -23,6 +23,7 @@ require (
 	github.com/alexkohler/nargs v0.0.0-20200419150446-2df8ecd3c73a // indirect
 	github.com/alexkohler/prealloc v1.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/fatih/errwrap v1.5.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/gordonklaus/ineffassign v0.1.0 // indirect

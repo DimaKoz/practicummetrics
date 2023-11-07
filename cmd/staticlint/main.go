@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/fatih/errwrap/errwrap"
 	"github.com/sashamelentyev/usestdlibvars/pkg/analyzer"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/multichecker"
@@ -125,6 +126,9 @@ func linterStart() {
 
 	// github.com/sashamelentyev/usestdlibvars/pkg/analyzer
 	analyzers = append(analyzers, analyzer.New())
+
+	// github.com/fatih/errwrap/errwrap
+	analyzers = append(analyzers, errwrap.Analyzer)
 
 	multichecker.Main(
 		analyzers...,

@@ -3,6 +3,7 @@ module github.com/DimaKoz/practicummetrics/cmd/staticlint
 go 1.19
 
 require (
+	github.com/fatih/errwrap v1.5.0
 	github.com/sashamelentyev/usestdlibvars v1.24.0
 	golang.org/x/tools v0.14.0
 	honnef.co/go/tools v0.4.6

@@ -1,5 +1,7 @@
 github.com/BurntSushi/toml v1.2.1 h1:9F2/+DoOYIOksmaJFPw1tGFy1eDnIJXg+UHjuD8lTak=
 github.com/BurntSushi/toml v1.2.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
+github.com/fatih/errwrap v1.5.0 h1:/z6jzrekbYYeJukzq9h3nY+SHREDevEB0vJYC4kE9D0=
+github.com/fatih/errwrap v1.5.0/go.mod h1:FXpv2oYhwDEQuC7zFNWUVbF79oUViMgJFvrzdR3IhiE=
 github.com/sashamelentyev/usestdlibvars v1.24.0 h1:MKNzmXtGh5N0y74Z/CIaJh4GlB364l0K1RUT08WSWAc=
 github.com/sashamelentyev/usestdlibvars v1.24.0/go.mod h1:9cYkq+gYJ+a5W2RPdhfaSCnTVUC1OQP/bSiiBhq3OZE=
 golang.org/x/exp/typeparams v0.0.0-20221208152030-732eee02a75a h1:Jw5wfR+h9mnIYH+OtGT2im5wV1YGGDora5vTv/aa5bE=
