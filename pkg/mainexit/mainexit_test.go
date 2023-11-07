@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func Test_ExitInMainAnalyzer(t *testing.T) {
+func Test_Analyzer(t *testing.T) {
 	results := analysistest.Run(t, analysistest.TestData(), Analyzer, "./...")
 	fmt.Println(results)
 }

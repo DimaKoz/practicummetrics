@@ -23,9 +23,9 @@ func runMainExit(pass *analysis.Pass) (interface{}, error) {
 		return x.Name.Name == "main"
 	}
 
-	/*isMainFunc := func(x *ast.FuncDecl) bool {
+	isMainFunc := func(x *ast.FuncDecl) bool {
 		return x.Name.Name == "main"
-	}*/
+	}
 
 	isOsExit := func(x *ast.SelectorExpr, isMain bool) bool {
 		if !isMain || x.X == nil {
@@ -56,14 +56,14 @@ func runMainExit(pass *analysis.Pass) (interface{}, error) {
 			if !isMainPkg(x) {
 				return
 			}
-			/*		case *ast.FuncDecl: // определение функции
-					f := isMainFunc(x)
-					if mainInspecting && !f { // если до этого инспектировали main, а теперь нет - можно заканчивать
-						mainInspecting = false
-						return
-					}
-					mainInspecting = f
-			*/
+		case *ast.FuncDecl: // определение функции
+			f := isMainFunc(x)
+			if mainInspecting && !f {
+				mainInspecting = false
+				return
+			}
+			mainInspecting = f
+
 		case *ast.SelectorExpr:
 			if isOsExit(x, mainInspecting) {
 				return
