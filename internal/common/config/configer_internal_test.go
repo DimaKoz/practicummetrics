@@ -276,15 +276,16 @@ func TestPrepBuildValues(t *testing.T) {
 		name string
 		args args
 		want string
-	}{{
-		name: "NA",
-		args: struct {
-			bldV string
-			bldD string
-			bldC string
-		}{bldV: "NA", bldD: "NA", bldC: "NA"},
-		want: "Build version: NA\nBuild date: NA\nBuild commit:  NA\n",
-	},
+	}{
+		{
+			name: "NA",
+			args: struct {
+				bldV string
+				bldD string
+				bldC string
+			}{bldV: "NA", bldD: "NA", bldC: "NA"},
+			want: "Build version: NA\nBuild date: NA\nBuild commit:  NA\n",
+		},
 		{
 			name: "Ok",
 			args: struct {
@@ -296,8 +297,10 @@ func TestPrepBuildValues(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, PrepBuildValues(tt.args.bldV, tt.args.bldD, tt.args.bldC), "PrepBuildValues(%v, %v, %v)", tt.args.bldV, tt.args.bldD, tt.args.bldC)
+		unit := tt
+		t.Run(unit.name, func(t *testing.T) {
+			got := PrepBuildValues(unit.args.bldV, unit.args.bldD, unit.args.bldC)
+			assert.Equalf(t, unit.want, got, "PrepBuildValues(%v, %v, %v)", unit.args.bldV, unit.args.bldD, unit.args.bldC)
 		})
 	}
 }
