@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -357,4 +358,17 @@ func (cfg ServerConfig) StringVariantCopy() string {
 	_ = copy(result[bLen:], " \n")
 
 	return string(result)
+}
+
+func PrepBuildValues(bldV string, bldD string, bldC string) string {
+	buffStr := bytes.Buffer{}
+	buffStr.WriteString("Build version: ")
+	buffStr.WriteString(bldV)
+	buffStr.WriteString("\nBuild date: ")
+	buffStr.WriteString(bldD)
+	buffStr.WriteString("\nBuild commit:  ")
+	buffStr.WriteString(bldC)
+	buffStr.WriteString("\n")
+
+	return buffStr.String()
 }
