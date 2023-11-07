@@ -1,7 +1,7 @@
 // Package mainexit contains linter that looks for the 'os.Exit' call function from main and warns if such call will be found.
 // It can be called from multichecker.Main(...*analysis.Analyzer) of golang.org/x/tools/go/analysis/multichecker
 //
-//	multichecker.Main(linter.ExitInMainAnalyzer)
+//	multichecker.Main(mainexit.Analyzer)
 package mainexit
 
 import (

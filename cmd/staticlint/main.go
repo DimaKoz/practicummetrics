@@ -125,7 +125,7 @@ func linterStart() {
 		}
 	}
 
-	// github.com/sashamelentyev/usestdlibvars/pkg/analyzer
+	// github.com/sashamelentyev/usestdlibvars/
 	analyzers = append(analyzers, analyzer.New())
 
 	// github.com/fatih/errwrap/errwrap
