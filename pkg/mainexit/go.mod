@@ -1,4 +1,4 @@
-module github.com/DimaKoz/practicummetrics/pgk/mainexit
+module github.com/DimaKoz/practicummetrics/pkg/mainexit
 
 go 1.19
 
