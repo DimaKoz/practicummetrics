@@ -1,6 +1,6 @@
 module github.com/DimaKoz/practicummetrics
 
-go 1.19
+go 1.21.4
 
 
 require (
