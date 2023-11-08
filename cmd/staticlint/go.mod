@@ -1,6 +1,6 @@
 module github.com/DimaKoz/practicummetrics/cmd/staticlint
 
-go 1.21.4
+go 1.21
 
 
 require (
