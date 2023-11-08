@@ -16,9 +16,16 @@ import (
 
 const buffersNumber = 5
 
+var (
+	BuildVersion = "N/A"
+	BuildDate    = "N/A"
+	BuildCommit  = "N/A"
+)
+
 func main() {
 	infoLog := log.Default()
 	infoLog.SetPrefix("agent: INFO: ")
+	infoLog.Println(config.PrepBuildValues(BuildVersion, BuildDate, BuildCommit))
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)

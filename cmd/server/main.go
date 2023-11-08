@@ -15,6 +15,12 @@ import (
 	"go.uber.org/zap"
 )
 
+var (
+	BuildVersion = "N/A"
+	BuildDate    = "N/A"
+	BuildCommit  = "N/A"
+)
+
 func main() {
 	// DB connection
 	// urlExample := "postgres://videos:userpassword@localhost:5432/testdb"
@@ -37,6 +43,7 @@ func main() {
 	if err = config.LoadServerConfig(cfg, config.ProcessEnvServer); err != nil {
 		zap.S().Fatalf("couldn't create a config %s", err)
 	}
+	zap.S().Infoln(config.PrepBuildValues(BuildVersion, BuildDate, BuildCommit))
 
 	printCfgInfo(cfg)
 

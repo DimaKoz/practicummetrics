@@ -265,3 +265,42 @@ func TestServerConfigString(t *testing.T) {
 
 	assert.Equal(t, want, cfg.String())
 }
+
+func TestPrepBuildValues(t *testing.T) {
+	type args struct {
+		bldV string
+		bldD string
+		bldC string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "NA",
+			args: struct {
+				bldV string
+				bldD string
+				bldC string
+			}{bldV: "NA", bldD: "NA", bldC: "NA"},
+			want: "Build version: NA\nBuild date: NA\nBuild commit:  NA\n",
+		},
+		{
+			name: "Ok",
+			args: struct {
+				bldV string
+				bldD string
+				bldC string
+			}{bldV: "12/22/23", bldD: "11:56:59", bldC: "fae3be770660ddc7da88309d82f25ccb74b6a25e"},
+			want: "Build version: 12/22/23\nBuild date: 11:56:59\nBuild commit:  fae3be770660ddc7da88309d82f25ccb74b6a25e\n",
+		},
+	}
+	for _, tt := range tests {
+		unit := tt
+		t.Run(unit.name, func(t *testing.T) {
+			got := PrepBuildValues(unit.args.bldV, unit.args.bldD, unit.args.bldC)
+			assert.Equalf(t, unit.want, got, "PrepBuildValues(%v, %v, %v)", unit.args.bldV, unit.args.bldD, unit.args.bldC)
+		})
+	}
+}

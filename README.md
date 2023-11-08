@@ -3,6 +3,11 @@
 
 ## Бенчмарки и их результаты можно увидеть [тут](https://github.com/DimaKoz/practicummetrics/blob/iter16/benchmarks.md)
 
+###  Покрытие тестами можно увидеть при выполнении команды: 
+```
+make cover
+```
+
 
 # go-musthave-metrics-tpl
 
