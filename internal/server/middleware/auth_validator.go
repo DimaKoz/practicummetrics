@@ -20,9 +20,7 @@ var errBadHash = echo.NewHTTPError(http.StatusBadRequest, "bad hash")
 func AuthValidator(cfg config.ServerConfig) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(echoCtx echo.Context) error {
-			if true { // hash is temporary disabled
-				return next(echoCtx)
-			}
+
 			if err := authValidate(echoCtx, cfg.HashKey); err != nil {
 				return err
 			}
