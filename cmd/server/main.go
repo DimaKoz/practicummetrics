@@ -9,6 +9,7 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/DimaKoz/practicummetrics/internal/server"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
+	"github.com/DimaKoz/practicummetrics/internal/server/serializer"
 	"github.com/DimaKoz/practicummetrics/internal/server/sqldb"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
@@ -105,7 +106,7 @@ func printCfgInfo(cfg *config.ServerConfig) {
 
 func startServer(cfg *config.ServerConfig, conn *pgx.Conn) {
 	echos := echo.New()
-	echos.JSONSerializer = server.FastJSONSerializer{}
+	echos.JSONSerializer = serializer.FastJSONSerializer{}
 
 	server.SetupMiddleware(echos, cfg)
 	server.SetupRouter(echos, conn)
