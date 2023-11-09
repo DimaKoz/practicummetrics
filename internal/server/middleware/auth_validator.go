@@ -14,38 +14,18 @@ import (
 	"go.uber.org/zap"
 )
 
+var errBadHash = echo.NewHTTPError(http.StatusBadRequest, "bad hash")
+
 // AuthValidator checks "HashSHA256" header and its value.
 func AuthValidator(cfg config.ServerConfig) echo.MiddlewareFunc {
-	badHash := echo.NewHTTPError(http.StatusBadRequest, "bad hash")
-
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(echoCtx echo.Context) error {
 			if true { // hash is temporary disabled
 				return next(echoCtx)
 			}
-
-			if cfg.HashKey == "" {
-				return next(echoCtx)
+			if err := authValidate(echoCtx, cfg.HashKey); err != nil {
+				return err
 			}
-
-			// Hash key
-			headerHash := echoCtx.Request().Header.Get(common.HashKeyHeaderName)
-			if headerHash == "" {
-				zap.S().Info("ups:", "missed HashSHA256")
-
-				return badHash
-			}
-			// Request
-			reqBody := []byte{}
-			if echoCtx.Request().Body != nil { // Read
-				reqBody, _ = io.ReadAll(echoCtx.Request().Body)
-			}
-			echoCtx.Request().Body = io.NopCloser(bytes.NewBuffer(reqBody)) // Reset
-
-			if isBadHash(cfg.HashKey, headerHash, reqBody) {
-				return badHash
-			}
-
 			if err := next(echoCtx); err != nil {
 				echoCtx.Error(err)
 			}
@@ -53,6 +33,28 @@ func AuthValidator(cfg config.ServerConfig) echo.MiddlewareFunc {
 			return nil
 		}
 	}
+}
+
+// authValidate returns err when something is wrong.
+func authValidate(echoCtx echo.Context, cfgHashKey string) error {
+	if cfgHashKey == "" {
+		return nil
+	}
+
+	// Hash key
+	headerHash := echoCtx.Request().Header.Get(common.HashKeyHeaderName)
+	if headerHash == "" {
+		zap.S().Info("ups:", "missed HashSHA256")
+
+		return errBadHash
+	}
+	// Request
+	reqBody := getRequestBody(echoCtx)
+	if isBadHash(cfgHashKey, headerHash, reqBody) {
+		return errBadHash
+	}
+
+	return nil
 }
 
 // isBadHash returns true when 'incomeHash' is wrong.
@@ -67,4 +69,14 @@ func isBadHash(cfgKey string, incomeHash string, reqBody []byte) bool {
 	)
 
 	return incomeHash != hmacString
+}
+
+func getRequestBody(echoCtx echo.Context) []byte {
+	reqBody := []byte{}
+	if echoCtx.Request().Body != nil { // Read
+		reqBody, _ = io.ReadAll(echoCtx.Request().Body)
+	}
+	echoCtx.Request().Body = io.NopCloser(bytes.NewBuffer(reqBody)) // Reset
+
+	return reqBody
 }
