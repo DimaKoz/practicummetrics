@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"log"
 	"net/http"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
+	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"github.com/labstack/echo/v4"
 )
 

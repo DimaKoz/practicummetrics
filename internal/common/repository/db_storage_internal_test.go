@@ -3,12 +3,13 @@ package repository
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"github.com/pashagolub/pgxmock/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestAddMetricToDBErr(t *testing.T) {
@@ -21,7 +22,8 @@ func TestAddMetricToDBErr(t *testing.T) {
 		require.NoError(t, err)
 	}(mock, context.Background())
 
-	mu := model.MetricUnit{
+	//nolint:exhaustruct
+	metricUnit := model.MetricUnit{
 		Name: "test",
 	}
 	rows := pgxmock.NewRows([]string{"id", "name", "type", "value"}).
@@ -33,7 +35,7 @@ func TestAddMetricToDBErr(t *testing.T) {
 		WillReturnRows(rows)
 
 	var pgConn sqldb.PgxIface = mock
-	mu, err = AddMetricToDB(&pgConn, mu)
+	_, err = AddMetricToDB(&pgConn, metricUnit)
 	assert.Error(t, err)
 
 	err = mock.ExpectationsWereMet()
@@ -50,7 +52,8 @@ func TestGetMetricByNameFromDBErr(t *testing.T) {
 		require.NoError(t, err)
 	}(mock, context.Background())
 
-	mu := model.MetricUnit{
+	//nolint:exhaustruct
+	metricUnit := model.MetricUnit{
 		Name: "test",
 	}
 	rows := pgxmock.NewRows([]string{"name", "type", "value"}).
@@ -58,11 +61,11 @@ func TestGetMetricByNameFromDBErr(t *testing.T) {
 
 	mock.ExpectQuery(
 		"select name, type, value from metrics where name=\\$1").
-		WithArgs(mu.Name).
+		WithArgs(metricUnit.Name).
 		WillReturnRows(rows)
 
 	var pgConn sqldb.PgxIface = mock
-	mu, err = GetMetricByNameFromDB(&pgConn, mu.Name)
+	_, err = GetMetricByNameFromDB(&pgConn, metricUnit.Name)
 	assert.Error(t, err)
 
 	err = mock.ExpectationsWereMet()

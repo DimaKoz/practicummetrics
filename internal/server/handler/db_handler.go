@@ -3,9 +3,9 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"net/http"
 
+	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"github.com/labstack/echo/v4"
 )
 

@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"strconv"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"github.com/jackc/pgx/v5"
 )
 

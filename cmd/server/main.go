@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"os"
 	"time"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
+	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"github.com/DimaKoz/practicummetrics/internal/server"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	"github.com/DimaKoz/practicummetrics/internal/server/serializer"
