@@ -8,6 +8,40 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMetricsGetPreparedValueErr(t *testing.T) {
+	tests := []struct {
+		name   string
+		fValue float64
+		iValue int64
+		m      *model.Metrics
+		want   string
+	}{
+		{
+			name: model.MetricTypeGauge,
+
+			m:    model.NewEmptyMetrics(),
+			want: "340255.4088704579",
+		},
+		{
+			name: model.MetricTypeCounter,
+			m:    model.NewEmptyMetrics(),
+			want: "42",
+		},
+	}
+	tests[0].m.ID = "test0"
+	tests[0].m.MType = model.MetricTypeGauge
+
+	tests[1].m.ID = "test1"
+	tests[1].m.MType = model.MetricTypeCounter
+	for _, testItem := range tests {
+		test := testItem
+		t.Run(test.name, func(t *testing.T) {
+			_, err := test.m.GetPreparedValue()
+			assert.Error(t, err)
+		})
+	}
+}
+
 func TestMetricsGetPreparedValue(t *testing.T) {
 	tests := []struct {
 		name   string
