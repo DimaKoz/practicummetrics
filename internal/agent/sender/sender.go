@@ -107,7 +107,7 @@ const (
 	minimumBatchNumber  = 2
 )
 
-// getMetricsUpdateTargetURL prepares an URL from address and endpoint.
+// getMetricsUpdateTargetURL prepares a URL from address and endpoint.
 func getMetricsUpdateTargetURL(address string, endpoint string) string {
 	buffLen := len(protocolParcelsSend) + len(endpoint) + len(address)
 	strBld := strings.Builder{}
