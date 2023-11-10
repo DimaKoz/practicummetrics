@@ -3,19 +3,19 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"net/http"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 )
 
 // BaseHandler holds *pgx.Conn.
 type BaseHandler struct {
-	conn *pgx.Conn
+	conn *sqldb.PgxIface
 }
 
 // NewBaseHandler returns a new BaseHandler.
-func NewBaseHandler(dbConn *pgx.Conn) *BaseHandler {
+func NewBaseHandler(dbConn *sqldb.PgxIface) *BaseHandler {
 	return &BaseHandler{
 		conn: dbConn,
 	}
@@ -28,7 +28,7 @@ func (h *BaseHandler) PingHandler(ctxEcho echo.Context) error {
 	status := http.StatusInternalServerError
 	var err error
 	if h.conn != nil {
-		if err = h.conn.Ping(ctx); err == nil {
+		if err = (*h.conn).Ping(ctx); err == nil {
 			status = http.StatusOK
 		}
 	}

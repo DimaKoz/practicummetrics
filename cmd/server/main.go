@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"os"
 	"time"
 
@@ -10,8 +11,6 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/server"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	"github.com/DimaKoz/practicummetrics/internal/server/serializer"
-	"github.com/DimaKoz/practicummetrics/internal/server/sqldb"
-	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
@@ -48,7 +47,7 @@ func main() {
 
 	printCfgInfo(cfg)
 
-	var conn *pgx.Conn
+	var conn sqldb.PgxIface
 	if conn, err = sqldb.ConnectDB(cfg); err == nil {
 		defer conn.Close(context.Background())
 	} else {
@@ -104,7 +103,7 @@ func printCfgInfo(cfg *config.ServerConfig) {
 	zap.S().Infow("Starting server")
 }
 
-func startServer(cfg *config.ServerConfig, conn *pgx.Conn) {
+func startServer(cfg *config.ServerConfig, conn sqldb.PgxIface) {
 	echos := echo.New()
 	echos.JSONSerializer = serializer.FastJSONSerializer{}
 

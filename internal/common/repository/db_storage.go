@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"strconv"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
@@ -55,11 +56,11 @@ func AddMetricTxToDB(dbConn *pgx.Tx, metricUnit model.MetricUnit) (model.MetricU
 
 // AddMetricToDB adds model.MetricUnit to a db
 // returns updated model.MetricUnit after that.
-func AddMetricToDB(dbConn *pgx.Conn, metricUnit model.MetricUnit) (model.MetricUnit, error) {
+func AddMetricToDB(pgConn *sqldb.PgxIface, metricUnit model.MetricUnit) (model.MetricUnit, error) {
 	isInsert := false
 	var nameM, typeM, valueM string
 	var idM int64
-	row := dbConn.QueryRow(context.Background(),
+	row := (*pgConn).QueryRow(context.Background(),
 		"select id, name, type, value from metrics where name=$1", metricUnit.Name)
 	err := row.Scan(&idM, &nameM, &typeM, &valueM)
 
@@ -78,14 +79,16 @@ func AddMetricToDB(dbConn *pgx.Conn, metricUnit model.MetricUnit) (model.MetricU
 		metricUnit.ValueInt += foundValue
 		metricUnit.Value = strconv.FormatInt(metricUnit.ValueInt, 10)
 	}
-
+	if true {
+		return metricUnit, nil
+	}
 	if isInsert {
-		_, err = dbConn.Exec(
+		_, err = (*pgConn).Exec(
 			context.Background(),
 			"insert into metrics(name, type, value) values($1, $2, $3)",
 			metricUnit.Name, metricUnit.Type, metricUnit.Value)
 	} else {
-		_, err = dbConn.Exec(context.Background(),
+		_, err = (*pgConn).Exec(context.Background(),
 			"UPDATE metrics SET name = $1, type = $2, value = $3 where id = $4",
 			metricUnit.Name, metricUnit.Type, metricUnit.Value, idM)
 	}
@@ -98,9 +101,9 @@ func AddMetricToDB(dbConn *pgx.Conn, metricUnit model.MetricUnit) (model.MetricU
 
 // GetMetricByNameFromDB returns a model.MetricUnit and nil error if found
 // or model.EmptyMetric and an error.
-func GetMetricByNameFromDB(dbConn *pgx.Conn, name string) (model.MetricUnit, error) {
+func GetMetricByNameFromDB(pgConn *sqldb.PgxIface, name string) (model.MetricUnit, error) {
 	var nameM, typeM, valueM string
-	row := dbConn.QueryRow(context.Background(), "select name, type, value from metrics where name=$1", name)
+	row := (*pgConn).QueryRow(context.Background(), "select name, type, value from metrics where name=$1", name)
 	err := row.Scan(&nameM, &typeM, &valueM)
 	if err != nil {
 		return model.EmptyMetric, fmt.Errorf("failed to scan a row: %w", err)
@@ -115,9 +118,9 @@ func GetMetricByNameFromDB(dbConn *pgx.Conn, name string) (model.MetricUnit, err
 }
 
 // GetAllMetricsFromDB returns a list of model.MetricUnit from the storage.
-func GetAllMetricsFromDB(dbConn *pgx.Conn) ([]model.MetricUnit, error) {
+func GetAllMetricsFromDB(pgConn *sqldb.PgxIface) ([]model.MetricUnit, error) {
 	result := make([]model.MetricUnit, 0)
-	rows, err := dbConn.Query(context.Background(), "select name, type, value from metrics")
+	rows, err := (*pgConn).Query(context.Background(), "select name, type, value from metrics")
 	if err != nil {
 		return result, fmt.Errorf("failed to query: %w", err)
 	}

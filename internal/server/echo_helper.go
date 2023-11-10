@@ -2,9 +2,9 @@ package server
 
 import (
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
+	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	middleware2 "github.com/DimaKoz/practicummetrics/internal/server/middleware"
-	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -23,8 +23,8 @@ func SetupMiddleware(echoFramework *echo.Echo, cfg *config.ServerConfig) {
 }
 
 // SetupRouter adds some paths to Echo framework.
-func SetupRouter(echoFramework *echo.Echo, conn *pgx.Conn) {
-	dbHandler := handler.NewBaseHandler(conn)
+func SetupRouter(echoFramework *echo.Echo, conn sqldb.PgxIface) {
+	dbHandler := handler.NewBaseHandler(&conn)
 	echoFramework.POST("/update/:type/:name/:value", handler.UpdateHandler)
 	echoFramework.POST("/updates/", dbHandler.UpdatesHandlerJSON)
 	echoFramework.POST("/update/", dbHandler.UpdateHandlerJSON)

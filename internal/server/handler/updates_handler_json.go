@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"log"
 	"net/http"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
-	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -89,8 +89,8 @@ func wrapUpdsHandlerErr(ctx echo.Context, statusCode int, msg string, errIn erro
 }
 
 // processMetricUnits saves metricUnits to DB.
-func processMetricUnits(ctx echo.Context, conn *pgx.Conn, metricUnits []model.MetricUnit) error {
-	transaction, err := conn.Begin(context.TODO())
+func processMetricUnits(ctx echo.Context, conn *sqldb.PgxIface, metricUnits []model.MetricUnit) error {
+	transaction, err := (*conn).Begin(context.TODO())
 	if err != nil {
 		return wrapUpdsHandlerErr(ctx, http.StatusBadRequest, "UpdatesHandlerJSON: failed to get a transaction: %s", err)
 	}
