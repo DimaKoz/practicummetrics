@@ -25,6 +25,8 @@ func AuthValidator(cfg config.ServerConfig) echo.MiddlewareFunc {
 			}
 			if err := next(echoCtx); err != nil {
 				echoCtx.Error(err)
+
+				return err
 			}
 
 			return nil

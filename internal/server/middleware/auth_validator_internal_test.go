@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/DimaKoz/practicummetrics/internal/common"
+	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -63,6 +64,65 @@ func TestGetRequestBody(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestAuthValidator(t *testing.T) {
+	e := echo.New()
+	req := httptest.NewRequest(echo.GET, "/", nil)
+	res := httptest.NewRecorder()
+	ctx := e.NewContext(req, res)
+
+	//nolint:exhaustruct
+	cfg := config.ServerConfig{}
+	comeIn := false
+	authV := AuthValidator(cfg)(func(c echo.Context) error {
+		comeIn = true
+
+		//nolint:wrapcheck
+		return c.NoContent(http.StatusOK)
+	})
+	err := authV(ctx)
+	require.NoError(t, err)
+	assert.True(t, comeIn)
+}
+
+func TestAuthValidatorErr(t *testing.T) {
+	e := echo.New()
+	req := httptest.NewRequest(echo.GET, "/", nil)
+	res := httptest.NewRecorder()
+	ctx := e.NewContext(req, res)
+
+	//nolint:exhaustruct
+	cfg := config.ServerConfig{}
+	comeIn := false
+	authV := AuthValidator(cfg)(func(c echo.Context) error {
+		comeIn = true
+
+		return http.ErrAbortHandler
+	})
+	err := authV(ctx)
+	assert.ErrorIs(t, err, http.ErrAbortHandler)
+	assert.True(t, comeIn)
+}
+
+func TestAuthValidatorErrBadHash(t *testing.T) {
+	e := echo.New()
+	req := httptest.NewRequest(echo.GET, "/", nil)
+	res := httptest.NewRecorder()
+	ctx := e.NewContext(req, res)
+
+	//nolint:exhaustruct
+	cfg := config.ServerConfig{Config: config.Config{HashKey: "gsgd"}}
+	comeIn := false
+	authV := AuthValidator(cfg)(func(c echo.Context) error {
+		comeIn = true
+
+		//nolint:wrapcheck
+		return c.NoContent(http.StatusOK)
+	})
+	err := authV(ctx)
+	assert.ErrorIs(t, err, errBadHash)
+	assert.False(t, comeIn)
+}
+
 func TestAuthValidateEmptyCfgHashKey(t *testing.T) {
 	echoFr := echo.New()
 	eCtx := echoFr.AcquireContext()
@@ -73,7 +133,7 @@ func TestAuthValidateEmptyCfgHashKey(t *testing.T) {
 }
 
 func TestAuthValidateEmptyHeaderHashKey(t *testing.T) {
-	want := "abc"
+	want := "abcd"
 	echoFr := echo.New()
 	request := httptest.NewRequest(http.MethodGet, "https://example.com", bytes.NewReader([]byte(want)))
 	eCtx := echoFr.AcquireContext()
@@ -93,6 +153,19 @@ func TestAuthValidate(t *testing.T) {
 	eCtx.SetRequest(request)
 	err := authValidate(eCtx, want)
 	assert.NoError(t, err)
+	err = echoFr.Close()
+	require.NoError(t, err)
+}
+
+func TestAuthValidateBadHash(t *testing.T) {
+	want := "abc"
+	echoFr := echo.New()
+	request := httptest.NewRequest(http.MethodGet, "https://example.com", bytes.NewReader([]byte(want)))
+	eCtx := echoFr.AcquireContext()
+	request.Header.Set(common.HashKeyHeaderName, "bad hash")
+	eCtx.SetRequest(request)
+	err := authValidate(eCtx, want)
+	assert.ErrorIs(t, err, errBadHash)
 	err = echoFr.Close()
 	require.NoError(t, err)
 }
