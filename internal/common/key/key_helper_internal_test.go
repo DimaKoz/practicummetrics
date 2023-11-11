@@ -88,3 +88,15 @@ func TestEncryptDecrypt(t *testing.T) {
 
 	assert.Equal(t, want, string(decryptedBytes))
 }
+
+func TestFiledLoadKeys(t *testing.T) {
+	filePath := "badpath"
+	_, err := loadPrivateKey(filePath)
+	if !assert.Error(t, err) {
+		return
+	}
+	_, err = loadPublicKey(filePath)
+	if !assert.Error(t, err) {
+		return
+	}
+}
