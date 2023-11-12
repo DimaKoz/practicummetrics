@@ -33,7 +33,7 @@ func TestParcelsSend(t *testing.T) {
 			name: "check sending",
 			args: args{
 				cfg: &config.AgentConfig{
-					Config: config.Config{
+					Config: config.Config{ //nolint:exhaustruct
 						Address: "localhost:8181", HashKey: "asdf",
 					},
 					RateLimit: 0, PollInterval: int64(2),
@@ -97,7 +97,7 @@ func TestParcelsSendBatch(t *testing.T) {
 			name: "check sending",
 			args: args{
 				cfg: &config.AgentConfig{
-					Config:    config.Config{Address: "localhost:8181", HashKey: "werr"},
+					Config:    config.Config{Address: "localhost:8181", HashKey: "werr"}, //nolint:exhaustruct
 					RateLimit: 0, PollInterval: int64(2),
 					ReportInterval: int64(10),
 				},
@@ -155,7 +155,7 @@ func TestPrintSender(t *testing.T) {
 		log.SetOutput(os.Stderr)
 	}()
 	ParcelsSend(&config.AgentConfig{
-		Config: config.Config{
+		Config: config.Config{ //nolint:exhaustruct
 			Address: "localhost:8888", HashKey: "",
 		},
 		RateLimit:      0,
@@ -184,7 +184,7 @@ func TestBrokenBatchCoverage(t *testing.T) {
 		log.SetOutput(os.Stderr)
 	}()
 	ParcelsSend(&config.AgentConfig{
-		Config: config.Config{
+		Config: config.Config{ //nolint:exhaustruct
 			Address: "localhost:8888", HashKey: "",
 		},
 		RateLimit:      0,

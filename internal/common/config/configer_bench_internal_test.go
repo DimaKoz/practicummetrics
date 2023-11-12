@@ -22,7 +22,7 @@ BenchmarkConfigString - see 'deadcode_grave' branch
 
 func BenchmarkConfigStringCopy(b *testing.B) {
 	cfg := ServerConfig{
-		Config: Config{
+		Config: Config{ //nolint:exhaustruct
 			Address: "1",
 			HashKey: "2",
 		},

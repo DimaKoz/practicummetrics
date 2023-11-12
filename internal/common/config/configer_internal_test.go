@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -13,10 +14,11 @@ import (
 )
 
 const (
-	addressEnvName = "ADDRESS"
-	pollEnvName    = "POLL_INTERVAL"
-	reportEnvName  = "REPORT_INTERVAL"
-	keyEnvName     = "KEY"
+	addressEnvName   = "ADDRESS"
+	pollEnvName      = "POLL_INTERVAL"
+	reportEnvName    = "REPORT_INTERVAL"
+	keyEnvName       = "KEY"
+	cryptoKeyEnvName = "CRYPTO_KEY"
 )
 
 var (
@@ -26,25 +28,26 @@ var (
 )
 
 type argTestConfig struct {
-	envAddress  string
-	envPoll     string
-	envReport   string
-	envKey      string
-	flagAddress string
-	flagKey     string
-	flagPoll    string
-	flagReport  string
+	envAddress   string
+	envPoll      string
+	envReport    string
+	envKey       string
+	envCryptoKey string
+	flagAddress  string
+	flagKey      string
+	flagPoll     string
+	flagReport   string
 }
 
 var (
 	wantConfig1 = &AgentConfig{
 		RateLimit:    0,
-		Config:       Config{Address: "127.0.0.1:59483", HashKey: "e"},
+		Config:       Config{Address: "127.0.0.1:59483", HashKey: "e"}, //nolint:exhaustruct
 		PollInterval: 15, ReportInterval: 16,
 	}
 	wantConfig4 = &AgentConfig{
 		RateLimit:    0,
-		Config:       Config{Address: "127.0.0.1:59483", HashKey: ""},
+		Config:       Config{Address: "127.0.0.1:59483", HashKey: ""}, //nolint:exhaustruct
 		PollInterval: 3, ReportInterval: 4,
 	}
 )
@@ -59,7 +62,7 @@ var testsCasesAgentInitConfig = []struct {
 	{
 		name: "default values (agent)", args: argTestConfig{}, wantErr: nil, //nolint:exhaustruct
 		want: &AgentConfig{
-			Config: Config{Address: "localhost:8080", HashKey: ""}, RateLimit: 0,
+			Config: Config{Address: "localhost:8080", HashKey: "", CryptoKey: ""}, RateLimit: 0,
 			PollInterval: int64(defaultPollInterval), ReportInterval: int64(defaultReportInterval),
 		},
 	},
@@ -96,26 +99,28 @@ var testsCasesAgentInitConfig = []struct {
 }
 
 func TestAgentInitConfig(t *testing.T) {
-	for _, test := range testsCasesAgentInitConfig {
-		test := test
+	for _, test1 := range testsCasesAgentInitConfig {
+		test := test1
 		t.Run(test.name, func(t *testing.T) {
 			envArgsAgentInitConfig(t, addressEnvName, test.args.envAddress) // ENV setup
 			envArgsAgentInitConfig(t, pollEnvName, test.args.envPoll)
 			envArgsAgentInitConfig(t, reportEnvName, test.args.envReport)
 			envArgsAgentInitConfig(t, keyEnvName, test.args.envKey)
+			envArgsAgentInitConfig(t, cryptoKeyEnvName, test.args.envCryptoKey)
 			/*			if test.args.flagAddress != "" ||
 						test.args.flagKey != "" ||
 						test.args.flagPoll != "" ||
 						test.args.flagReport != "" { // Flags setup*/
 			osArgOrig := os.Args
-			flag2.CommandLine = flag2.NewFlagSet(os.Args[0], flag2.ContinueOnError)
-			flag2.CommandLine.SetOutput(io.Discard)
+			flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+			flag.CommandLine.SetOutput(io.Discard)
 			os.Args = make([]string, 0)
 			os.Args = append(os.Args, osArgOrig[0])
 			appendArgsAgentInitConfig(&os.Args, "-a", test.args.flagAddress)
 			appendArgsAgentInitConfig(&os.Args, "-k", test.args.flagKey)
 			appendArgsAgentInitConfig(&os.Args, "-p", test.args.flagPoll)
 			appendArgsAgentInitConfig(&os.Args, "-r", test.args.flagReport)
+			appendArgsAgentInitConfig(&os.Args, "-crypto-key", test.args.envCryptoKey)
 			t.Cleanup(func() { os.Args = osArgOrig })
 			//}
 
@@ -197,7 +202,7 @@ func TestProcessEnvMock(t *testing.T) {
 
 func TestLoadServerConfig(t *testing.T) {
 	want := &ServerConfig{
-		Config: Config{
+		Config: Config{ //nolint:exhaustruct
 			Address: defaultAddress,
 			HashKey: defaultKey,
 		},
@@ -252,8 +257,9 @@ func TestServerConfigIsUseDatabase(t *testing.T) {
 func TestServerConfigString(t *testing.T) {
 	cfg := ServerConfig{
 		Config: Config{
-			Address: "1",
-			HashKey: "2",
+			Address:   "1",
+			HashKey:   "2",
+			CryptoKey: "7",
 		},
 		StoreInterval:   3,
 		FileStoragePath: "4",
@@ -261,7 +267,8 @@ func TestServerConfigString(t *testing.T) {
 		hasRestore:      true,
 		Restore:         true,
 	}
-	want := "Address: 1 \n StoreInterval: 3 \n FileStoragePath: 4 \n ConnectionDB: 5 \n Key: 2 \n Restore: true \n"
+	want := "Address: 1 \n StoreInterval: 3 \n FileStoragePath: 4 \n " +
+		"ConnectionDB: 5 \n Key: 2 \n CryptoKey: 7 \n Restore: true \n"
 
 	assert.Equal(t, want, cfg.String())
 }

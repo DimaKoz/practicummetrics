@@ -21,12 +21,12 @@ var (
 	BuildCommit  = "N/A"
 )
 
-func main() {
-	// DB connection
-	// urlExample := "postgres://videos:userpassword@localhost:5432/testdb"
-	// urlExample := "postgres://localhost:5432/testdb?sslmode=disable"
-	// _ = os.Setenv("DATABASE_DSN", urlExample)
+// DB connection
+// urlExample := "postgres://videos:userpassword@localhost:5432/testdb"
+// urlExample := "postgres://localhost:5432/testdb?sslmode=disable"
+// _ = os.Setenv("DATABASE_DSN", urlExample)
 
+func main() {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		panic(err)
@@ -46,6 +46,8 @@ func main() {
 	zap.S().Infoln(config.PrepBuildValues(BuildVersion, BuildDate, BuildCommit))
 
 	printCfgInfo(cfg)
+
+	repository.LoadPrivateKey(*cfg)
 
 	var conn sqldb.PgxIface
 	if conn, err = sqldb.ConnectDB(cfg); err == nil {

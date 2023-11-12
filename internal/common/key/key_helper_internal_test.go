@@ -6,35 +6,15 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var wdTest = ""
-
-func getWD() string {
-	if wdTest != "" {
-		return wdTest
-	}
-	wDir, _ := os.Getwd()
-	//nolint:forbidigo
-	fmt.Println("wd started:")
-	for !strings.HasSuffix(wDir, "practicummetrics") {
-		wDir = filepath.Dir(wDir)
-	}
-	wdTest = wDir
-
-	return wDir
-}
-
 func TestLoadPrivateKey(t *testing.T) {
 	wDir := getWD()
 	filePath := fmt.Sprintf("%s/keys/keyfile.pem", wDir)
-	key, err := loadPrivateKey(filePath)
+	key, err := loadPrivateKeyImpl(filePath)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -46,7 +26,7 @@ func TestLoadPublicKey(t *testing.T) {
 	wDir := getWD()
 
 	filePath := fmt.Sprintf("%s/keys/publickeyfile.pem", wDir)
-	key, err := loadPublicKey(filePath)
+	key, err := loadPublicKeyImpl(filePath)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -57,12 +37,12 @@ func TestLoadPublicKey(t *testing.T) {
 func TestEncryptDecrypt(t *testing.T) {
 	wDir := getWD()
 
-	keyPu, err := loadPublicKey(fmt.Sprintf("%s/keys/publickeyfile.pem", wDir))
+	keyPu, err := loadPublicKeyImpl(fmt.Sprintf("%s/keys/publickeyfile.pem", wDir))
 	if !assert.NoError(t, err) {
 		return
 	}
 
-	keyPr, err := loadPrivateKey(fmt.Sprintf("%s/keys/keyfile.pem", wDir))
+	keyPr, err := loadPrivateKeyImpl(fmt.Sprintf("%s/keys/keyfile.pem", wDir))
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -91,11 +71,11 @@ func TestEncryptDecrypt(t *testing.T) {
 
 func TestFiledLoadKeys(t *testing.T) {
 	filePath := "badpath"
-	_, err := loadPrivateKey(filePath)
+	_, err := loadPrivateKeyImpl(filePath)
 	if !assert.Error(t, err) {
 		return
 	}
-	_, err = loadPublicKey(filePath)
+	_, err = loadPublicKeyImpl(filePath)
 	if !assert.Error(t, err) {
 		return
 	}
