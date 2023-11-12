@@ -40,6 +40,8 @@ func main() {
 	infoLog.Println("reportInterval:", cfg.ReportInterval)
 	infoLog.Println("pollInterval:", cfg.PollInterval)
 
+	repository.LoadPublicKey(*cfg)
+
 	tickerGathering := time.NewTicker(time.Duration(cfg.PollInterval) * time.Second)
 	defer tickerGathering.Stop()
 

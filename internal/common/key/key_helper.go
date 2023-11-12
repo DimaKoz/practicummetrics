@@ -55,6 +55,15 @@ func loadPrivateKeyImpl(path string) (*rsa.PrivateKey, error) {
 	return key, nil
 }
 
+func LoadPublicKey(cfg config.AgentConfig) (*rsa.PublicKey, error) {
+	if cfg.CryptoKey == "" {
+		return nil, ErrNoKeyPath
+	}
+	filePath := fmt.Sprintf("%s/%s", getWD(), cfg.CryptoKey /*"keys/publickeyfile.pem"*/)
+
+	return loadPublicKeyImpl(filePath)
+}
+
 func loadPublicKeyImpl(path string) (*rsa.PublicKey, error) {
 	pemString, err := os.ReadFile(path)
 	if err != nil {

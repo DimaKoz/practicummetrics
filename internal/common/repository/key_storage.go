@@ -17,7 +17,7 @@ var (
 // keyStorage represents storage.
 type keyStorage struct {
 	private *rsa.PrivateKey
-	// public  *rsa.PublicKey
+	public  *rsa.PublicKey
 }
 
 // SetPrivateKey sets rsa.PrivateKey.
@@ -38,7 +38,6 @@ func GetPrivateKey() *rsa.PrivateKey {
 }
 */
 
-/*
 // SetPublicKey sets rsa.PublicKey.
 func SetPublicKey(key *rsa.PublicKey) {
 	keyStorageSync.Lock()
@@ -46,7 +45,6 @@ func SetPublicKey(key *rsa.PublicKey) {
 
 	keySt.public = key
 }
-*/
 
 /*
 // GetPublicKey returns a *rsa.PublicKey or nil.
@@ -68,9 +66,12 @@ func LoadPrivateKey(cfg config.ServerConfig) {
 	SetPrivateKey(keyPrivate)
 }
 
-/*func LoadPublicKey(cfg config.AgentConfig) {
-	if cfg.CryptoKey == "" {
+func LoadPublicKey(cfg config.AgentConfig) {
+	keyPublic, err := key.LoadPublicKey(cfg)
+	if err != nil {
+		zap.S().Error(err)
+
 		return
 	}
+	SetPublicKey(keyPublic)
 }
-*/

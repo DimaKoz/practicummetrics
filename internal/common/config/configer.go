@@ -187,10 +187,13 @@ func setUnknownStrValue(target *string, value string) {
 // addAgentFlags adds agent flags to process them.
 func addAgentFlags(cfg *AgentConfig, address *string,
 	hashKey *string, pollInterval *string, reportInterval *string, limit *string,
+	cryptoKey *string,
 ) {
 	addStringChecksStringFlag(cfg.Address, "", "a", address)
 
 	addStringChecksStringFlag(cfg.HashKey, unknownStringFieldValue, "k", hashKey)
+
+	addStringChecksStringFlag(cfg.CryptoKey, unknownStringFieldValue, "crypto-key", cryptoKey)
 
 	addIntChecksStringFlag(cfg.PollInterval, 0, "p", pollInterval)
 
@@ -214,9 +217,10 @@ func addIntChecksStringFlag(currentCfgValue int64, defaultCfgValue int64, flagNa
 // processAgentFlags gets parameters from command line and fill AgentConfig
 // or returns error if something wrong.
 func processAgentFlags(cfg *AgentConfig) error {
-	var address, keyFlag, pFlag, rFlag, lFlag string
+	flag.CommandLine.ErrorHandling()
+	var address, keyFlag, pFlag, rFlag, lFlag, sFlag string
 
-	addAgentFlags(cfg, &address, &keyFlag, &pFlag, &rFlag, &lFlag)
+	addAgentFlags(cfg, &address, &keyFlag, &pFlag, &rFlag, &lFlag, &sFlag)
 	flag.Parse()
 
 	if address != "" {
@@ -225,6 +229,10 @@ func processAgentFlags(cfg *AgentConfig) error {
 
 	if keyFlag != "" {
 		cfg.HashKey = keyFlag
+	}
+
+	if sFlag != "" {
+		cfg.CryptoKey = sFlag
 	}
 
 	if err := setAgentIntFlag(&cfg.PollInterval, pFlag, "poll interval"); err != nil {
