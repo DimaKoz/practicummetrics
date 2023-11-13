@@ -1,11 +1,15 @@
 package repository
 
 import (
+	"crypto"
+	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"sync"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/key"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -20,6 +24,38 @@ type keyStorage struct {
 	public  *rsa.PublicKey
 }
 
+// DecryptByPrivateKey returns a decrypted []byte or nil with an error.
+func DecryptByPrivateKey(encryptedMessage []byte) ([]byte, error) {
+	keyStorageSync.RLock()
+	defer keyStorageSync.RUnlock()
+	//nolint:exhaustruct
+	cryptoOps := rsa.OAEPOptions{Hash: crypto.SHA256}
+
+	decryptedBytes, err := keySt.private.Decrypt(nil, encryptedMessage, &cryptoOps)
+	if err != nil {
+		return nil, errors.Wrap(err, "can't decrypt by: ")
+	}
+
+	return decryptedBytes, nil
+}
+
+// EncryptByPublicKey returns an encrypted []byte or nil with an error.
+func EncryptByPublicKey(message []byte) ([]byte, error) {
+	keyStorageSync.RLock()
+	defer keyStorageSync.RUnlock()
+	encryptedBytes, err := rsa.EncryptOAEP(
+		sha256.New(),
+		rand.Reader,
+		keySt.public,
+		message,
+		nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "can't encrypt by: ")
+	}
+
+	return encryptedBytes, nil
+}
+
 // SetPrivateKey sets rsa.PrivateKey.
 func SetPrivateKey(key *rsa.PrivateKey) {
 	keyStorageSync.Lock()
@@ -28,16 +64,6 @@ func SetPrivateKey(key *rsa.PrivateKey) {
 	keySt.private = key
 }
 
-/*
-// GetPrivateKey returns a *rsa.PrivateKey or nil.
-func GetPrivateKey() *rsa.PrivateKey {
-	keyStorageSync.RLock()
-	defer keyStorageSync.RUnlock()
-
-	return keySt.private
-}
-*/
-
 // SetPublicKey sets rsa.PublicKey.
 func SetPublicKey(key *rsa.PublicKey) {
 	keyStorageSync.Lock()
@@ -45,16 +71,6 @@ func SetPublicKey(key *rsa.PublicKey) {
 
 	keySt.public = key
 }
-
-/*
-// GetPublicKey returns a *rsa.PublicKey or nil.
-func GetPublicKey() *rsa.PublicKey {
-	keyStorageSync.RLock()
-	defer keyStorageSync.RUnlock()
-
-	return keySt.public
-}
-*/
 
 func LoadPrivateKey(cfg config.ServerConfig) {
 	keyPrivate, err := key.LoadPrivateKey(cfg)
