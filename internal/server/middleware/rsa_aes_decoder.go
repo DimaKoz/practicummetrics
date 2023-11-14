@@ -24,7 +24,7 @@ func RsaAesDecoder() echo.MiddlewareFunc {
 				return errRsaAesDecode
 			}
 			reqBody, err := io.ReadAll(echoCtx.Request().Body)
-			if err != nil {
+			if err != nil || len(reqBody) == 0 {
 				return errRsaAesDecode
 			}
 			decodedData, err := repository.DecryptBigMessage(reqBody, encodedKey)
