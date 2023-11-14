@@ -118,3 +118,23 @@ func TestFiledLoadKeys(t *testing.T) {
 		return
 	}
 }
+
+func TestLoadKeysBadConfigs(t *testing.T) {
+	//nolint:exhaustruct
+	cfg := config.ServerConfig{
+		Config: config.Config{},
+	}
+	key, err := LoadPrivateKey(cfg)
+	assert.Nil(t, key)
+	assert.NotNil(t, err)
+	assert.ErrorIs(t, err, ErrNoKeyPath)
+
+	//nolint:exhaustruct
+	cfg1 := config.AgentConfig{
+		Config: config.Config{},
+	}
+	key1, err := LoadPublicKey(cfg1)
+	assert.Nil(t, key1)
+	assert.NotNil(t, err)
+	assert.ErrorIs(t, err, ErrNoKeyPath)
+}

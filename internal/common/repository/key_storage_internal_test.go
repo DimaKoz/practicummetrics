@@ -41,3 +41,28 @@ func TestEncryptDecrypt(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, want, string(decB))
 }
+
+func TestLoadPrivateKeyErr(t *testing.T) {
+	keySt.private = nil
+	//nolint:exhaustruct
+	cfgS := config.ServerConfig{
+		Config: config.Config{
+			CryptoKey: "",
+		},
+	}
+	LoadPrivateKey(cfgS)
+
+	assert.Nil(t, keySt.private)
+}
+
+func TestInitAgentAesKeys(t *testing.T) {
+	//nolint:exhaustruct
+	cfga := config.AgentConfig{
+		Config: config.Config{
+			CryptoKey: "keys/publickeyfile.pem",
+		},
+	}
+	err := InitAgentAesKeys(cfga)
+
+	assert.NoError(t, err)
+}
