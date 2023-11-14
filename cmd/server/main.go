@@ -49,10 +49,13 @@ func main() {
 
 	repository.LoadPrivateKey(*cfg)
 
-	var conn sqldb.PgxIface
-	if conn, err = sqldb.ConnectDB(cfg); err == nil {
-		defer conn.Close(context.Background())
+	var pgxConn sqldb.PgxIface
+	var conn *sqldb.PgxIface
+	if pgxConn, err = sqldb.ConnectDB(cfg); err == nil {
+		defer pgxConn.Close(context.Background())
+		conn = &pgxConn
 	} else {
+		conn = nil
 		zap.S().Warnf("failed to get a db connection by %s", err.Error())
 	}
 
@@ -105,7 +108,7 @@ func printCfgInfo(cfg *config.ServerConfig) {
 	zap.S().Infow("Starting server")
 }
 
-func startServer(cfg *config.ServerConfig, conn sqldb.PgxIface) {
+func startServer(cfg *config.ServerConfig, conn *sqldb.PgxIface) {
 	echos := echo.New()
 	echos.JSONSerializer = serializer.FastJSONSerializer{}
 

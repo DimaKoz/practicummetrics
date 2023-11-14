@@ -37,10 +37,13 @@ func main() {
 
 	// from cfg:
 	infoLog.Println("cfg:\n", "address:", cfg.Address, "\nkey:", cfg.HashKey)
-	infoLog.Println("reportInterval:", cfg.ReportInterval)
-	infoLog.Println("pollInterval:", cfg.PollInterval)
+	infoLog.Println("reportInterval:", cfg.ReportInterval, "\npollInterval:", cfg.PollInterval)
 
-	repository.LoadPublicKey(*cfg)
+	if cfg.CryptoKey != "" {
+		if err = repository.InitAgentAesKeys(*cfg); err != nil {
+			log.Fatalf("couldn't init aes key %s", err)
+		}
+	}
 
 	tickerGathering := time.NewTicker(time.Duration(cfg.PollInterval) * time.Second)
 	defer tickerGathering.Stop()
@@ -78,9 +81,7 @@ func main() {
 	}()
 
 	infoLog.Println("awaiting a signal or press Ctrl+C to finish this agent")
-
 	<-done
-
 	infoLog.Println("exiting")
 }
 

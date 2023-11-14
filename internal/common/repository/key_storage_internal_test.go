@@ -34,10 +34,10 @@ func TestEncryptDecrypt(t *testing.T) {
 
 	want := "test message"
 
-	encB, err := EncryptByPublicKey([]byte(want))
+	encB, err := encryptByPublicKey(keyPub, []byte(want))
 	assert.NoError(t, err)
 
-	decB, err := DecryptByPrivateKey(encB)
+	decB, err := decryptByPrivateKey(encB)
 	assert.NoError(t, err)
 	assert.Equal(t, want, string(decB))
 }

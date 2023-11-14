@@ -1,3 +1,6 @@
 package common
 
-const HashKeyHeaderName = "HashSHA256"
+const (
+	HashKeyHeaderName       = "HashSHA256"
+	RsaEncodedKeyHeaderName = "EncKey"
+)

@@ -11,7 +11,10 @@ import (
 
 // SetupMiddleware inits and some middlewares to Echo framework.
 func SetupMiddleware(echoFramework *echo.Echo, cfg *config.ServerConfig) {
-	// Logging middlewares
+	if cfg.CryptoKey != "" {
+		echoFramework.Use(middleware2.RsaAesDecoder())
+	}
+	// Logging middleware0s
 	// RequestLoggerWithConfig and BodyDump
 	loggerConfig := middleware2.GetRequestLoggerConfig()
 	echoFramework.Use(middleware.RequestLoggerWithConfig(loggerConfig))
@@ -23,8 +26,8 @@ func SetupMiddleware(echoFramework *echo.Echo, cfg *config.ServerConfig) {
 }
 
 // SetupRouter adds some paths to Echo framework.
-func SetupRouter(echoFramework *echo.Echo, conn sqldb.PgxIface) {
-	dbHandler := handler.NewBaseHandler(&conn)
+func SetupRouter(echoFramework *echo.Echo, conn *sqldb.PgxIface) {
+	dbHandler := handler.NewBaseHandler(conn)
 	echoFramework.POST("/update/:type/:name/:value", handler.UpdateHandler)
 	echoFramework.POST("/updates/", dbHandler.UpdatesHandlerJSON)
 	echoFramework.POST("/update/", dbHandler.UpdateHandlerJSON)
