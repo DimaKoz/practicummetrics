@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"crypto/aes"
 	"testing"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
@@ -42,6 +43,40 @@ func TestEncryptDecrypt(t *testing.T) {
 	assert.Equal(t, want, string(decB))
 }
 
+func TestEncryptBigMessageErr(t *testing.T) {
+	_, err := EncryptBigMessage([]byte("dshua"))
+	assert.Error(t, err)
+}
+
+func TestEncryptDecryptBigMessage(t *testing.T) {
+	// Init
+
+	//nolint:exhaustruct
+	cfgS := config.ServerConfig{
+		Config: config.Config{
+			CryptoKey: "keys/keyfile.pem",
+		},
+	}
+	LoadPrivateKey(cfgS)
+
+	//nolint:exhaustruct
+	cfgA := config.AgentConfig{
+		Config: config.Config{
+			CryptoKey: "keys/publickeyfile.pem",
+		},
+	}
+	err := InitAgentAesKeys(cfgA)
+	require.NoError(t, err)
+
+	want := "a big message"
+
+	mess, err := EncryptBigMessage([]byte(want))
+	assert.NoError(t, err)
+	got, err := DecryptBigMessage(mess.Encoded, mess.AesKey)
+	assert.NoError(t, err)
+	assert.Equal(t, want, string(got))
+}
+
 func TestLoadPrivateKeyErr(t *testing.T) {
 	keySt.private = nil
 	//nolint:exhaustruct
@@ -65,4 +100,23 @@ func TestInitAgentAesKeys(t *testing.T) {
 	err := InitAgentAesKeys(cfga)
 
 	assert.NoError(t, err)
+}
+
+func TestInitAgentAesKeysErrorLoadRSA(t *testing.T) {
+	//nolint:exhaustruct
+	cfga := config.AgentConfig{
+		Config: config.Config{
+			CryptoKey: "",
+		},
+	}
+	err := InitAgentAesKeys(cfga)
+
+	assert.Error(t, err)
+}
+
+func TestAesDecodeBadKey(t *testing.T) {
+	got, err := aesDecode(nil, []byte(""))
+
+	assert.Nil(t, got)
+	assert.ErrorIs(t, err, aes.KeySizeError(0))
 }
