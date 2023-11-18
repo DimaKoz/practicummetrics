@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/DimaKoz/practicummetrics/internal/common"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/stretchr/testify/assert"
 )
@@ -35,7 +36,7 @@ func TestLoadPrivateKey1(t *testing.T) {
 }
 
 func TestLoadPrivateKey(t *testing.T) {
-	wDir := getWD()
+	wDir := common.GetWD()
 	filePath := fmt.Sprintf("%s/keys/keyfile.pem", wDir)
 	key, err := loadPrivateKeyImpl(filePath)
 	if !assert.NoError(t, err) {
@@ -61,7 +62,7 @@ func TestLoadPublicKey1(t *testing.T) {
 }
 
 func TestLoadPublicKey(t *testing.T) {
-	wDir := getWD()
+	wDir := common.GetWD()
 
 	filePath := fmt.Sprintf("%s/keys/publickeyfile.pem", wDir)
 	key, err := loadPublicKeyImpl(filePath)
@@ -73,7 +74,7 @@ func TestLoadPublicKey(t *testing.T) {
 }
 
 func TestEncryptDecrypt(t *testing.T) {
-	wDir := getWD()
+	wDir := common.GetWD()
 
 	keyPu, err := loadPublicKeyImpl(fmt.Sprintf("%s/keys/publickeyfile.pem", wDir))
 	if !assert.NoError(t, err) {

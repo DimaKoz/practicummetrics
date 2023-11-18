@@ -6,31 +6,11 @@ import (
 	"encoding/pem"
 	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
 
+	"github.com/DimaKoz/practicummetrics/internal/common"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/pkg/errors"
-	"go.uber.org/zap"
 )
-
-var workDir = ""
-
-func getWD() string {
-	if workDir != "" {
-		return workDir
-	}
-	wDirTemp, _ := os.Getwd()
-
-	zap.S().Infof("wd started: %s", wDirTemp)
-
-	for !strings.HasSuffix(wDirTemp, "practicummetrics") {
-		wDirTemp = filepath.Dir(wDirTemp)
-	}
-	workDir = wDirTemp
-
-	return workDir
-}
 
 var ErrNoKeyPath = errors.New("no crypto-key path")
 
@@ -38,7 +18,7 @@ func LoadPrivateKey(cfg config.ServerConfig) (*rsa.PrivateKey, error) {
 	if cfg.CryptoKey == "" {
 		return nil, ErrNoKeyPath
 	}
-	filePath := fmt.Sprintf("%s/%s", getWD(), cfg.CryptoKey /*"keys/keyfile.pem"*/)
+	filePath := fmt.Sprintf("%s/%s", common.GetWD(), cfg.CryptoKey /*"keys/keyfile.pem"*/)
 
 	return loadPrivateKeyImpl(filePath)
 }
@@ -59,7 +39,7 @@ func LoadPublicKey(cfg config.AgentConfig) (*rsa.PublicKey, error) {
 	if cfg.CryptoKey == "" {
 		return nil, ErrNoKeyPath
 	}
-	filePath := fmt.Sprintf("%s/%s", getWD(), cfg.CryptoKey /*"keys/publickeyfile.pem"*/)
+	filePath := fmt.Sprintf("%s/%s", common.GetWD(), cfg.CryptoKey /*"keys/publickeyfile.pem"*/)
 
 	return loadPublicKeyImpl(filePath)
 }
