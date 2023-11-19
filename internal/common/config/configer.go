@@ -137,11 +137,17 @@ func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
 	return nil
 }
 
-// LoadAgentConfig returns *AgentConfig.
-func LoadAgentConfig() (*AgentConfig, error) {
+func NewAgentConfig() *AgentConfig {
 	cfg := &AgentConfig{} //nolint:exhaustruct
 	cfg.HashKey = unknownStringFieldValue
 	cfg.CryptoKey = unknownStringFieldValue
+
+	return cfg
+}
+
+// LoadAgentConfig returns *AgentConfig.
+func LoadAgentConfig() (*AgentConfig, error) {
+	cfg := NewAgentConfig()
 
 	if err := processEnvAgent(cfg); err != nil {
 		return nil, fmt.Errorf("agent config: cannot process ENV variables: %w", err)

@@ -356,3 +356,28 @@ func TestLoadAgentConfigValues(t *testing.T) {
 
 	assert.Equal(t, want, got)
 }
+
+func TestTrimLastS(t *testing.T) {
+	income := "q"
+	want := "q"
+
+	got := trimLastS(income)
+
+	assert.Equal(t, want, got)
+}
+
+func TestTrimLastSOnlyS(t *testing.T) {
+	income := "s"
+	want := ""
+
+	got := trimLastS(income)
+
+	assert.Equal(t, want, got)
+}
+
+func TestSetUnknownStrValue(t *testing.T) {
+	target := "1"
+	value := "2"
+	setUnknownStrValue(&target, value)
+	assert.Equal(t, value, target)
+}
