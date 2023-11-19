@@ -273,7 +273,6 @@ func TestSetupDefaultServerValuesHasRestore(t *testing.T) {
 	setupDefaultServerValues(&cfg, "", 42, "", "", true)
 
 	assert.True(t, cfg.Restore)
-
 }
 
 func TestServerConfigString(t *testing.T) {
