@@ -257,6 +257,25 @@ func TestServerConfigIsUseDatabase(t *testing.T) {
 	}
 }
 
+func TestSetupDefaultServerValuesHasRestore(t *testing.T) {
+	cfg := ServerConfig{
+		Config: Config{
+			Address:   "1",
+			HashKey:   "2",
+			CryptoKey: "7",
+		},
+		StoreInterval:   3,
+		FileStoragePath: "4",
+		ConnectionDB:    "5",
+		hasRestore:      false,
+		Restore:         false,
+	}
+	setupDefaultServerValues(&cfg, "", 42, "", "", true)
+
+	assert.True(t, cfg.Restore)
+
+}
+
 func TestServerConfigString(t *testing.T) {
 	cfg := ServerConfig{
 		Config: Config{
