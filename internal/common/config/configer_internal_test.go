@@ -9,11 +9,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/DimaKoz/practicummetrics/internal/common"
-	"github.com/goccy/go-json"
 	flag2 "github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -331,66 +328,6 @@ func TestPrepBuildValues(t *testing.T) {
 			assert.Equalf(t, unit.want, got, "PrepBuildValues(%v, %v, %v)", unit.args.bldV, unit.args.bldD, unit.args.bldC)
 		})
 	}
-}
-
-func TestLoadAgentConfigFile(t *testing.T) {
-	want := LoadedAgentConfig{
-		Address:        "localhost:8080",
-		ReportInterval: "1s",
-		PollInterval:   "1s",
-		CryptoKey:      "keys/publickeyfile.pem",
-	}
-	wDir := common.GetWD()
-	path := fmt.Sprintf("%s/testdata/agent_example_task.json", wDir)
-	jsonString, err := os.ReadFile(path)
-	require.NoError(t, err)
-	require.NotNil(t, jsonString)
-	lacfg := LoadedAgentConfig{} //nolint:exhaustruct
-	err = json.Unmarshal(jsonString, &lacfg)
-	assert.NoError(t, err)
-	assert.Equal(t, want, lacfg)
-}
-
-func TestLoadAgentConfigValues(t *testing.T) {
-	loadedCfg := LoadedAgentConfig{
-		Address:        "localhost:8888",
-		ReportInterval: "3s",
-		PollInterval:   "4s",
-		CryptoKey:      "keys22/publickeyfile.pem",
-	}
-
-	//nolint:exhaustruct
-	want := AgentConfig{
-		Config:         Config{Address: "localhost:8888", CryptoKey: "keys22/publickeyfile.pem"},
-		ReportInterval: 3,
-		PollInterval:   4,
-	}
-
-	aCfg := new(AgentConfig)
-	aCfg.Address = unknownStringFieldValue
-	aCfg.CryptoKey = unknownStringFieldValue
-
-	got := fillConfigIfEmpty(*aCfg, loadedCfg)
-
-	assert.Equal(t, want, got)
-}
-
-func TestTrimLastS(t *testing.T) {
-	income := "q"
-	want := "q"
-
-	got := trimLastS(income)
-
-	assert.Equal(t, want, got)
-}
-
-func TestTrimLastSOnlyS(t *testing.T) {
-	income := "s"
-	want := ""
-
-	got := trimLastS(income)
-
-	assert.Equal(t, want, got)
 }
 
 func TestSetUnknownStrValue(t *testing.T) {

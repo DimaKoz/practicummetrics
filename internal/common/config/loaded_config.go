@@ -5,6 +5,15 @@ import (
 	"unicode/utf8"
 )
 
+type LoadedServerConfig struct {
+	Address       string `json:"address"`
+	Restore       bool   `json:"restore"`
+	StoreInterval string `json:"store_interval"` //nolint:tagliatelle
+	StoreFile     string `json:"store_file"`     //nolint:tagliatelle
+	DatabaseDsn   string `json:"database_dsn"`   //nolint:tagliatelle
+	CryptoKey     string `json:"crypto_key"`     //nolint:tagliatelle
+}
+
 type LoadedAgentConfig struct {
 	Address        string `json:"address"`
 	ReportInterval string `json:"report_interval"` //nolint:tagliatelle
@@ -21,7 +30,7 @@ func trimLastS(income string) string {
 	return income[:len(income)-lastRuneSize]
 }
 
-func fillConfigIfEmpty(cfg AgentConfig, loadedCfg LoadedAgentConfig) AgentConfig {
+func fillAgentConfigIfEmpty(cfg AgentConfig, loadedCfg LoadedAgentConfig) AgentConfig {
 	if cfg.Address == unknownStringFieldValue && loadedCfg.Address != "" {
 		cfg.Address = loadedCfg.Address
 	}
@@ -30,12 +39,12 @@ func fillConfigIfEmpty(cfg AgentConfig, loadedCfg LoadedAgentConfig) AgentConfig
 		cfg.CryptoKey = loadedCfg.CryptoKey
 	}
 
-	fillConfigIfEmptyInt(&cfg, loadedCfg)
+	fillAgentConfigIfEmptyInt(&cfg, loadedCfg)
 
 	return cfg
 }
 
-func fillConfigIfEmptyInt(cfg *AgentConfig, loadedCfg LoadedAgentConfig) {
+func fillAgentConfigIfEmptyInt(cfg *AgentConfig, loadedCfg LoadedAgentConfig) {
 	if cfg.PollInterval == 0 && loadedCfg.PollInterval != "" {
 		prepP := trimLastS(loadedCfg.PollInterval)
 		if pollInterval, err := strconv.ParseInt(prepP, 10, 64); err == nil {
@@ -49,4 +58,37 @@ func fillConfigIfEmptyInt(cfg *AgentConfig, loadedCfg LoadedAgentConfig) {
 			cfg.ReportInterval = repInterval
 		}
 	}
+}
+
+func fillServerConfigIfEmpty(cfg ServerConfig, loadedCfg LoadedServerConfig) ServerConfig {
+	setUnknownStrValue(&cfg.Address, loadedCfg.Address)
+	if loadedCfg.Address != "" {
+		setUnknownStrValue(&cfg.Address, loadedCfg.Address)
+	}
+
+	if loadedCfg.CryptoKey != "" {
+		setUnknownStrValue(&cfg.CryptoKey, loadedCfg.CryptoKey)
+	}
+
+	if loadedCfg.StoreFile != "" {
+		setUnknownStrValue(&cfg.FileStoragePath, loadedCfg.StoreFile)
+	}
+
+	if loadedCfg.DatabaseDsn != "" {
+		setUnknownStrValue(&cfg.ConnectionDB, loadedCfg.DatabaseDsn)
+	}
+
+	if cfg.StoreInterval == unknownIntFieldValue && loadedCfg.StoreInterval != "" {
+		prepP := trimLastS(loadedCfg.StoreInterval)
+		if storeInterval, err := strconv.ParseInt(prepP, 10, 64); err == nil {
+			cfg.StoreInterval = storeInterval
+		}
+	}
+
+	if !cfg.hasRestore && loadedCfg.Restore {
+		cfg.Restore = loadedCfg.Restore
+		cfg.hasRestore = true
+	}
+
+	return cfg
 }
