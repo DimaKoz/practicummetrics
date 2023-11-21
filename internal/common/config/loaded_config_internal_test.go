@@ -115,10 +115,10 @@ func TestLoadServerConfigValues(t *testing.T) {
 		hasRestore:      true,
 	}
 
-	sCfg := NewServerConfig()
-	sCfg.HashKey = ""
+	got := NewServerConfig()
+	got.HashKey = ""
 
-	got := fillServerConfigIfEmpty(*sCfg, loadedCfg)
+	fillServerConfigIfEmpty(got, loadedCfg)
 
-	assert.Equal(t, want, got)
+	assert.Equal(t, want, *got)
 }

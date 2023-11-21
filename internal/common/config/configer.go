@@ -81,6 +81,14 @@ func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
 	if err := processServerFlags(cfg); err != nil {
 		return fmt.Errorf("server config: cannot process flags variables: %w", err)
 	}
+	// 0001ecbd0
+	if cfg.ConfigFile != unknownStringFieldValue && cfg.ConfigFile != "" {
+		laCfg, err := LoadConfigFromFile[LoadedServerConfig](cfg.ConfigFile)
+		if err != nil {
+			return fmt.Errorf("cannot load flags variables: %w", err)
+		}
+		fillServerConfigIfEmpty(cfg, *laCfg)
+	}
 
 	setupDefaultServerValues(cfg,
 		defaultAddress,
@@ -113,7 +121,7 @@ func LoadAgentConfig() (*AgentConfig, error) {
 		return nil, fmt.Errorf("cannot process flags variables: %w", err)
 	}
 	if cfg.ConfigFile != unknownStringFieldValue && cfg.ConfigFile != "" {
-		laCfg, err := LoadAgentConfigFromFile(cfg.ConfigFile)
+		laCfg, err := LoadConfigFromFile[LoadedAgentConfig](cfg.ConfigFile)
 		if err != nil {
 			return nil, fmt.Errorf("cannot load flags variables: %w", err)
 		}
@@ -129,7 +137,7 @@ func LoadAgentConfig() (*AgentConfig, error) {
 // addServerFlags adds server flags to process them.
 func addServerFlags(cfg *ServerConfig,
 	address *string, rFlag *string, iFlag *string, fFlag *string, dFlag *string, keyFlag *string,
-	sFlag *string,
+	sFlag *string, cFlag *string,
 ) {
 	if cfg.Address == unknownStringFieldValue {
 		flag.StringVar(address, "a", unknownStringFieldValue, "")
@@ -141,6 +149,8 @@ func addServerFlags(cfg *ServerConfig,
 	if cfg.CryptoKey == unknownStringFieldValue && flag.Lookup("crypto-key") == nil {
 		flag.StringVar(sFlag, "crypto-key", unknownStringFieldValue, "")
 	}
+	addStringChecksStringFlag(cfg.ConfigFile, unknownStringFieldValue, "c", cFlag)
+	addStringChecksStringFlag(cfg.ConfigFile, unknownStringFieldValue, "config", cFlag)
 
 	if !cfg.hasRestore && flag.Lookup("r") == nil {
 		flag.StringVar(rFlag, "r", unknownStringFieldValue, "")
@@ -162,10 +172,10 @@ func addServerFlags(cfg *ServerConfig,
 func processServerFlags(cfg *ServerConfig) error {
 	dFlag, keyFlag := unknownStringFieldValue, unknownStringFieldValue
 	address, rFlag, fFlag := unknownStringFieldValue, unknownStringFieldValue, unknownStringFieldValue
-	sFlag := unknownStringFieldValue
+	sFlag, cFlag := unknownStringFieldValue, unknownStringFieldValue
 
 	var iFlag string
-	addServerFlags(cfg, &address, &rFlag, &iFlag, &fFlag, &dFlag, &keyFlag, &sFlag)
+	addServerFlags(cfg, &address, &rFlag, &iFlag, &fFlag, &dFlag, &keyFlag, &sFlag, &cFlag)
 	flag.Parse()
 
 	setUnknownStrValue(&cfg.Address, address)
@@ -173,6 +183,7 @@ func processServerFlags(cfg *ServerConfig) error {
 	setUnknownStrValue(&cfg.FileStoragePath, fFlag)
 	setUnknownStrValue(&cfg.ConnectionDB, dFlag)
 	setUnknownStrValue(&cfg.CryptoKey, sFlag)
+	setUnknownStrValue(&cfg.ConfigFile, cFlag)
 
 	if !cfg.hasRestore && rFlag != unknownStringFieldValue {
 		if s, err := strconv.ParseBool(rFlag); err == nil {

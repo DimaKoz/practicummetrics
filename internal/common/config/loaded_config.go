@@ -24,17 +24,21 @@ type LoadedAgentConfig struct {
 	CryptoKey      string `json:"crypto_key"`      //nolint:tagliatelle
 }
 
-func LoadAgentConfigFromFile(path string) (*LoadedAgentConfig, error) {
+type LoadedConfig interface {
+	LoadedAgentConfig | LoadedServerConfig
+}
+
+func LoadConfigFromFile[T LoadedConfig](path string) (*T, error) {
 	jsonString, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
-	lacfg := LoadedAgentConfig{} //nolint:exhaustruct
+	lacfg := new(T)
 	if err = json.Unmarshal(jsonString, &lacfg); err != nil {
 		return nil, err //nolint:wrapcheck
 	}
 
-	return &lacfg, nil
+	return lacfg, nil
 }
 
 func trimLastS(income string) string {
@@ -76,7 +80,7 @@ func fillAgentConfigIfEmptyInt(cfg *AgentConfig, loadedCfg LoadedAgentConfig) {
 	}
 }
 
-func fillServerConfigIfEmpty(cfg ServerConfig, loadedCfg LoadedServerConfig) ServerConfig {
+func fillServerConfigIfEmpty(cfg *ServerConfig, loadedCfg LoadedServerConfig) {
 	setUnknownStrValue(&cfg.Address, loadedCfg.Address)
 	if loadedCfg.Address != "" {
 		setUnknownStrValue(&cfg.Address, loadedCfg.Address)
@@ -105,6 +109,4 @@ func fillServerConfigIfEmpty(cfg ServerConfig, loadedCfg LoadedServerConfig) Ser
 		cfg.Restore = loadedCfg.Restore
 		cfg.hasRestore = true
 	}
-
-	return cfg
 }
