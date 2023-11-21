@@ -104,8 +104,9 @@ func TestLoadServerConfigValues(t *testing.T) {
 	//nolint:exhaustruct
 	want := ServerConfig{
 		Config: Config{
-			Address:   "localhost:8888",
-			CryptoKey: "keys22/keyfile.pem",
+			Address:    "localhost:8888",
+			CryptoKey:  "keys22/keyfile.pem",
+			ConfigFile: unknownStringFieldValue,
 		},
 		StoreInterval:   22,
 		FileStoragePath: "/tmp/store.txt",

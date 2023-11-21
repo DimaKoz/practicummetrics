@@ -1,8 +1,11 @@
 package config
 
 import (
+	"os"
 	"strconv"
 	"unicode/utf8"
+
+	"github.com/goccy/go-json"
 )
 
 type LoadedServerConfig struct {
@@ -21,6 +24,19 @@ type LoadedAgentConfig struct {
 	CryptoKey      string `json:"crypto_key"`      //nolint:tagliatelle
 }
 
+func LoadAgentConfigFromFile(path string) (*LoadedAgentConfig, error) {
+	jsonString, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err //nolint:wrapcheck
+	}
+	lacfg := LoadedAgentConfig{} //nolint:exhaustruct
+	if err = json.Unmarshal(jsonString, &lacfg); err != nil {
+		return nil, err //nolint:wrapcheck
+	}
+
+	return &lacfg, nil
+}
+
 func trimLastS(income string) string {
 	lastRune, lastRuneSize := utf8.DecodeLastRuneInString(income)
 	if lastRune != 's' {
@@ -31,7 +47,7 @@ func trimLastS(income string) string {
 }
 
 func fillAgentConfigIfEmpty(cfg AgentConfig, loadedCfg LoadedAgentConfig) AgentConfig {
-	if cfg.Address == unknownStringFieldValue && loadedCfg.Address != "" {
+	if (cfg.Address == "" || cfg.Address == unknownStringFieldValue) && loadedCfg.Address != "" {
 		cfg.Address = loadedCfg.Address
 	}
 

@@ -42,12 +42,12 @@ type argTestConfig struct {
 var (
 	wantConfig1 = &AgentConfig{
 		RateLimit:    0,
-		Config:       Config{Address: "127.0.0.1:59483", HashKey: "e"}, //nolint:exhaustruct
+		Config:       Config{Address: "127.0.0.1:59483", HashKey: "e", ConfigFile: unknownStringFieldValue}, //nolint:exhaustruct
 		PollInterval: 15, ReportInterval: 16,
 	}
 	wantConfig4 = &AgentConfig{
 		RateLimit:    0,
-		Config:       Config{Address: "127.0.0.1:59483", HashKey: ""}, //nolint:exhaustruct
+		Config:       Config{Address: "127.0.0.1:59483", HashKey: "", ConfigFile: unknownStringFieldValue}, //nolint:exhaustruct
 		PollInterval: 3, ReportInterval: 4,
 	}
 )
@@ -62,7 +62,7 @@ var testsCasesAgentInitConfig = []struct {
 	{
 		name: "default values (agent)", args: argTestConfig{}, wantErr: nil, //nolint:exhaustruct
 		want: &AgentConfig{
-			Config: Config{Address: "localhost:8080", HashKey: "", CryptoKey: ""}, RateLimit: 0,
+			Config: Config{Address: "localhost:8080", HashKey: "", CryptoKey: "", ConfigFile: unknownStringFieldValue}, RateLimit: 0,
 			PollInterval: int64(defaultPollInterval), ReportInterval: int64(defaultReportInterval),
 		},
 	},
@@ -81,7 +81,7 @@ var testsCasesAgentInitConfig = []struct {
 			flagAddress: "127.0.0.1:59455", flagPoll: "12", flagReport: "15", flagKey: "ww",
 		},
 		want: &AgentConfig{
-			Config:    Config{Address: "127.0.0.1:59455", HashKey: "ww"},
+			Config:    Config{Address: "127.0.0.1:59455", HashKey: "ww", ConfigFile: unknownStringFieldValue},
 			RateLimit: 0, PollInterval: 12, ReportInterval: 15,
 		},
 	},
@@ -203,8 +203,9 @@ func TestProcessEnvMock(t *testing.T) {
 func TestLoadServerConfig(t *testing.T) {
 	want := &ServerConfig{
 		Config: Config{ //nolint:exhaustruct
-			Address: defaultAddress,
-			HashKey: defaultKey,
+			Address:    defaultAddress,
+			HashKey:    defaultKey,
+			ConfigFile: unknownStringFieldValue,
 		},
 		StoreInterval:   defaultStoreInterval,
 		ConnectionDB:    unknownStringFieldValue,
@@ -257,9 +258,10 @@ func TestServerConfigIsUseDatabase(t *testing.T) {
 func TestSetupDefaultServerValuesHasRestore(t *testing.T) {
 	cfg := ServerConfig{
 		Config: Config{
-			Address:   "1",
-			HashKey:   "2",
-			CryptoKey: "7",
+			Address:    "1",
+			HashKey:    "2",
+			CryptoKey:  "7",
+			ConfigFile: "8",
 		},
 		StoreInterval:   3,
 		FileStoragePath: "4",
@@ -275,9 +277,10 @@ func TestSetupDefaultServerValuesHasRestore(t *testing.T) {
 func TestServerConfigString(t *testing.T) {
 	cfg := ServerConfig{
 		Config: Config{
-			Address:   "1",
-			HashKey:   "2",
-			CryptoKey: "7",
+			Address:    "1",
+			HashKey:    "2",
+			CryptoKey:  "7",
+			ConfigFile: "8",
 		},
 		StoreInterval:   3,
 		FileStoragePath: "4",

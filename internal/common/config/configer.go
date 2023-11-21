@@ -28,9 +28,10 @@ const (
 
 // Config represents a config of the agent and/or the server.
 type Config struct {
-	Address   string `env:"ADDRESS"`
-	HashKey   string `env:"KEY"`
-	CryptoKey string `env:"CRYPTO_KEY"`
+	Address    string `env:"ADDRESS"`
+	HashKey    string `env:"KEY"`
+	CryptoKey  string `env:"CRYPTO_KEY"`
+	ConfigFile string `env:"CONFIG"`
 }
 
 // AgentConfig represents a config of the agent.
@@ -55,9 +56,10 @@ type ServerConfig struct {
 func NewServerConfig() *ServerConfig {
 	return &ServerConfig{
 		Config: Config{
-			Address:   unknownStringFieldValue,
-			HashKey:   unknownStringFieldValue,
-			CryptoKey: unknownStringFieldValue,
+			Address:    unknownStringFieldValue,
+			HashKey:    unknownStringFieldValue,
+			CryptoKey:  unknownStringFieldValue,
+			ConfigFile: unknownStringFieldValue,
 		},
 		StoreInterval:   unknownIntFieldValue,
 		FileStoragePath: unknownStringFieldValue,
@@ -94,6 +96,7 @@ func NewAgentConfig() *AgentConfig {
 	cfg := &AgentConfig{} //nolint:exhaustruct
 	cfg.HashKey = unknownStringFieldValue
 	cfg.CryptoKey = unknownStringFieldValue
+	cfg.ConfigFile = unknownStringFieldValue
 
 	return cfg
 }
@@ -108,6 +111,14 @@ func LoadAgentConfig() (*AgentConfig, error) {
 
 	if err := processAgentFlags(cfg); err != nil {
 		return nil, fmt.Errorf("cannot process flags variables: %w", err)
+	}
+	if cfg.ConfigFile != unknownStringFieldValue && cfg.ConfigFile != "" {
+		laCfg, err := LoadAgentConfigFromFile(cfg.ConfigFile)
+		if err != nil {
+			return nil, fmt.Errorf("cannot load flags variables: %w", err)
+		}
+		cfgNew := fillAgentConfigIfEmpty(*cfg, *laCfg)
+		cfg = &cfgNew
 	}
 
 	setupDefaultAgentValues(cfg, defaultAddress, defaultReportInterval, defaultPollInterval)
@@ -191,15 +202,16 @@ func setUnknownStrValue(target *string, value string) {
 }
 
 // addAgentFlags adds agent flags to process them.
-func addAgentFlags(cfg *AgentConfig, address *string,
-	hashKey *string, pollInterval *string, reportInterval *string, limit *string,
-	cryptoKey *string,
+func addAgentFlags(cfg *AgentConfig, address *string, hashKey *string, pollInterval *string,
+	reportInterval *string, limit *string, cryptoKey *string, cFlag *string,
 ) {
 	addStringChecksStringFlag(cfg.Address, "", "a", address)
 
 	addStringChecksStringFlag(cfg.HashKey, unknownStringFieldValue, "k", hashKey)
 
 	addStringChecksStringFlag(cfg.CryptoKey, unknownStringFieldValue, "crypto-key", cryptoKey)
+	addStringChecksStringFlag(cfg.ConfigFile, unknownStringFieldValue, "c", cFlag)
+	addStringChecksStringFlag(cfg.ConfigFile, unknownStringFieldValue, "config", cFlag)
 
 	addIntChecksStringFlag(cfg.PollInterval, 0, "p", pollInterval)
 
@@ -224,9 +236,9 @@ func addIntChecksStringFlag(currentCfgValue int64, defaultCfgValue int64, flagNa
 // or returns error if something wrong.
 func processAgentFlags(cfg *AgentConfig) error {
 	flag.CommandLine.ErrorHandling()
-	var address, keyFlag, pFlag, rFlag, lFlag, sFlag string
+	var address, keyFlag, pFlag, rFlag, lFlag, sFlag, cFlag string
 
-	addAgentFlags(cfg, &address, &keyFlag, &pFlag, &rFlag, &lFlag, &sFlag)
+	addAgentFlags(cfg, &address, &keyFlag, &pFlag, &rFlag, &lFlag, &sFlag, &cFlag)
 	flag.Parse()
 
 	if address != "" {
@@ -239,6 +251,9 @@ func processAgentFlags(cfg *AgentConfig) error {
 
 	if sFlag != "" {
 		cfg.CryptoKey = sFlag
+	}
+	if cFlag != "" {
+		cfg.ConfigFile = cFlag
 	}
 
 	if err := setAgentIntFlag(&cfg.PollInterval, pFlag, "poll interval"); err != nil {
