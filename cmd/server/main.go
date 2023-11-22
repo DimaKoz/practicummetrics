@@ -2,7 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
@@ -115,7 +119,23 @@ func startServer(cfg *config.ServerConfig, conn *sqldb.PgxIface) {
 	server.SetupMiddleware(echos, cfg)
 	server.SetupRouter(echos, conn)
 
-	if err := echos.Start(cfg.Address); err != nil {
-		zap.S().Fatalf("couldn't start the server by %s", err)
+	go func(cfg config.ServerConfig, echoFramework *echo.Echo) {
+		zap.S().Info("start server")
+		if err := echoFramework.Start(cfg.Address); err != nil && errors.Is(err, http.ErrServerClosed) {
+			zap.S().Info("shutting down the server")
+		}
+	}(*cfg, echos)
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
+	zap.S().Info("awaiting a signal or press Ctrl+C to finish this server")
+	<-quit
+	zap.S().Info("quit...")
+	timeoutDelay := 10
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutDelay)*time.Second)
+	defer cancel()
+	if err := echos.Shutdown(ctx); err != nil {
+		zap.S().Fatal(err)
 	}
 }
