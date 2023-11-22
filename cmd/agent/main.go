@@ -28,7 +28,7 @@ func main() {
 	infoLog.Println(config.PrepBuildValues(BuildVersion, BuildDate, BuildCommit))
 
 	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 	cfg, err := config.LoadAgentConfig()
 	if err != nil {
