@@ -48,6 +48,7 @@ type ServerConfig struct {
 	StoreInterval   int64  `env:"STORE_INTERVAL"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 	ConnectionDB    string `env:"DATABASE_DSN"`
+	TrustedSubnet   string `env:"TRUSTED_SUBNET"`
 	hasRestore      bool
 	Restore         bool `env:"RESTORE"`
 }
@@ -64,9 +65,14 @@ func NewServerConfig() *ServerConfig {
 		StoreInterval:   unknownIntFieldValue,
 		FileStoragePath: unknownStringFieldValue,
 		ConnectionDB:    unknownStringFieldValue,
+		TrustedSubnet:   unknownStringFieldValue,
 		hasRestore:      false,
 		Restore:         true,
 	}
+}
+
+func (cfg ServerConfig) HasTrustedSubnet() bool {
+	return cfg.TrustedSubnet != "" && cfg.TrustedSubnet != unknownStringFieldValue
 }
 
 // ProcessEnv receives and sets up the ServerConfig.

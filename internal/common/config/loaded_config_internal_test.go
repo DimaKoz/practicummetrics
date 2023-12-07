@@ -111,6 +111,7 @@ func TestLoadServerConfigValues(t *testing.T) {
 		StoreInterval:   22,
 		FileStoragePath: "/tmp/store.txt",
 		ConnectionDB:    "nodbhere:889862",
+		TrustedSubnet:   unknownStringFieldValue,
 		Restore:         true,
 		hasRestore:      true,
 	}
