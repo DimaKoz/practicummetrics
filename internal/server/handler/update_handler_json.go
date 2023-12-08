@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -20,6 +21,7 @@ func SetSyncSaveUpdateHandlerJSON(sync bool) {
 
 // UpdateHandlerJSON handles `/update` with json.
 func (h *BaseHandler) UpdateHandlerJSON(ctx echo.Context) error {
+	ctxB := context.Background()
 	metrics := model.NewEmptyMetrics()
 	if err := ctx.Bind(&metrics); err != nil {
 		return wrapUpdHandlerErr(ctx, http.StatusBadRequest, "UpdateHandlerJSON: failed to parse json: %s", err)
@@ -38,7 +40,7 @@ func (h *BaseHandler) UpdateHandlerJSON(ctx echo.Context) error {
 	}
 	var metricUnit model.MetricUnit
 	if h != nil && h.conn != nil {
-		if metricUnit, err = repository.AddMetricToDB(h.conn, muIncome); err != nil {
+		if metricUnit, err = repository.AddMetricToDB(ctxB, h.conn, muIncome); err != nil {
 			return wrapUpdHandlerErr(ctx, http.StatusInternalServerError, "UpdateHandlerJSON: cannot create metric: %s", err)
 		}
 	} else {

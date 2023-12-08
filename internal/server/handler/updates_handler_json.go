@@ -90,19 +90,20 @@ func wrapUpdsHandlerErr(ctx echo.Context, statusCode int, msg string, errIn erro
 
 // processMetricUnits saves metricUnits to DB.
 func processMetricUnits(ctx echo.Context, conn *sqldb.PgxIface, metricUnits []model.MetricUnit) error {
-	transaction, err := (*conn).Begin(context.TODO())
+	ctxB := context.Background()
+	transaction, err := (*conn).Begin(ctxB)
 	if err != nil {
 		return wrapUpdsHandlerErr(ctx, http.StatusBadRequest, "UpdatesHandlerJSON: failed to get a transaction: %s", err)
 	}
 
 	for _, unit := range metricUnits {
-		if _, err = repository.AddMetricTxToDB(&transaction, unit); err != nil {
-			_ = transaction.Rollback(context.TODO())
+		if _, err = repository.AddMetricTxToDB(ctxB, &transaction, unit); err != nil {
+			_ = transaction.Rollback(ctxB)
 
 			return wrapUpdsHandlerErr(ctx, http.StatusInternalServerError, "UpdatesHandlerJSON: cannot create metric: %s", err)
 		}
 	}
-	if err = transaction.Commit(context.TODO()); err != nil {
+	if err = transaction.Commit(ctxB); err != nil {
 		return wrapUpdsHandlerErr(ctx, http.StatusInternalServerError,
 			"UpdatesHandlerJSON: failed to commit a transaction: %s", err)
 	}
