@@ -58,8 +58,9 @@ func TestGetRequestBody(t *testing.T) {
 	request := httptest.NewRequest(http.MethodGet, "https://example.com", bytes.NewReader([]byte(want)))
 	eCtx := echoFr.AcquireContext()
 	eCtx.SetRequest(request)
-	got := string(getRequestBody(eCtx))
-	assert.Equal(t, want, got)
+	got, gotErr := getRequestBody(eCtx)
+	assert.NoError(t, gotErr)
+	assert.Equal(t, want, string(got))
 	err := echoFr.Close()
 	require.NoError(t, err)
 }
