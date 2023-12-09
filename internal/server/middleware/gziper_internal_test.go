@@ -48,8 +48,9 @@ func TestNewGzipConfig(t *testing.T) {
 			name: "nil Skipper",
 			args: args{f: nil},
 			want: middleware.GzipConfig{
-				Skipper: nil,
-				Level:   gzip.BestCompression,
+				Skipper:   nil,
+				Level:     gzip.BestCompression,
+				MinLength: 0,
 			},
 		},
 	}

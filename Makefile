@@ -58,6 +58,7 @@ lnt:
 	# excluded 'exhaustivestruct' - deprecated
 	# excluded 'depguard' - no need in it
 	# golangci-lint run -v --enable-all --disable gochecknoglobals --disable paralleltest --disable exhaustivestruct --disable depguard --disable wsl
+	tput bold setaf 1;golangci-lint run --version;tput sgr0
 	golangci-lint run -v
 
 .PHONY: fmt

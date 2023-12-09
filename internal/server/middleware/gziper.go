@@ -20,8 +20,9 @@ var gzipSkipper = func(c echo.Context) bool {
 
 func newGzipConfig(skipper middleware.Skipper) middleware.GzipConfig {
 	return middleware.GzipConfig{
-		Skipper: skipper,
-		Level:   gzip.BestCompression,
+		Skipper:   skipper,
+		Level:     gzip.BestCompression,
+		MinLength: 0,
 	}
 }
 

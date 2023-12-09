@@ -7,10 +7,10 @@ require (
 	github.com/go-resty/resty/v2 v2.10.0
 	github.com/goccy/go-json v0.10.2
 	github.com/jackc/pgx/v5 v5.4.3
-	github.com/labstack/echo/v4 v4.10.2
+	github.com/labstack/echo/v4 v4.11.3
 	github.com/pashagolub/pgxmock/v2 v2.7.0
 	github.com/pkg/errors v0.9.1
-	github.com/shirou/gopsutil/v3 v3.23.9
+	github.com/shirou/gopsutil/v3 v3.23.10
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.24.0
@@ -27,7 +27,7 @@ require (
 	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
