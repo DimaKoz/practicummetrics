@@ -33,8 +33,8 @@ func TestParcelsSend(t *testing.T) {
 			name: "check sending",
 			args: args{
 				cfg: &config.AgentConfig{
-					Config: config.Config{
-						Address: "localhost:8181", HashKey: "",
+					Config: config.Config{ //nolint:exhaustruct
+						Address: "localhost:8181", HashKey: "asdf",
 					},
 					RateLimit: 0, PollInterval: int64(2),
 					ReportInterval: int64(10),
@@ -82,6 +82,64 @@ func TestParcelsSend(t *testing.T) {
 	}
 }
 
+func TestParcelsSendBatch(t *testing.T) {
+	type args struct {
+		cfg *config.AgentConfig
+		mu0 model.MetricUnit
+		mu1 model.MetricUnit
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "check sending",
+			args: args{
+				cfg: &config.AgentConfig{
+					Config:    config.Config{Address: "localhost:8181", HashKey: "werr"}, //nolint:exhaustruct
+					RateLimit: 0, PollInterval: int64(2),
+					ReportInterval: int64(10),
+				},
+				mu0: model.MetricUnit{Type: model.MetricTypeGauge, Name: "qwerty", Value: "42.42", ValueInt: 0, ValueFloat: 42.42},
+				mu1: model.MetricUnit{Type: model.MetricTypeCounter, Name: "counter", Value: "1", ValueInt: 1, ValueFloat: 0},
+			},
+			want: "[{\"id\":\"qwerty\",\"type\":\"gauge\",\"value\":42.42}," +
+				"{\"id\":\"counter\",\"type\":\"counter\",\"delta\":1}]",
+		},
+	}
+	for _, testItem := range tests {
+		test := testItem
+		t.Run(test.name, func(t *testing.T) {
+			mock := http.HandlerFunc(func(responseWriter http.ResponseWriter, req *http.Request) {
+				// Test request parameters
+				defer req.Body.Close()
+				body, err := io.ReadAll(req.Body)
+				assert.NoError(t, err, "want no error")
+				got := string(body)
+				responseWriter.WriteHeader(http.StatusBadRequest)
+				assert.NoError(t, err, "got: %v, want no error", got)
+				assert.Equal(t, test.want, got, "got: %v, want: %v", got, test.want)
+			})
+			// Start a local HTTP server
+			srv := httptest.NewUnstartedServer(mock)
+
+			// create a listener with the desired port.
+			l, err := net.Listen("tcp", test.args.cfg.Address)
+			assert.NoError(t, err)
+
+			_ = srv.Listener.Close()
+			srv.Listener = l
+			srv.Start() // Start the server.
+
+			defer srv.Close() // Close the server when test finishes
+
+			// Use Client & URL from our local test server
+			ParcelsSend(test.args.cfg, []model.MetricUnit{test.args.mu0, test.args.mu1})
+		})
+	}
+}
+
 func readByte() {
 	_ = io.EOF // force an error
 }
@@ -97,7 +155,7 @@ func TestPrintSender(t *testing.T) {
 		log.SetOutput(os.Stderr)
 	}()
 	ParcelsSend(&config.AgentConfig{
-		Config: config.Config{
+		Config: config.Config{ //nolint:exhaustruct
 			Address: "localhost:8888", HashKey: "",
 		},
 		RateLimit:      0,
@@ -109,6 +167,41 @@ func TestPrintSender(t *testing.T) {
 		Value:      "42.42",
 		ValueInt:   0,
 		ValueFloat: 42.42,
+	}})
+	readByte()
+	got := buf.String()
+	assert.Contains(t, got, want, "Expected %s, got %s", want, got)
+}
+
+func TestBrokenBatchCoverage(t *testing.T) {
+	want := `Post "http://localhost:8888/updates/"`
+
+	var buf bytes.Buffer
+
+	log.SetOutput(&buf)
+
+	defer func() {
+		log.SetOutput(os.Stderr)
+	}()
+	ParcelsSend(&config.AgentConfig{
+		Config: config.Config{ //nolint:exhaustruct
+			Address: "localhost:8888", HashKey: "",
+		},
+		RateLimit:      0,
+		PollInterval:   int64(2),
+		ReportInterval: int64(10),
+	}, []model.MetricUnit{{
+		Type:       model.MetricTypeGauge,
+		Name:       "qwerty",
+		Value:      "42.42",
+		ValueInt:   0,
+		ValueFloat: 42.42,
+	}, {
+		Type:       model.MetricTypeGauge,
+		Name:       "qwerty1",
+		Value:      "0.1",
+		ValueInt:   0,
+		ValueFloat: 0.1,
 	}})
 	readByte()
 	got := buf.String()

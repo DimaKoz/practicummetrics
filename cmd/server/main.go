@@ -2,15 +2,19 @@ package main
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
+	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"github.com/DimaKoz/practicummetrics/internal/server"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
-	"github.com/DimaKoz/practicummetrics/internal/server/sqldb"
-	"github.com/jackc/pgx/v5"
+	"github.com/DimaKoz/practicummetrics/internal/server/serializer"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
@@ -21,12 +25,12 @@ var (
 	BuildCommit  = "N/A"
 )
 
-func main() {
-	// DB connection
-	// urlExample := "postgres://videos:userpassword@localhost:5432/testdb"
-	// urlExample := "postgres://localhost:5432/testdb?sslmode=disable"
-	// _ = os.Setenv("DATABASE_DSN", urlExample)
+// DB connection
+// urlExample := "postgres://videos:userpassword@localhost:5432/testdb"
+// urlExample := "postgres://localhost:5432/testdb?sslmode=disable"
+// _ = os.Setenv("DATABASE_DSN", urlExample)
 
+func main() {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		panic(err)
@@ -47,10 +51,15 @@ func main() {
 
 	printCfgInfo(cfg)
 
-	var conn *pgx.Conn
-	if conn, err = sqldb.ConnectDB(cfg); err == nil {
-		defer conn.Close(context.Background())
+	repository.LoadPrivateKey(*cfg)
+
+	var pgxConn sqldb.PgxIface
+	var conn *sqldb.PgxIface
+	if pgxConn, err = sqldb.ConnectDB(cfg); err == nil {
+		defer pgxConn.Close(context.Background())
+		conn = &pgxConn
 	} else {
+		conn = nil
 		zap.S().Warnf("failed to get a db connection by %s", err.Error())
 	}
 
@@ -103,14 +112,30 @@ func printCfgInfo(cfg *config.ServerConfig) {
 	zap.S().Infow("Starting server")
 }
 
-func startServer(cfg *config.ServerConfig, conn *pgx.Conn) {
+func startServer(cfg *config.ServerConfig, conn *sqldb.PgxIface) {
 	echos := echo.New()
-	echos.JSONSerializer = server.FastJSONSerializer{}
+	echos.JSONSerializer = serializer.FastJSONSerializer{}
 
 	server.SetupMiddleware(echos, cfg)
 	server.SetupRouter(echos, conn)
 
-	if err := echos.Start(cfg.Address); err != nil {
-		zap.S().Fatalf("couldn't start the server by %s", err)
+	go func(cfg config.ServerConfig, echoFramework *echo.Echo) {
+		zap.S().Info("start server")
+		if err := echoFramework.Start(cfg.Address); err != nil && errors.Is(err, http.ErrServerClosed) {
+			zap.S().Info("shutting down the server")
+		}
+	}(*cfg, echos)
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
+	zap.S().Info("awaiting a signal or press Ctrl+C to finish this server")
+	<-quit
+	zap.S().Info("quit...")
+	timeoutDelay := 10
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutDelay)*time.Second)
+	defer cancel()
+	if err := echos.Shutdown(ctx); err != nil {
+		zap.S().Fatal(err)
 	}
 }

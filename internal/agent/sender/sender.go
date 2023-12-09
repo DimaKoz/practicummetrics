@@ -10,6 +10,7 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
+	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/go-resty/resty/v2"
 	goccyj "github.com/goccy/go-json"
 )
@@ -40,6 +41,16 @@ func sendingBatch(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 
 		return
 	}
+	if cfg.CryptoKey != "" {
+		encMessage, err := repository.EncryptBigMessage(body)
+		if err != nil {
+			logSendingErr(err)
+
+			return
+		}
+		body = encMessage.Encoded
+		request.Header.Set(common.RsaEncodedKeyHeaderName, encMessage.AesKey)
+	}
 	if cfg.HashKey != "" {
 		appendHashOtherMarshaling(request, cfg.HashKey, body)
 	}
@@ -63,6 +74,16 @@ func sendingSingle(rClient *resty.Client, cfg *config.AgentConfig, metrics []mod
 			logSendingErr(err)
 
 			return
+		}
+		if cfg.CryptoKey != "" {
+			encMessage, err := repository.EncryptBigMessage(body)
+			if err != nil {
+				logSendingErr(err)
+
+				return
+			}
+			body = encMessage.Encoded
+			request.Header.Set(common.RsaEncodedKeyHeaderName, encMessage.AesKey)
 		}
 
 		request.SetBody(body)
@@ -107,7 +128,7 @@ const (
 	minimumBatchNumber  = 2
 )
 
-// getMetricsUpdateTargetURL prepares an URL from address and endpoint.
+// getMetricsUpdateTargetURL prepares a URL from address and endpoint.
 func getMetricsUpdateTargetURL(address string, endpoint string) string {
 	buffLen := len(protocolParcelsSend) + len(endpoint) + len(address)
 	strBld := strings.Builder{}
