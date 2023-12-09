@@ -5,6 +5,8 @@ import (
 	"runtime"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 /*
@@ -61,4 +63,9 @@ func BenchmarkUtilizationConvertValue(b *testing.B) {
 			_ = a
 		}
 	})
+}
+
+func TestGetFieldValueVariantUnknownValue(t *testing.T) {
+	got := getFieldValueVariant(nil, "NewField")
+	assert.Empty(t, got)
 }

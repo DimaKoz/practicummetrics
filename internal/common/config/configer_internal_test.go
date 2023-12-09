@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -13,10 +14,11 @@ import (
 )
 
 const (
-	addressEnvName = "ADDRESS"
-	pollEnvName    = "POLL_INTERVAL"
-	reportEnvName  = "REPORT_INTERVAL"
-	keyEnvName     = "KEY"
+	addressEnvName   = "ADDRESS"
+	pollEnvName      = "POLL_INTERVAL"
+	reportEnvName    = "REPORT_INTERVAL"
+	keyEnvName       = "KEY"
+	cryptoKeyEnvName = "CRYPTO_KEY"
 )
 
 var (
@@ -26,25 +28,34 @@ var (
 )
 
 type argTestConfig struct {
-	envAddress  string
-	envPoll     string
-	envReport   string
-	envKey      string
-	flagAddress string
-	flagKey     string
-	flagPoll    string
-	flagReport  string
+	envAddress   string
+	envPoll      string
+	envReport    string
+	envKey       string
+	envCryptoKey string
+	flagAddress  string
+	flagKey      string
+	flagPoll     string
+	flagReport   string
 }
 
 var (
+	//nolint:exhaustruct
 	wantConfig1 = &AgentConfig{
-		RateLimit:    0,
-		Config:       Config{Address: "127.0.0.1:59483", HashKey: "e"},
+		RateLimit: 0,
+		Config: Config{
+			Address: "127.0.0.1:59483", HashKey: "e",
+			ConfigFile: unknownStringFieldValue,
+		},
 		PollInterval: 15, ReportInterval: 16,
 	}
+	//nolint:exhaustruct
 	wantConfig4 = &AgentConfig{
-		RateLimit:    0,
-		Config:       Config{Address: "127.0.0.1:59483", HashKey: ""},
+		RateLimit: 0,
+		Config: Config{
+			Address: "127.0.0.1:59483", HashKey: "",
+			ConfigFile: unknownStringFieldValue,
+		},
 		PollInterval: 3, ReportInterval: 4,
 	}
 )
@@ -59,7 +70,10 @@ var testsCasesAgentInitConfig = []struct {
 	{
 		name: "default values (agent)", args: argTestConfig{}, wantErr: nil, //nolint:exhaustruct
 		want: &AgentConfig{
-			Config: Config{Address: "localhost:8080", HashKey: ""}, RateLimit: 0,
+			Config: Config{
+				Address: "localhost:8080", HashKey: "", CryptoKey: "",
+				ConfigFile: unknownStringFieldValue,
+			}, RateLimit: 0,
 			PollInterval: int64(defaultPollInterval), ReportInterval: int64(defaultReportInterval),
 		},
 	},
@@ -78,7 +92,7 @@ var testsCasesAgentInitConfig = []struct {
 			flagAddress: "127.0.0.1:59455", flagPoll: "12", flagReport: "15", flagKey: "ww",
 		},
 		want: &AgentConfig{
-			Config:    Config{Address: "127.0.0.1:59455", HashKey: "ww"},
+			Config:    Config{Address: "127.0.0.1:59455", HashKey: "ww", ConfigFile: unknownStringFieldValue},
 			RateLimit: 0, PollInterval: 12, ReportInterval: 15,
 		},
 	},
@@ -96,26 +110,28 @@ var testsCasesAgentInitConfig = []struct {
 }
 
 func TestAgentInitConfig(t *testing.T) {
-	for _, test := range testsCasesAgentInitConfig {
-		test := test
+	for _, test1 := range testsCasesAgentInitConfig {
+		test := test1
 		t.Run(test.name, func(t *testing.T) {
 			envArgsAgentInitConfig(t, addressEnvName, test.args.envAddress) // ENV setup
 			envArgsAgentInitConfig(t, pollEnvName, test.args.envPoll)
 			envArgsAgentInitConfig(t, reportEnvName, test.args.envReport)
 			envArgsAgentInitConfig(t, keyEnvName, test.args.envKey)
+			envArgsAgentInitConfig(t, cryptoKeyEnvName, test.args.envCryptoKey)
 			/*			if test.args.flagAddress != "" ||
 						test.args.flagKey != "" ||
 						test.args.flagPoll != "" ||
 						test.args.flagReport != "" { // Flags setup*/
 			osArgOrig := os.Args
-			flag2.CommandLine = flag2.NewFlagSet(os.Args[0], flag2.ContinueOnError)
-			flag2.CommandLine.SetOutput(io.Discard)
+			flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+			flag.CommandLine.SetOutput(io.Discard)
 			os.Args = make([]string, 0)
 			os.Args = append(os.Args, osArgOrig[0])
 			appendArgsAgentInitConfig(&os.Args, "-a", test.args.flagAddress)
 			appendArgsAgentInitConfig(&os.Args, "-k", test.args.flagKey)
 			appendArgsAgentInitConfig(&os.Args, "-p", test.args.flagPoll)
 			appendArgsAgentInitConfig(&os.Args, "-r", test.args.flagReport)
+			appendArgsAgentInitConfig(&os.Args, "-crypto-key", test.args.envCryptoKey)
 			t.Cleanup(func() { os.Args = osArgOrig })
 			//}
 
@@ -197,9 +213,10 @@ func TestProcessEnvMock(t *testing.T) {
 
 func TestLoadServerConfig(t *testing.T) {
 	want := &ServerConfig{
-		Config: Config{
-			Address: defaultAddress,
-			HashKey: defaultKey,
+		Config: Config{ //nolint:exhaustruct
+			Address:    defaultAddress,
+			HashKey:    defaultKey,
+			ConfigFile: unknownStringFieldValue,
 		},
 		StoreInterval:   defaultStoreInterval,
 		ConnectionDB:    unknownStringFieldValue,
@@ -249,11 +266,32 @@ func TestServerConfigIsUseDatabase(t *testing.T) {
 	}
 }
 
+func TestSetupDefaultServerValuesHasRestore(t *testing.T) {
+	cfg := ServerConfig{
+		Config: Config{
+			Address:    "1",
+			HashKey:    "2",
+			CryptoKey:  "7",
+			ConfigFile: "8",
+		},
+		StoreInterval:   3,
+		FileStoragePath: "4",
+		ConnectionDB:    "5",
+		hasRestore:      false,
+		Restore:         false,
+	}
+	setupDefaultServerValues(&cfg, "", 42, "", "", true)
+
+	assert.True(t, cfg.Restore)
+}
+
 func TestServerConfigString(t *testing.T) {
 	cfg := ServerConfig{
 		Config: Config{
-			Address: "1",
-			HashKey: "2",
+			Address:    "1",
+			HashKey:    "2",
+			CryptoKey:  "7",
+			ConfigFile: "8",
 		},
 		StoreInterval:   3,
 		FileStoragePath: "4",
@@ -261,7 +299,8 @@ func TestServerConfigString(t *testing.T) {
 		hasRestore:      true,
 		Restore:         true,
 	}
-	want := "Address: 1 \n StoreInterval: 3 \n FileStoragePath: 4 \n ConnectionDB: 5 \n Key: 2 \n Restore: true \n"
+	want := "Address: 1 \n StoreInterval: 3 \n FileStoragePath: 4 \n " +
+		"ConnectionDB: 5 \n Key: 2 \n CryptoKey: 7 \n Restore: true \n"
 
 	assert.Equal(t, want, cfg.String())
 }
@@ -303,4 +342,11 @@ func TestPrepBuildValues(t *testing.T) {
 			assert.Equalf(t, unit.want, got, "PrepBuildValues(%v, %v, %v)", unit.args.bldV, unit.args.bldD, unit.args.bldC)
 		})
 	}
+}
+
+func TestSetUnknownStrValue(t *testing.T) {
+	target := "1"
+	value := "2"
+	setUnknownStrValue(&target, value)
+	assert.Equal(t, value, target)
 }

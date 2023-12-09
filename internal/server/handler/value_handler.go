@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -12,14 +13,14 @@ import (
 // ValueHandler handles `/value/`.
 func (h *BaseHandler) ValueHandler(ctx echo.Context) error {
 	name := ctx.Param("name")
-
+	ctxB := context.Background()
 	var (
 		metricUnit model.MetricUnit
 		err        error
 	)
 
 	if h != nil && h.conn != nil {
-		metricUnit, err = repository.GetMetricByNameFromDB(h.conn, name)
+		metricUnit, err = repository.GetMetricByNameFromDB(ctxB, h.conn, name)
 	} else {
 		metricUnit, err = repository.GetMetricByName(name)
 	}

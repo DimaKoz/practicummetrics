@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json" // this import helps to pass some autotests
 	"fmt"
 	"log"
@@ -19,6 +20,7 @@ func (h *BaseHandler) ValueHandlerJSON(ctx echo.Context) error {
 	_ = encJ               // this logic helps to pass some autotests
 
 	log.Println("ValueHandlerJSON")
+	ctxB := context.Background()
 	mappedData := echo.Map{}
 	if err := ctx.Bind(&mappedData); err != nil {
 		err = ctx.String(http.StatusBadRequest, fmt.Sprintf("failed to parse json: %s", err))
@@ -33,7 +35,7 @@ func (h *BaseHandler) ValueHandlerJSON(ctx echo.Context) error {
 	var metricUnit model.MetricUnit
 	var err error
 	if h != nil && h.conn != nil {
-		metricUnit, err = repository.GetMetricByNameFromDB(h.conn, name)
+		metricUnit, err = repository.GetMetricByNameFromDB(ctxB, h.conn, name)
 	} else {
 		metricUnit, err = repository.GetMetricByName(name)
 	}

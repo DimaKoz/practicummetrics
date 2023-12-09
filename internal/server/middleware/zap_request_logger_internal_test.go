@@ -7,7 +7,51 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
 )
+
+func setupLogsCapture() (*zap.Logger, *observer.ObservedLogs) {
+	core, logs := observer.New(zap.InfoLevel)
+
+	return zap.New(core), logs
+}
+
+func TestLogReqBody(t *testing.T) {
+	logger, logs := setupLogsCapture()
+	prevL := zap.L()
+	defer zap.ReplaceGlobals(prevL)
+	zap.ReplaceGlobals(logger)
+
+	wantMessage := "1234"
+
+	logReqBodyImpl(logger.Sugar(), []byte(wantMessage))
+
+	assert.False(t, logs.Len() != 1, "No logs")
+
+	entry := logs.All()[0]
+	assert.Equal(t, zap.InfoLevel, entry.Level)
+	assert.Equal(t, wantMessage, entry.Context[0].String, "Invalid log entry %v", entry)
+}
+
+func TestLogReqBodyFunc(t *testing.T) {
+	logger, logs := setupLogsCapture()
+	prevL := zap.L()
+	defer zap.ReplaceGlobals(prevL)
+	zap.ReplaceGlobals(logger)
+
+	wantMessage := "12345"
+
+	handler := GetBodyLoggerHandler()
+	e := echo.New()
+
+	handler(e.AcquireContext(), []byte(wantMessage), []byte{})
+
+	assert.False(t, logs.Len() != 1, "No logs")
+
+	entry := logs.All()[0]
+	assert.Equal(t, zap.InfoLevel, entry.Level)
+	assert.Equal(t, wantMessage, entry.Context[0].String, "Invalid log entry %v", entry)
+}
 
 func TestLogValuesFunc(t *testing.T) {
 	logger := zap.Must(zap.NewDevelopment())
