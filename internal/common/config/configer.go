@@ -218,8 +218,7 @@ func setUnknownStrValue(target *string, value string) {
 }
 
 // addAgentFlags adds agent flags to process them.
-func addAgentFlags(cfg *AgentConfig, address *string, hashKey *string, pollInterval *string,
-	reportInterval *string, limit *string, cryptoKey *string, cFlag *string,
+func addAgentFlags(cfg *AgentConfig, address, hashKey, pollInterval, reportInterval, limit, cryptoKey, cFlag *string,
 ) {
 	addStringChecksStringFlag(cfg.Address, "", "a", address)
 
@@ -236,13 +235,13 @@ func addAgentFlags(cfg *AgentConfig, address *string, hashKey *string, pollInter
 	addIntChecksStringFlag(cfg.RateLimit, 0, "l", limit)
 }
 
-func addStringChecksStringFlag(currentCfgValue string, defaultCfgValue string, flagName string, passedVar *string) {
+func addStringChecksStringFlag(currentCfgValue, defaultCfgValue, flagName string, passedVar *string) {
 	if currentCfgValue == defaultCfgValue && flag.Lookup(flagName) == nil {
 		flag.StringVar(passedVar, flagName, "", "")
 	}
 }
 
-func addIntChecksStringFlag(currentCfgValue int64, defaultCfgValue int64, flagName string, passedVar *string) {
+func addIntChecksStringFlag(currentCfgValue, defaultCfgValue int64, flagName string, passedVar *string) {
 	if currentCfgValue == defaultCfgValue && flag.Lookup(flagName) == nil {
 		flag.StringVar(passedVar, flagName, "", "")
 	}
@@ -284,7 +283,7 @@ func processAgentFlags(cfg *AgentConfig) error {
 }
 
 // setAgentIntFlag sets flag value to int64 field of AgentConfig.
-func setAgentIntFlag(cfgInt *int64, flag string, errMesPart string) error {
+func setAgentIntFlag(cfgInt *int64, flag, errMesPart string) error {
 	if *cfgInt == 0 && flag != "" {
 		if s, err := strconv.ParseInt(flag, 10, 64); err == nil {
 			*cfgInt = s
@@ -422,7 +421,7 @@ func (cfg ServerConfig) StringVariantCopy() string {
 	return string(result)
 }
 
-func PrepBuildValues(bldV string, bldD string, bldC string) string {
+func PrepBuildValues(bldV, bldD, bldC string) string {
 	buffStr := bytes.Buffer{}
 	buffStr.WriteString("Build version: ")
 	buffStr.WriteString(bldV)
