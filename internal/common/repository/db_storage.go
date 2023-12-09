@@ -13,12 +13,11 @@ import (
 
 // AddMetricTxToDB adds model.MetricUnit to a db
 // returns updated model.MetricUnit after that.
-func AddMetricTxToDB(dbConn *pgx.Tx, metricUnit model.MetricUnit) (model.MetricUnit, error) {
+func AddMetricTxToDB(ctx context.Context, dbConn *pgx.Tx, metricUnit model.MetricUnit) (model.MetricUnit, error) {
 	isInsert := false
 	var nameM, typeM, valueM string
 	var idM int64
-	row := (*dbConn).QueryRow(context.Background(),
-		"select id, name, type, value from metrics where name=$1", metricUnit.Name)
+	row := (*dbConn).QueryRow(ctx, "select id, name, type, value from metrics where name=$1", metricUnit.Name)
 	err := row.Scan(&idM, &nameM, &typeM, &valueM)
 
 	if err != nil && errors.Is(err, pgx.ErrNoRows) {
@@ -38,12 +37,11 @@ func AddMetricTxToDB(dbConn *pgx.Tx, metricUnit model.MetricUnit) (model.MetricU
 	}
 
 	if isInsert {
-		_, err = (*dbConn).Exec(
-			context.Background(),
+		_, err = (*dbConn).Exec(ctx,
 			"insert into metrics(name, type, value) values($1, $2, $3)",
 			metricUnit.Name, metricUnit.Type, metricUnit.Value)
 	} else {
-		_, err = (*dbConn).Exec(context.Background(),
+		_, err = (*dbConn).Exec(ctx,
 			"UPDATE metrics SET name = $1, type = $2, value = $3 where id = $4",
 			metricUnit.Name, metricUnit.Type, metricUnit.Value, idM)
 	}
@@ -56,12 +54,11 @@ func AddMetricTxToDB(dbConn *pgx.Tx, metricUnit model.MetricUnit) (model.MetricU
 
 // AddMetricToDB adds model.MetricUnit to a db
 // returns updated model.MetricUnit after that.
-func AddMetricToDB(pgConn *sqldb.PgxIface, metricUnit model.MetricUnit) (model.MetricUnit, error) {
+func AddMetricToDB(ctx context.Context, pgConn *sqldb.PgxIface, metricUnit model.MetricUnit) (model.MetricUnit, error) {
 	isInsert := false
 	var nameM, typeM, valueM string
 	var idM int64
-	row := (*pgConn).QueryRow(context.Background(),
-		"select id, name, type, value from metrics where name=$1", metricUnit.Name)
+	row := (*pgConn).QueryRow(ctx, "select id, name, type, value from metrics where name=$1", metricUnit.Name)
 	err := row.Scan(&idM, &nameM, &typeM, &valueM)
 
 	if err != nil && errors.Is(err, pgx.ErrNoRows) {
@@ -83,12 +80,11 @@ func AddMetricToDB(pgConn *sqldb.PgxIface, metricUnit model.MetricUnit) (model.M
 		return metricUnit, nil
 	}
 	if isInsert {
-		_, err = (*pgConn).Exec(
-			context.Background(),
+		_, err = (*pgConn).Exec(ctx,
 			"insert into metrics(name, type, value) values($1, $2, $3)",
 			metricUnit.Name, metricUnit.Type, metricUnit.Value)
 	} else {
-		_, err = (*pgConn).Exec(context.Background(),
+		_, err = (*pgConn).Exec(ctx,
 			"UPDATE metrics SET name = $1, type = $2, value = $3 where id = $4",
 			metricUnit.Name, metricUnit.Type, metricUnit.Value, idM)
 	}
@@ -101,9 +97,9 @@ func AddMetricToDB(pgConn *sqldb.PgxIface, metricUnit model.MetricUnit) (model.M
 
 // GetMetricByNameFromDB returns a model.MetricUnit and nil error if found
 // or model.EmptyMetric and an error.
-func GetMetricByNameFromDB(pgConn *sqldb.PgxIface, name string) (model.MetricUnit, error) {
+func GetMetricByNameFromDB(ctx context.Context, pgConn *sqldb.PgxIface, name string) (model.MetricUnit, error) {
 	var nameM, typeM, valueM string
-	row := (*pgConn).QueryRow(context.Background(), "select name, type, value from metrics where name=$1", name)
+	row := (*pgConn).QueryRow(ctx, "select name, type, value from metrics where name=$1", name)
 	err := row.Scan(&nameM, &typeM, &valueM)
 	if err != nil {
 		return model.EmptyMetric, fmt.Errorf("failed to scan a row: %w", err)
@@ -118,9 +114,9 @@ func GetMetricByNameFromDB(pgConn *sqldb.PgxIface, name string) (model.MetricUni
 }
 
 // GetAllMetricsFromDB returns a list of model.MetricUnit from the storage.
-func GetAllMetricsFromDB(pgConn *sqldb.PgxIface) ([]model.MetricUnit, error) {
+func GetAllMetricsFromDB(ctx context.Context, pgConn *sqldb.PgxIface) ([]model.MetricUnit, error) {
 	result := make([]model.MetricUnit, 0)
-	rows, err := (*pgConn).Query(context.Background(), "select name, type, value from metrics")
+	rows, err := (*pgConn).Query(ctx, "select name, type, value from metrics")
 	if err != nil {
 		return result, fmt.Errorf("failed to query: %w", err)
 	}

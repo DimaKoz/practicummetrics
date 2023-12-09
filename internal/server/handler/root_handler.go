@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -15,7 +16,7 @@ func (h *BaseHandler) RootHandler(ctx echo.Context) error {
 	var metrics []model.MetricUnit
 	var err error
 	if h != nil && h.conn != nil {
-		metrics, _ = repository.GetAllMetricsFromDB(h.conn)
+		metrics, _ = repository.GetAllMetricsFromDB(context.Background(), h.conn)
 	} else {
 		metrics = repository.GetAllMetrics()
 	}

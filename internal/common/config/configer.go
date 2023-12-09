@@ -87,7 +87,7 @@ func LoadServerConfig(cfg *ServerConfig, processing ProcessEnv) error {
 	if err := processServerFlags(cfg); err != nil {
 		return fmt.Errorf("server config: cannot process flags variables: %w", err)
 	}
-	// 0001ecbd0
+
 	if cfg.ConfigFile != unknownStringFieldValue && cfg.ConfigFile != "" {
 		laCfg, err := LoadConfigFromFile[LoadedServerConfig](cfg.ConfigFile)
 		if err != nil {
@@ -142,8 +142,7 @@ func LoadAgentConfig() (*AgentConfig, error) {
 
 // addServerFlags adds server flags to process them.
 func addServerFlags(cfg *ServerConfig,
-	address *string, rFlag *string, iFlag *string, fFlag *string, dFlag *string, keyFlag *string,
-	sFlag *string, cFlag *string,
+	address, rFlag, iFlag, fFlag, dFlag, keyFlag, sFlag, cFlag *string,
 ) {
 	if cfg.Address == unknownStringFieldValue {
 		flag.StringVar(address, "a", unknownStringFieldValue, "")

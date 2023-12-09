@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -14,7 +15,10 @@ import (
 	"go.uber.org/zap"
 )
 
-var errBadHash = echo.NewHTTPError(http.StatusBadRequest, "bad hash")
+var (
+	errBadHash      = echo.NewHTTPError(http.StatusBadRequest, "bad hash")
+	errCantReadHash = echo.NewHTTPError(http.StatusBadRequest, "can't read hash")
+)
 
 // AuthValidator checks "HashSHA256" header and its value.
 func AuthValidator(cfg config.ServerConfig) echo.MiddlewareFunc {
@@ -48,7 +52,10 @@ func authValidate(echoCtx echo.Context, cfgHashKey string) error {
 		return errBadHash
 	}
 	// Request
-	reqBody := getRequestBody(echoCtx)
+	reqBody, err := getRequestBody(echoCtx)
+	if err != nil {
+		return errCantReadHash
+	}
 	if isBadHash(cfgHashKey, headerHash, reqBody) {
 		return errBadHash
 	}
@@ -70,12 +77,15 @@ func isBadHash(cfgKey string, incomeHash string, reqBody []byte) bool {
 	return incomeHash != hmacString
 }
 
-func getRequestBody(echoCtx echo.Context) []byte {
+func getRequestBody(echoCtx echo.Context) ([]byte, error) {
 	reqBody := []byte{}
+	var err error
 	if echoCtx.Request().Body != nil { // Read
-		reqBody, _ = io.ReadAll(echoCtx.Request().Body)
+		if reqBody, err = io.ReadAll(echoCtx.Request().Body); err != nil {
+			return nil, fmt.Errorf("can't read body by: %w", err)
+		}
 	}
 	echoCtx.Request().Body = io.NopCloser(bytes.NewBuffer(reqBody)) // Reset
 
-	return reqBody
+	return reqBody, nil
 }

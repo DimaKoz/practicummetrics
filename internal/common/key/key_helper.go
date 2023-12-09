@@ -23,13 +23,18 @@ func LoadPrivateKey(cfg config.ServerConfig) (*rsa.PrivateKey, error) {
 	return loadPrivateKeyImpl(filePath)
 }
 
+const errLoadingKeyTemplate = "can't load a key by: %w"
+
 func loadPrivateKeyImpl(path string) (*rsa.PrivateKey, error) {
 	pemString, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err //nolint:wrapcheck
+		return nil, fmt.Errorf(errLoadingKeyTemplate, err)
 	}
 	block, _ := pem.Decode(pemString)
-	parseResult, _ := x509.ParsePKCS8PrivateKey(block.Bytes)
+	parseResult, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf(errLoadingKeyTemplate, err)
+	}
 	key, _ := parseResult.(*rsa.PrivateKey)
 
 	return key, nil

@@ -15,12 +15,12 @@ import (
 func TestAddMetricToDBErr(t *testing.T) {
 	mock, err := pgxmock.NewConn()
 	require.NoError(t, err, fmt.Sprintf("an error '%s' was not expected when opening a stub database connection", err))
-
+	ctxB := context.Background()
 	defer func(mock pgxmock.PgxConnIface, ctx context.Context) {
 		mock.ExpectClose()
 		err = mock.Close(ctx)
 		require.NoError(t, err)
-	}(mock, context.Background())
+	}(mock, ctxB)
 
 	//nolint:exhaustruct
 	metricUnit := model.MetricUnit{
@@ -35,7 +35,7 @@ func TestAddMetricToDBErr(t *testing.T) {
 		WillReturnRows(rows)
 
 	var pgConn sqldb.PgxIface = mock
-	_, err = AddMetricToDB(&pgConn, metricUnit)
+	_, err = AddMetricToDB(ctxB, &pgConn, metricUnit)
 	assert.Error(t, err)
 
 	err = mock.ExpectationsWereMet()
@@ -45,12 +45,12 @@ func TestAddMetricToDBErr(t *testing.T) {
 func TestGetMetricByNameFromDBErr(t *testing.T) {
 	mock, err := pgxmock.NewConn()
 	require.NoError(t, err, fmt.Sprintf("an error '%s' was not expected when opening a stub database connection", err))
-
+	ctxB := context.Background()
 	defer func(mock pgxmock.PgxConnIface, ctx context.Context) {
 		mock.ExpectClose()
 		err = mock.Close(ctx)
 		require.NoError(t, err)
-	}(mock, context.Background())
+	}(mock, ctxB)
 
 	//nolint:exhaustruct
 	metricUnit := model.MetricUnit{
@@ -65,7 +65,7 @@ func TestGetMetricByNameFromDBErr(t *testing.T) {
 		WillReturnRows(rows)
 
 	var pgConn sqldb.PgxIface = mock
-	_, err = GetMetricByNameFromDB(&pgConn, metricUnit.Name)
+	_, err = GetMetricByNameFromDB(ctxB, &pgConn, metricUnit.Name)
 	assert.Error(t, err)
 
 	err = mock.ExpectationsWereMet()
@@ -75,12 +75,12 @@ func TestGetMetricByNameFromDBErr(t *testing.T) {
 func TestGetAllMetricsFromDBErr(t *testing.T) {
 	mock, err := pgxmock.NewConn()
 	require.NoError(t, err, fmt.Sprintf("an error '%s' was not expected when opening a stub database connection", err))
-
+	ctxB := context.Background()
 	defer func(mock pgxmock.PgxConnIface, ctx context.Context) {
 		mock.ExpectClose()
 		err = mock.Close(ctx)
 		require.NoError(t, err)
-	}(mock, context.Background())
+	}(mock, ctxB)
 
 	rows := pgxmock.NewRows([]string{"name", "type", "value"}).
 		AddRow("test", "gauge", 1 /*<-error here*/)
@@ -90,7 +90,7 @@ func TestGetAllMetricsFromDBErr(t *testing.T) {
 		WillReturnRows(rows)
 
 	var pgConn sqldb.PgxIface = mock
-	_, err = GetAllMetricsFromDB(&pgConn)
+	_, err = GetAllMetricsFromDB(ctxB, &pgConn)
 	assert.Error(t, err)
 
 	err = mock.ExpectationsWereMet()
