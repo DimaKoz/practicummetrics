@@ -141,8 +141,10 @@ func LoadAgentConfig() (*AgentConfig, error) {
 }
 
 // addServerFlags adds server flags to process them.
+//
+//nolint:cyclop
 func addServerFlags(cfg *ServerConfig,
-	address, rFlag, iFlag, fFlag, dFlag, keyFlag, sFlag, cFlag *string,
+	address, rFlag, iFlag, fFlag, dFlag, keyFlag, sFlag, cFlag, tFlag *string,
 ) {
 	if cfg.Address == unknownStringFieldValue {
 		flag.StringVar(address, "a", unknownStringFieldValue, "")
@@ -170,6 +172,10 @@ func addServerFlags(cfg *ServerConfig,
 	if cfg.ConnectionDB == unknownStringFieldValue {
 		flag.StringVar(dFlag, "d", unknownStringFieldValue, "")
 	}
+
+	if cfg.TrustedSubnet == unknownStringFieldValue {
+		flag.StringVar(tFlag, "t", unknownStringFieldValue, "")
+	}
 }
 
 // processServerFlags gets parameters from command line and fill ServerConfig
@@ -178,9 +184,10 @@ func processServerFlags(cfg *ServerConfig) error {
 	dFlag, keyFlag := unknownStringFieldValue, unknownStringFieldValue
 	address, rFlag, fFlag := unknownStringFieldValue, unknownStringFieldValue, unknownStringFieldValue
 	sFlag, cFlag := unknownStringFieldValue, unknownStringFieldValue
+	tFlag := unknownStringFieldValue
 
 	var iFlag string
-	addServerFlags(cfg, &address, &rFlag, &iFlag, &fFlag, &dFlag, &keyFlag, &sFlag, &cFlag)
+	addServerFlags(cfg, &address, &rFlag, &iFlag, &fFlag, &dFlag, &keyFlag, &sFlag, &cFlag, &tFlag)
 	flag.Parse()
 
 	setUnknownStrValue(&cfg.Address, address)
@@ -189,6 +196,7 @@ func processServerFlags(cfg *ServerConfig) error {
 	setUnknownStrValue(&cfg.ConnectionDB, dFlag)
 	setUnknownStrValue(&cfg.CryptoKey, sFlag)
 	setUnknownStrValue(&cfg.ConfigFile, cFlag)
+	setUnknownStrValue(&cfg.TrustedSubnet, tFlag)
 
 	if !cfg.hasRestore && rFlag != unknownStringFieldValue {
 		if s, err := strconv.ParseBool(rFlag); err == nil {
@@ -343,6 +351,10 @@ func setupDefaultServerValues(config *ServerConfig,
 
 	if config.CryptoKey == unknownStringFieldValue {
 		config.CryptoKey = defaultKey
+	}
+
+	if config.TrustedSubnet == unknownStringFieldValue {
+		config.TrustedSubnet = ""
 	}
 
 	if config.StoreInterval == unknownIntFieldValue {

@@ -220,7 +220,7 @@ func TestLoadServerConfig(t *testing.T) {
 		},
 		StoreInterval:   defaultStoreInterval,
 		ConnectionDB:    unknownStringFieldValue,
-		TrustedSubnet:   unknownStringFieldValue,
+		TrustedSubnet:   "",
 		FileStoragePath: defaultFileStoragePath,
 		hasRestore:      true,
 		Restore:         defaultRestore,

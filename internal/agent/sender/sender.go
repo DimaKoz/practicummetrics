@@ -119,7 +119,7 @@ func logSendingErr(err error) {
 func addHeadersToRequest(request *resty.Request) {
 	request.SetHeader("Content-Type", "application/json")
 	request.SetHeader("Accept-Encoding", "gzip")
-	request.SetHeader("X-Real-IP", "192.168.1.1")
+	request.SetHeader("X-Real-IP", "193.168.1.1")
 }
 
 const (
