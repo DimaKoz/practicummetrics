@@ -3,41 +3,38 @@ package grpcsrv
 import (
 	"context"
 	"fmt"
-	proto2 "github.com/DimaKoz/practicummetrics/pkg/proto"
 	"net"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
+	proto2 "github.com/DimaKoz/practicummetrics/pkg/proto"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// MetricsServer поддерживает все необходимые методы сервера.
+// MetricsServer supports all required methods of the 'gRPC' server.
 type MetricsServer struct {
 	grpc.Server
-	// нужно встраивать тип pb.Unimplemented<TypeName>
-	// для совместимости с будущими версиями
+	// UnimplementedMetricsServer must be embedded to have future compatible implementations.
 	proto2.UnimplementedMetricsServer
 
-	// используем config.ServerConfig для хранения настроек
 	cfg config.ServerConfig
 }
 
 func New(cfg config.ServerConfig) (*MetricsServer, error) {
-	s := &MetricsServer{
-		Server: *grpc.NewServer(),
-		cfg:    cfg,
+	serverGrpc := &MetricsServer{
+		Server:                     *grpc.NewServer(),
+		UnimplementedMetricsServer: proto2.UnimplementedMetricsServer{},
+		cfg:                        cfg,
 	}
 
-	// регистрируем сервис
-	proto2.RegisterMetricsServer(s, s)
+	proto2.RegisterMetricsServer(serverGrpc, serverGrpc)
 
-	return s, nil
+	return serverGrpc, nil
 }
 
 func (s *MetricsServer) Run(_ context.Context) error {
-	// ToDo: address from cfg
-	listen, err := net.Listen("tcp", ":3201")
+	listen, err := net.Listen("tcp", "localhost:3201")
 	if err != nil {
 		zap.S().Warn(err)
 

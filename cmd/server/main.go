@@ -37,20 +37,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	defer func(loggerZap *zap.Logger) {
 		_ = loggerZap.Sync()
 	}(logger)
-
 	zap.ReplaceGlobals(logger)
 
 	cfg := config.NewServerConfig()
-
 	if err = config.LoadServerConfig(cfg, config.ProcessEnvServer); err != nil {
 		zap.S().Fatalf("couldn't create a config %s", err)
 	}
-	zap.S().Infoln(config.PrepBuildValues(BuildVersion, BuildDate, BuildCommit))
-
 	printCfgInfo(cfg)
 
 	repository.LoadPrivateKey(*cfg)
@@ -61,7 +56,6 @@ func main() {
 		defer pgxConn.Close(ctx)
 		conn = &pgxConn
 	} else {
-		conn = nil
 		zap.S().Warnf("failed to get a db connection by %s", err.Error())
 	}
 
@@ -72,10 +66,7 @@ func main() {
 
 	repository.SetupFilePathStorage(cfg.FileStoragePath)
 	loadIfNeed(cfg)
-	sGrpc, err := grpcsrv.New(*cfg)
-	if err != nil {
-		zap.S().Fatal(err)
-	}
+	startServerGRPC(ctx, *cfg)
 
 	if cfg.FileStoragePath != "" {
 		if cfg.StoreInterval != 0 {
@@ -95,10 +86,18 @@ func main() {
 			handler.SetSyncSaveUpdateHandlerJSON(true)
 		}
 	}
+
+	startServer(cfg, conn)
+}
+
+func startServerGRPC(ctx context.Context, cfg config.ServerConfig) {
+	sGrpc, err := grpcsrv.New(cfg)
+	if err != nil {
+		zap.S().Fatal(err)
+	}
 	if err = sGrpc.Run(ctx); err != nil {
 		zap.S().Fatal(fmt.Errorf("starting grpc server failed by: %w", err))
 	}
-	startServer(cfg, conn)
 }
 
 func loadIfNeed(cfg *config.ServerConfig) {
@@ -114,6 +113,7 @@ func loadIfNeed(cfg *config.ServerConfig) {
 }
 
 func printCfgInfo(cfg *config.ServerConfig) {
+	zap.S().Infoln(config.PrepBuildValues(BuildVersion, BuildDate, BuildCommit))
 	zap.S().Info(
 		"cfg: \n", cfg.StringVariantCopy(),
 	)
