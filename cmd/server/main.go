@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,6 +14,7 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"github.com/DimaKoz/practicummetrics/internal/server"
+	"github.com/DimaKoz/practicummetrics/internal/server/grpcsrv"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	"github.com/DimaKoz/practicummetrics/internal/server/serializer"
 	"github.com/labstack/echo/v4"
@@ -52,11 +54,11 @@ func main() {
 	printCfgInfo(cfg)
 
 	repository.LoadPrivateKey(*cfg)
-
+	ctx := context.Background()
 	var pgxConn sqldb.PgxIface
 	var conn *sqldb.PgxIface
 	if pgxConn, err = sqldb.ConnectDB(cfg); err == nil {
-		defer pgxConn.Close(context.Background())
+		defer pgxConn.Close(ctx)
 		conn = &pgxConn
 	} else {
 		conn = nil
@@ -70,6 +72,10 @@ func main() {
 
 	repository.SetupFilePathStorage(cfg.FileStoragePath)
 	loadIfNeed(cfg)
+	sGrpc, err := grpcsrv.New(*cfg)
+	if err != nil {
+		zap.S().Fatal(err)
+	}
 
 	if cfg.FileStoragePath != "" {
 		if cfg.StoreInterval != 0 {
@@ -89,7 +95,9 @@ func main() {
 			handler.SetSyncSaveUpdateHandlerJSON(true)
 		}
 	}
-
+	if err = sGrpc.Run(ctx); err != nil {
+		zap.S().Fatal(fmt.Errorf("starting grpc server failed by: %w", err))
+	}
 	startServer(cfg, conn)
 }
 
@@ -100,7 +108,7 @@ func loadIfNeed(cfg *config.ServerConfig) {
 	needLoad := cfg.Restore && cfg.FileStoragePath != ""
 	if needLoad {
 		if err := repository.LoadVariant(); err != nil {
-			zap.S().Fatalf("couldn't restore metrics by %s", err)
+			zap.S().Errorf("couldn't restore metrics by %s", err)
 		}
 	}
 }
