@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/DimaKoz/practicummetrics/internal/agent/gather"
+	"github.com/DimaKoz/practicummetrics/internal/agent/grpc"
 	"github.com/DimaKoz/practicummetrics/internal/agent/sender"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
@@ -23,28 +24,21 @@ var (
 )
 
 func main() {
-	infoLog := log.Default()
-	infoLog.SetPrefix("agent: INFO: ")
-	infoLog.Println(config.PrepBuildValues(BuildVersion, BuildDate, BuildCommit))
+	infoLog := initInfoLogger()
 
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	sigs := initSigChan()
 
 	cfg, err := config.LoadAgentConfig()
 	if err != nil {
 		log.Fatalf("couldn't create a config %s", err)
 	}
+	logCfg(infoLog, *cfg)
+	initIfNeedAES(*cfg)
 
-	// from cfg:
-	infoLog.Println("cfg:\n", "address:", cfg.Address, "\nkey:", cfg.HashKey)
-	infoLog.Println("reportInterval:", cfg.ReportInterval, "\npollInterval:", cfg.PollInterval)
-
-	if cfg.CryptoKey != "" {
-		if err = repository.InitAgentAesKeys(*cfg); err != nil {
-			log.Fatalf("couldn't init aes key %s", err)
-		}
+	if err = grpc.Init(*cfg, infoLog); err != nil {
+		infoLog.Printf("no gRPC by: %s", err)
 	}
-
+	defer grpc.Close()
 	tickerGathering := time.NewTicker(time.Duration(cfg.PollInterval) * time.Second)
 	defer tickerGathering.Stop()
 
@@ -56,11 +50,10 @@ func main() {
 	defer close(errCh)
 	done := make(chan bool)
 	defer close(done)
-
 	go func() {
 		for {
 			select {
-			case <-sigs:
+			case <-*sigs:
 				done <- true
 
 				return
@@ -79,7 +72,6 @@ func main() {
 			}
 		}
 	}()
-
 	infoLog.Println("awaiting a signal or press Ctrl+C to finish this agent")
 	<-done
 	infoLog.Println("exiting")
@@ -90,6 +82,35 @@ func metricsCase(metrics []model.MetricUnit, infoLog *log.Logger) {
 		repository.AddMetric(s)
 	}
 	infoLog.Println("added metrics:", len(metrics))
+}
+
+func initIfNeedAES(cfg config.AgentConfig) {
+	if cfg.CryptoKey != "" {
+		if err := repository.InitAgentAesKeys(cfg); err != nil {
+			log.Fatalf("couldn't init aes key %s", err)
+		}
+	}
+}
+
+func initInfoLogger() *log.Logger {
+	infoLog := log.Default()
+	infoLog.SetPrefix("agent: INFO: ")
+	infoLog.Println(config.PrepBuildValues(BuildVersion, BuildDate, BuildCommit))
+
+	return infoLog
+}
+
+func initSigChan() *chan os.Signal {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
+	return &sigs
+}
+
+func logCfg(iLog *log.Logger, cfg config.AgentConfig) {
+	// from cfg:
+	iLog.Println("cfg:\n", "address:", cfg.Address, "\nkey:", cfg.HashKey)
+	iLog.Println("reportInterval:", cfg.ReportInterval, "\npollInterval:", cfg.PollInterval)
 }
 
 func gatherCase(metricsCh chan<- []model.MetricUnit, errCh chan error) {

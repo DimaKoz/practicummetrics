@@ -1,12 +1,14 @@
 package sender
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"log"
 	"strings"
 
+	"github.com/DimaKoz/practicummetrics/internal/agent/grpc"
 	"github.com/DimaKoz/practicummetrics/internal/common"
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
@@ -41,6 +43,7 @@ func sendingBatch(cfg *config.AgentConfig, metrics []model.MetricUnit) {
 
 		return
 	}
+	grpc.Send(context.Background(), string(body))
 	if cfg.CryptoKey != "" {
 		encMessage, err := repository.EncryptBigMessage(body)
 		if err != nil {
