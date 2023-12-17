@@ -3,6 +3,7 @@ package serializer
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	goccyj "github.com/goccy/go-json"
 	"github.com/labstack/echo/v4"
@@ -37,4 +38,21 @@ func (d FastJSONSerializer) Deserialize(c echo.Context, data interface{}) error 
 	}
 
 	return err //nolint:wrapcheck
+}
+
+func DeserializeString(body string, data interface{}) error {
+	reader := strings.NewReader(body)
+	err := goccyj.NewDecoder(reader).Decode(data)
+	if ute, ok := err.(*goccyj.UnmarshalTypeError); ok { //nolint:errorlint
+		mess := fmt.Sprintf("Unmarshal type error: expected=%v, got=%v, field=%v, offset=%v",
+			ute.Type, ute.Value, ute.Field, ute.Offset)
+
+		return fmt.Errorf("%s", mess)
+	} else if syne, ok := err.(*goccyj.SyntaxError); ok { //nolint:errorlint
+		mess := fmt.Sprintf("Syntax error: offset=%v, error=%v", syne.Offset, syne.Error())
+
+		return fmt.Errorf("%s", mess)
+	}
+
+	return err
 }
