@@ -68,14 +68,13 @@ func (s *MetricsServer) Updates(_ context.Context, request *proto2.UpdateRequest
 		if err != nil {
 			erDesc := fmt.Sprintf("gRPC: Metrics contains nil: %s", err)
 
-			return &response, fmt.Errorf("%s", erDesc)
+			return &response, fmt.Errorf("%s : %w", erDesc, err)
 		}
 		muIncome, err := model.NewMetricUnit(item.MType, item.ID, prepModelValue)
 		if err != nil {
 			return &response, fmt.Errorf("gRPC: cannot create metric: %w", err)
 		}
 		_ = repository.AddMetric(muIncome)
-
 	}
 	s.saveUpdates()
 

@@ -1,6 +1,7 @@
 package serializer
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -8,6 +9,12 @@ import (
 	goccyj "github.com/goccy/go-json"
 	"github.com/labstack/echo/v4"
 )
+
+var errFastSerializer = errors.New("fastJSONSerializer")
+
+func fastErrWrapError(msg string) error {
+	return fmt.Errorf("%w: %s", errFastSerializer, msg)
+}
 
 // FastJSONSerializer implements JSON encoding using encoding/json.
 type FastJSONSerializer struct{}
@@ -44,15 +51,17 @@ func DeserializeString(body string, data interface{}) error {
 	reader := strings.NewReader(body)
 	err := goccyj.NewDecoder(reader).Decode(data)
 	if ute, ok := err.(*goccyj.UnmarshalTypeError); ok { //nolint:errorlint
-		mess := fmt.Sprintf("Unmarshal type error: expected=%v, got=%v, field=%v, offset=%v",
+		mess := fmt.Sprintf("unmarshal type error: expected=%v, got=%v, field=%v, offset=%v",
 			ute.Type, ute.Value, ute.Field, ute.Offset)
 
-		return fmt.Errorf("%s", mess)
+		return fastErrWrapError(mess)
 	} else if syne, ok := err.(*goccyj.SyntaxError); ok { //nolint:errorlint
-		mess := fmt.Sprintf("Syntax error: offset=%v, error=%v", syne.Offset, syne.Error())
+		mess := fmt.Sprintf("syntax error: offset=%v, error=%v", syne.Offset, syne.Error())
 
-		return fmt.Errorf("%s", mess)
+		return fastErrWrapError(mess)
+	} else if err != nil {
+		return fmt.Errorf("can't parse by:%w", err)
 	}
 
-	return err
+	return nil
 }
