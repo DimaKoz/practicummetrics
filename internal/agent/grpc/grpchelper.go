@@ -3,11 +3,11 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/pkg/proto"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -15,7 +15,6 @@ import (
 type grpcSender struct {
 	conn   *grpc.ClientConn
 	client proto.MetricsClient
-	logger *log.Logger
 	cfg    config.AgentConfig
 }
 
@@ -24,7 +23,7 @@ var (
 	grpcSenderInstance grpcSender
 )
 
-func Init(cfg config.AgentConfig, logger *log.Logger) error {
+func Init(cfg config.AgentConfig) error {
 	grpcSenderSync.Lock()
 	defer grpcSenderSync.Unlock()
 	connGrpc, err := grpc.Dial("localhost:3201", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -34,7 +33,6 @@ func Init(cfg config.AgentConfig, logger *log.Logger) error {
 	clientGrpc := proto.NewMetricsClient(connGrpc)
 	grpcSenderInstance = grpcSender{
 		conn:   connGrpc,
-		logger: logger,
 		cfg:    cfg,
 		client: clientGrpc,
 	}
@@ -57,7 +55,7 @@ func Send(ctx context.Context, body string) {
 	}
 	_, err := grpcSenderInstance.client.Updates(ctx, updR)
 	if err != nil {
-		grpcSenderInstance.logger.Println(err)
+		zap.S().Warn(err)
 	}
 }
 

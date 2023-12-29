@@ -3,7 +3,6 @@ package sender
 import (
 	"bytes"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -17,6 +16,8 @@ import (
 	goccyj "github.com/goccy/go-json"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func TestParcelsSend(t *testing.T) {
@@ -140,20 +141,23 @@ func TestParcelsSendBatch(t *testing.T) {
 	}
 }
 
-func readByte() {
-	_ = io.EOF // force an error
+func newCustomLogger(pipeTo io.Writer) zapcore.Core { //nolint:ireturn
+	return zapcore.NewCore(
+		zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
+		zap.CombineWriteSyncers(os.Stderr, zapcore.AddSync(pipeTo)),
+		zapcore.InfoLevel,
+	)
 }
 
 func TestPrintSender(t *testing.T) {
-	want := `Post "http://localhost:8888/update/"`
+	want := "\\\"http://localhost:8888/update/"
 
-	var buf bytes.Buffer
+	buf := &bytes.Buffer{}
+	// call the constructor from your test code with the arbitrary writer
+	mycore := newCustomLogger(buf)
 
-	log.SetOutput(&buf)
-
-	defer func() {
-		log.SetOutput(os.Stderr)
-	}()
+	logger := zap.New(mycore)
+	zap.ReplaceGlobals(logger)
 	ParcelsSend(&config.AgentConfig{
 		Config: config.Config{ //nolint:exhaustruct
 			Address: "localhost:8888", HashKey: "",
@@ -168,21 +172,19 @@ func TestPrintSender(t *testing.T) {
 		ValueInt:   0,
 		ValueFloat: 42.42,
 	}})
-	readByte()
 	got := buf.String()
 	assert.Contains(t, got, want, "Expected %s, got %s", want, got)
 }
 
 func TestBrokenBatchCoverage(t *testing.T) {
-	want := `Post "http://localhost:8888/updates/"`
+	want := "http://localhost:8888/updates/"
 
-	var buf bytes.Buffer
+	buf := &bytes.Buffer{}
+	// call the constructor from your test code with the arbitrary writer
+	mycore := newCustomLogger(buf)
 
-	log.SetOutput(&buf)
-
-	defer func() {
-		log.SetOutput(os.Stderr)
-	}()
+	logger := zap.New(mycore)
+	zap.ReplaceGlobals(logger)
 	ParcelsSend(&config.AgentConfig{
 		Config: config.Config{ //nolint:exhaustruct
 			Address: "localhost:8888", HashKey: "",
@@ -203,7 +205,6 @@ func TestBrokenBatchCoverage(t *testing.T) {
 		ValueInt:   0,
 		ValueFloat: 0.1,
 	}})
-	readByte()
 	got := buf.String()
 	assert.Contains(t, got, want, "Expected %s, got %s", want, got)
 }

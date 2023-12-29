@@ -44,7 +44,7 @@ func main() {
 
 	cfg := config.NewServerConfig()
 	if err = config.LoadServerConfig(cfg, config.ProcessEnvServer); err != nil {
-		zap.S().Fatalf("couldn't create a config %s", err)
+		zap.S().Fatalf("couldn't create a config %v", err)
 	}
 	printCfgInfo(cfg)
 
@@ -78,7 +78,7 @@ func main() {
 				tickerChannel := ticker.C
 				for range tickerChannel {
 					if err = repository.SaveVariant(); err != nil {
-						zap.S().Fatalf("server: cannot save metrics: %s", err)
+						zap.S().Fatalf("server: cannot save metrics: %v", err)
 					}
 				}
 			}()
@@ -106,8 +106,9 @@ func loadIfNeed(cfg *config.ServerConfig) {
 	}
 	needLoad := cfg.Restore && cfg.FileStoragePath != ""
 	if needLoad {
+		// https://stackoverflow.com/a/61284074/3166697
 		if err := repository.LoadVariant(); err != nil {
-			zap.S().Errorf("couldn't restore metrics by %s", err)
+			zap.S().Errorf("couldn't restore metrics by %v", err)
 		}
 	}
 }

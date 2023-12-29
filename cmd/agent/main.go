@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,6 +12,7 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common/config"
 	"github.com/DimaKoz/practicummetrics/internal/common/model"
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
+	"go.uber.org/zap"
 )
 
 const buffersNumber = 5
@@ -24,19 +24,26 @@ var (
 )
 
 func main() {
-	infoLog := initInfoLogger()
-
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
+	defer func(loggerZap *zap.Logger) {
+		_ = loggerZap.Sync()
+	}(logger)
+	zap.ReplaceGlobals(logger)
+	zap.S().Infoln(config.PrepBuildValues(BuildVersion, BuildDate, BuildCommit))
 	sigs := initSigChan()
 
 	cfg, err := config.LoadAgentConfig()
 	if err != nil {
-		log.Fatalf("couldn't create a config %s", err)
+		zap.S().Fatalf("couldn't create a config %s", err)
 	}
-	logCfg(infoLog, *cfg)
+	logCfg(*cfg)
 	initIfNeedAES(*cfg)
 
-	if err = grpc.Init(*cfg, infoLog); err != nil {
-		infoLog.Printf("no gRPC by: %s", err)
+	if err = grpc.Init(*cfg); err != nil {
+		zap.S().Infof("no gRPC by: %s", err)
 	}
 	defer grpc.Close()
 	tickerGathering := time.NewTicker(time.Duration(cfg.PollInterval) * time.Second)
@@ -62,42 +69,34 @@ func main() {
 				gatherCase(metricsCh, errCh)
 
 			case metrics := <-metricsCh:
-				go metricsCase(metrics, infoLog)
+				go metricsCase(metrics)
 
 			case err = <-errCh:
-				infoLog.Fatalf("cannot collect metrics: %s", err)
+				zap.S().Fatalf("cannot collect metrics: %s", err)
 
 			case <-tickerReport.C:
-				reportCase(cfg, infoLog)
+				reportCase(cfg)
 			}
 		}
 	}()
-	infoLog.Println("awaiting a signal or press Ctrl+C to finish this agent")
+	zap.S().Infoln("awaiting a signal or press Ctrl+C to finish this agent")
 	<-done
-	infoLog.Println("exiting")
+	zap.S().Infoln("exiting")
 }
 
-func metricsCase(metrics []model.MetricUnit, infoLog *log.Logger) {
+func metricsCase(metrics []model.MetricUnit) {
 	for _, s := range metrics {
 		repository.AddMetric(s)
 	}
-	infoLog.Println("added metrics:", len(metrics))
+	zap.S().Infoln("added metrics:", len(metrics))
 }
 
 func initIfNeedAES(cfg config.AgentConfig) {
 	if cfg.CryptoKey != "" {
 		if err := repository.InitAgentAesKeys(cfg); err != nil {
-			log.Fatalf("couldn't init aes key %s", err)
+			zap.S().Fatalf("couldn't init aes key %s", err)
 		}
 	}
-}
-
-func initInfoLogger() *log.Logger {
-	infoLog := log.Default()
-	infoLog.SetPrefix("agent: INFO: ")
-	infoLog.Println(config.PrepBuildValues(BuildVersion, BuildDate, BuildCommit))
-
-	return infoLog
 }
 
 func initSigChan() *chan os.Signal {
@@ -107,10 +106,9 @@ func initSigChan() *chan os.Signal {
 	return &sigs
 }
 
-func logCfg(iLog *log.Logger, cfg config.AgentConfig) {
-	// from cfg:
-	iLog.Println("cfg:\n", "address:", cfg.Address, "\nkey:", cfg.HashKey)
-	iLog.Println("reportInterval:", cfg.ReportInterval, "\npollInterval:", cfg.PollInterval)
+func logCfg(cfg config.AgentConfig) {
+	zap.S().Infoln("cfg:\n", "address:", cfg.Address, "\nkey:", cfg.HashKey)
+	zap.S().Infoln("reportInterval:", cfg.ReportInterval, "\npollInterval:", cfg.PollInterval)
 }
 
 func gatherCase(metricsCh chan<- []model.MetricUnit, errCh chan error) {
@@ -118,19 +116,19 @@ func gatherCase(metricsCh chan<- []model.MetricUnit, errCh chan error) {
 	go gather.GetMetricsVariant(metricsCh, errCh)
 }
 
-func worker(workerID int64, cfg *config.AgentConfig, infoLog *log.Logger, jobs <-chan []model.MetricUnit) {
+func worker(workerID int64, cfg *config.AgentConfig, jobs <-chan []model.MetricUnit) {
 	for j := range jobs {
-		infoLog.Println("worker:", workerID, "started task:", j)
+		zap.S().Infoln("worker:", workerID, "started task:", j)
 		// a real job.
 		sender.ParcelsSend(cfg, j)
 
-		infoLog.Println("worker:", workerID, "done task:", j)
+		zap.S().Infoln("worker:", workerID, "done task:", j)
 	}
 }
 
-func reportCase(cfg *config.AgentConfig, infoLog *log.Logger) {
+func reportCase(cfg *config.AgentConfig) {
 	metrics := repository.GetAllMetrics()
-	infoLog.Println("all jobs:", metrics)
+	zap.S().Infoln("all jobs:", metrics)
 
 	workerNumber := cfg.RateLimit // Rate limit
 	if workerNumber == 0 {        // without workers
@@ -142,7 +140,7 @@ func reportCase(cfg *config.AgentConfig, infoLog *log.Logger) {
 	jobs := make(chan []model.MetricUnit, numJobs)
 
 	for w := int64(1); w <= workerNumber; w++ {
-		go worker(w, cfg, infoLog, jobs)
+		go worker(w, cfg, jobs)
 	}
 	for j := 1; j <= numJobs; j++ {
 		number := j - 1

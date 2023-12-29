@@ -5,7 +5,6 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"log"
 	"strings"
 
 	"github.com/DimaKoz/practicummetrics/internal/agent/grpc"
@@ -15,6 +14,7 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/go-resty/resty/v2"
 	goccyj "github.com/goccy/go-json"
+	"go.uber.org/zap"
 )
 
 // ParcelsSend sends metrics.
@@ -114,8 +114,8 @@ func appendHashOtherMarshaling(request *resty.Request, hashKey string, body []by
 
 // logSendingErr prints an error.
 func logSendingErr(err error) {
-	log.Printf("could not create the request: %s \n", err)
-	log.Println("waiting for the next tick")
+	zap.S().Warnf("could not create the request: %s \n", err)
+	zap.S().Infoln("waiting for the next tick")
 }
 
 // addHeadersToRequest "Content-Type" and "Accept-Encoding" headers to resty.Request.
