@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,6 +14,7 @@ import (
 	"github.com/DimaKoz/practicummetrics/internal/common/repository"
 	"github.com/DimaKoz/practicummetrics/internal/common/sqldb"
 	"github.com/DimaKoz/practicummetrics/internal/server"
+	"github.com/DimaKoz/practicummetrics/internal/server/grpcsrv"
 	"github.com/DimaKoz/practicummetrics/internal/server/handler"
 	"github.com/DimaKoz/practicummetrics/internal/server/serializer"
 	"github.com/labstack/echo/v4"
@@ -35,31 +37,25 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	defer func(loggerZap *zap.Logger) {
 		_ = loggerZap.Sync()
 	}(logger)
-
 	zap.ReplaceGlobals(logger)
 
 	cfg := config.NewServerConfig()
-
 	if err = config.LoadServerConfig(cfg, config.ProcessEnvServer); err != nil {
-		zap.S().Fatalf("couldn't create a config %s", err)
+		zap.S().Fatalf("couldn't create a config %v", err)
 	}
-	zap.S().Infoln(config.PrepBuildValues(BuildVersion, BuildDate, BuildCommit))
-
 	printCfgInfo(cfg)
 
 	repository.LoadPrivateKey(*cfg)
-
+	ctx := context.Background()
 	var pgxConn sqldb.PgxIface
 	var conn *sqldb.PgxIface
 	if pgxConn, err = sqldb.ConnectDB(cfg); err == nil {
-		defer pgxConn.Close(context.Background())
+		defer pgxConn.Close(ctx)
 		conn = &pgxConn
 	} else {
-		conn = nil
 		zap.S().Warnf("failed to get a db connection by %s", err.Error())
 	}
 
@@ -70,6 +66,7 @@ func main() {
 
 	repository.SetupFilePathStorage(cfg.FileStoragePath)
 	loadIfNeed(cfg)
+	startServerGRPC(ctx, *cfg)
 
 	if cfg.FileStoragePath != "" {
 		if cfg.StoreInterval != 0 {
@@ -81,7 +78,7 @@ func main() {
 				tickerChannel := ticker.C
 				for range tickerChannel {
 					if err = repository.SaveVariant(); err != nil {
-						zap.S().Fatalf("server: cannot save metrics: %s", err)
+						zap.S().Fatalf("server: cannot save metrics: %v", err)
 					}
 				}
 			}()
@@ -93,19 +90,31 @@ func main() {
 	startServer(cfg, conn)
 }
 
+func startServerGRPC(ctx context.Context, cfg config.ServerConfig) {
+	sGrpc, err := grpcsrv.New(cfg)
+	if err != nil {
+		zap.S().Fatal(err)
+	}
+	if err = sGrpc.Run(ctx); err != nil {
+		zap.S().Fatal(fmt.Errorf("starting grpc server failed by: %w", err))
+	}
+}
+
 func loadIfNeed(cfg *config.ServerConfig) {
 	if cfg.IsUseDatabase() {
 		return
 	}
 	needLoad := cfg.Restore && cfg.FileStoragePath != ""
 	if needLoad {
+		// https://stackoverflow.com/a/61284074/3166697
 		if err := repository.LoadVariant(); err != nil {
-			zap.S().Fatalf("couldn't restore metrics by %s", err)
+			zap.S().Errorf("couldn't restore metrics by %v", err)
 		}
 	}
 }
 
 func printCfgInfo(cfg *config.ServerConfig) {
+	zap.S().Infoln(config.PrepBuildValues(BuildVersion, BuildDate, BuildCommit))
 	zap.S().Info(
 		"cfg: \n", cfg.StringVariantCopy(),
 	)

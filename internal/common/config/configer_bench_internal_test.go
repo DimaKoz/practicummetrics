@@ -29,6 +29,7 @@ func BenchmarkConfigStringCopy(b *testing.B) {
 		StoreInterval:   3,
 		FileStoragePath: "4",
 		ConnectionDB:    "5",
+		TrustedSubnet:   "6",
 		hasRestore:      true,
 		Restore:         true,
 	}

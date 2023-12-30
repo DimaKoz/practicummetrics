@@ -11,10 +11,12 @@ import (
 
 // SetupMiddleware inits and some middlewares to Echo framework.
 func SetupMiddleware(echoFramework *echo.Echo, cfg *config.ServerConfig) {
+	echoFramework.Use(middleware2.SubnetChecker(*cfg))
+
 	if cfg.CryptoKey != "" {
 		echoFramework.Use(middleware2.RsaAesDecoder())
 	}
-	// Logging middleware0s
+	// Logging middlewares
 	// RequestLoggerWithConfig and BodyDump
 	loggerConfig := middleware2.GetRequestLoggerConfig()
 	echoFramework.Use(middleware.RequestLoggerWithConfig(loggerConfig))

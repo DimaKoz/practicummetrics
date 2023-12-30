@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package proto;
+
+import "google/protobuf/empty.proto";
+
+// to generate files:
+// protoc --go_out=. --go_opt=paths=source_relative   --go-grpc_out=. --go-grpc_opt=paths=source_relative pkg/proto/metric.proto
+
+option go_package = "practicummetrics/proto";
+
+message MetricsProto {
+  string body = 1;  // encrypted or non-encrypted body of the request
+}
+
+message UpdateRequest {
+  MetricsProto metrics = 1;
+}
+
+
+service Metrics {
+  rpc Updates(UpdateRequest) returns (google.protobuf.Empty);
+}

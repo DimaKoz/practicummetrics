@@ -48,6 +48,7 @@ type ServerConfig struct {
 	StoreInterval   int64  `env:"STORE_INTERVAL"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 	ConnectionDB    string `env:"DATABASE_DSN"`
+	TrustedSubnet   string `env:"TRUSTED_SUBNET"`
 	hasRestore      bool
 	Restore         bool `env:"RESTORE"`
 }
@@ -64,9 +65,14 @@ func NewServerConfig() *ServerConfig {
 		StoreInterval:   unknownIntFieldValue,
 		FileStoragePath: unknownStringFieldValue,
 		ConnectionDB:    unknownStringFieldValue,
+		TrustedSubnet:   unknownStringFieldValue,
 		hasRestore:      false,
 		Restore:         true,
 	}
+}
+
+func (cfg ServerConfig) HasTrustedSubnet() bool {
+	return cfg.TrustedSubnet != "" && cfg.TrustedSubnet != unknownStringFieldValue
 }
 
 // ProcessEnv receives and sets up the ServerConfig.
@@ -135,8 +141,10 @@ func LoadAgentConfig() (*AgentConfig, error) {
 }
 
 // addServerFlags adds server flags to process them.
+//
+//nolint:cyclop
 func addServerFlags(cfg *ServerConfig,
-	address, rFlag, iFlag, fFlag, dFlag, keyFlag, sFlag, cFlag *string,
+	address, rFlag, iFlag, fFlag, dFlag, keyFlag, sFlag, cFlag, tFlag *string,
 ) {
 	if cfg.Address == unknownStringFieldValue {
 		flag.StringVar(address, "a", unknownStringFieldValue, "")
@@ -164,6 +172,10 @@ func addServerFlags(cfg *ServerConfig,
 	if cfg.ConnectionDB == unknownStringFieldValue {
 		flag.StringVar(dFlag, "d", unknownStringFieldValue, "")
 	}
+
+	if cfg.TrustedSubnet == unknownStringFieldValue {
+		flag.StringVar(tFlag, "t", unknownStringFieldValue, "")
+	}
 }
 
 // processServerFlags gets parameters from command line and fill ServerConfig
@@ -172,9 +184,10 @@ func processServerFlags(cfg *ServerConfig) error {
 	dFlag, keyFlag := unknownStringFieldValue, unknownStringFieldValue
 	address, rFlag, fFlag := unknownStringFieldValue, unknownStringFieldValue, unknownStringFieldValue
 	sFlag, cFlag := unknownStringFieldValue, unknownStringFieldValue
+	tFlag := unknownStringFieldValue
 
 	var iFlag string
-	addServerFlags(cfg, &address, &rFlag, &iFlag, &fFlag, &dFlag, &keyFlag, &sFlag, &cFlag)
+	addServerFlags(cfg, &address, &rFlag, &iFlag, &fFlag, &dFlag, &keyFlag, &sFlag, &cFlag, &tFlag)
 	flag.Parse()
 
 	setUnknownStrValue(&cfg.Address, address)
@@ -183,6 +196,7 @@ func processServerFlags(cfg *ServerConfig) error {
 	setUnknownStrValue(&cfg.ConnectionDB, dFlag)
 	setUnknownStrValue(&cfg.CryptoKey, sFlag)
 	setUnknownStrValue(&cfg.ConfigFile, cFlag)
+	setUnknownStrValue(&cfg.TrustedSubnet, tFlag)
 
 	if !cfg.hasRestore && rFlag != unknownStringFieldValue {
 		if s, err := strconv.ParseBool(rFlag); err == nil {
@@ -212,8 +226,7 @@ func setUnknownStrValue(target *string, value string) {
 }
 
 // addAgentFlags adds agent flags to process them.
-func addAgentFlags(cfg *AgentConfig, address *string, hashKey *string, pollInterval *string,
-	reportInterval *string, limit *string, cryptoKey *string, cFlag *string,
+func addAgentFlags(cfg *AgentConfig, address, hashKey, pollInterval, reportInterval, limit, cryptoKey, cFlag *string,
 ) {
 	addStringChecksStringFlag(cfg.Address, "", "a", address)
 
@@ -230,13 +243,13 @@ func addAgentFlags(cfg *AgentConfig, address *string, hashKey *string, pollInter
 	addIntChecksStringFlag(cfg.RateLimit, 0, "l", limit)
 }
 
-func addStringChecksStringFlag(currentCfgValue string, defaultCfgValue string, flagName string, passedVar *string) {
+func addStringChecksStringFlag(currentCfgValue, defaultCfgValue, flagName string, passedVar *string) {
 	if currentCfgValue == defaultCfgValue && flag.Lookup(flagName) == nil {
 		flag.StringVar(passedVar, flagName, "", "")
 	}
 }
 
-func addIntChecksStringFlag(currentCfgValue int64, defaultCfgValue int64, flagName string, passedVar *string) {
+func addIntChecksStringFlag(currentCfgValue, defaultCfgValue int64, flagName string, passedVar *string) {
 	if currentCfgValue == defaultCfgValue && flag.Lookup(flagName) == nil {
 		flag.StringVar(passedVar, flagName, "", "")
 	}
@@ -278,7 +291,7 @@ func processAgentFlags(cfg *AgentConfig) error {
 }
 
 // setAgentIntFlag sets flag value to int64 field of AgentConfig.
-func setAgentIntFlag(cfgInt *int64, flag string, errMesPart string) error {
+func setAgentIntFlag(cfgInt *int64, flag, errMesPart string) error {
 	if *cfgInt == 0 && flag != "" {
 		if s, err := strconv.ParseInt(flag, 10, 64); err == nil {
 			*cfgInt = s
@@ -338,6 +351,10 @@ func setupDefaultServerValues(config *ServerConfig,
 
 	if config.CryptoKey == unknownStringFieldValue {
 		config.CryptoKey = defaultKey
+	}
+
+	if config.TrustedSubnet == unknownStringFieldValue {
+		config.TrustedSubnet = ""
 	}
 
 	if config.StoreInterval == unknownIntFieldValue {
@@ -416,7 +433,7 @@ func (cfg ServerConfig) StringVariantCopy() string {
 	return string(result)
 }
 
-func PrepBuildValues(bldV string, bldD string, bldC string) string {
+func PrepBuildValues(bldV, bldD, bldC string) string {
 	buffStr := bytes.Buffer{}
 	buffStr.WriteString("Build version: ")
 	buffStr.WriteString(bldV)

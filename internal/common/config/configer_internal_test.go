@@ -220,6 +220,7 @@ func TestLoadServerConfig(t *testing.T) {
 		},
 		StoreInterval:   defaultStoreInterval,
 		ConnectionDB:    unknownStringFieldValue,
+		TrustedSubnet:   "",
 		FileStoragePath: defaultFileStoragePath,
 		hasRestore:      true,
 		Restore:         defaultRestore,
@@ -277,6 +278,7 @@ func TestSetupDefaultServerValuesHasRestore(t *testing.T) {
 		StoreInterval:   3,
 		FileStoragePath: "4",
 		ConnectionDB:    "5",
+		TrustedSubnet:   "6",
 		hasRestore:      false,
 		Restore:         false,
 	}
@@ -296,6 +298,7 @@ func TestServerConfigString(t *testing.T) {
 		StoreInterval:   3,
 		FileStoragePath: "4",
 		ConnectionDB:    "5",
+		TrustedSubnet:   "",
 		hasRestore:      true,
 		Restore:         true,
 	}
