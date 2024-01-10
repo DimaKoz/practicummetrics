@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
-	github.com/go-resty/resty/v2 v2.10.0
+	github.com/go-resty/resty/v2 v2.11.0
 	github.com/goccy/go-json v0.10.2
 	github.com/golang/protobuf v1.5.3
 	github.com/jackc/pgx/v5 v5.4.3
